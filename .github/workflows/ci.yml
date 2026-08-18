@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check .
+
+      # --mpl turns on the image comparisons against tests/baseline/.
+      # Without it the figures are still built, just not compared.
+      - name: Test
+        run: pytest --mpl -v
+
+      # Baselines are rendered images: a matplotlib upgrade can shift them by a
+      # pixel or two even when the geometry is untouched. Keep the artifact so
+      # a failure can be looked at rather than guessed at.
+      - name: Upload image diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpl-results-${{ matrix.python-version }}
+          path: |
+            result_images/
+          if-no-files-found: ignore
+
+  gallery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      # Every committed example image must regenerate byte-identically from
+      # the public API. That is both a determinism check (no unseeded
+      # randomness) and proof the images match the code that claims to make
+      # them.
+      - name: Rebuild examples
+        run: python tools/build_gallery.py --check

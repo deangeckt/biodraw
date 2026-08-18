@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: "biodraw: bio-inspired vector drawings for papers, posters and slides"
+message: "If you use biodraw in a publication, please cite it."
+type: software
+authors:
+  - family-names: Geckt
+    given-names: Dean
+    email: dgeckt@gmail.com
+repository-code: "https://github.com/deangeckt/biodraw"
+abstract: >-
+  A Python library for drawing academic-style cartoon biology — cells,
+  dendrites with spines, axons, synapses and wired circuit panels — as clean,
+  resolution-independent vector output. Built on numpy and matplotlib only, so
+  drawings compose directly with data plots. Shapes are traced from hand
+  drawings and normalised into reusable profiles, and every shape can render
+  its own construction figure.
+keywords:
+  - scientific figures
+  - visualization
+  - matplotlib
+  - neuroscience
+  - illustration
+license: MIT
+version: 0.1.0.dev0

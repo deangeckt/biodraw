@@ -1,0 +1,67 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "biodraw"
+version = "0.1.0.dev0"
+description = "Bio-inspired vector drawings for papers, posters and slides"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Dean Geckt", email = "dgeckt@gmail.com" }]
+keywords = [
+    "matplotlib", "figure", "illustration", "schematic", "svg",
+    "neuroscience", "biology", "scientific-figures",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Matplotlib",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Multimedia :: Graphics",
+]
+dependencies = [
+    "numpy>=1.23",
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-mpl>=0.16",
+    "ruff>=0.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/deangeckt/biodraw"
+Source = "https://github.com/deangeckt/biodraw"
+Issues = "https://github.com/deangeckt/biodraw/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["biodraw"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Image-comparison tests are opt-in: bare `pytest` runs the fast geometry
+# checks and still *builds* every figure (so an exception fails the test),
+# while `pytest --mpl` additionally compares each one against
+# `tests/baseline/`. CI runs the latter. Each test names its own baseline
+# directory in its marker, so there is nothing to configure here.
+
+[tool.ruff]
+line-length = 79
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+# The geometry code is written in the vocabulary of the maths it implements:
+# `a`, `b`, `hw`, `t`, `u`, `v` are the names the docstrings use, and
+# spelling them out would make the formulae harder to check, not easier.
+ignore = ["E741"]
