@@ -59,9 +59,13 @@ here; anything that only wants downloading is not.
 ## Documentation rules
 
 These apply to every page of the gallery, every example folder, and the
-main README. Rule 1 is now **enforced structurally**: a gallery section
-is `images` then `body` then `code`, and `tools/build_site.py` has no
-field that puts a code block above a picture.
+main README. Rules 1 and 7 are now **enforced by the build**: a gallery
+section is `images` then `body` then `code`, and `tools/build_site.py` has no
+field that puts a code block above a picture — and `check_catalog` refuses a
+page that exceeds the word, snippet or caption budget, or that carries a
+section with no drawing in it. Rule 2 spent three sessions as prose everyone
+agreed with while the site grew to a hundred words per picture, which is the
+argument for the numbers in rule 7.
 
 1. **Image first, code second — always.** A reader should see what a thing
    looks like before being shown how to make it. Never open a section with a
@@ -101,7 +105,33 @@ field that puts a code block above a picture.
    `build_gallery` or `git`. The positive form matters more than the
    prohibition: the reader's next step is `pip install biodraw` and pointing
    an agent at the skills, so that is what the page should say.
-7. **Hover may affirm, never replace.** The gallery's cards first cross-faded
+7. **A catalog page shows drawings; every section earns its place with one.**
+   The gallery went live and the verdict was *"its still too much text, its
+   should be more catalog then code-snippet."* Measured: 6,662 words and 352
+   lines of code across 66 drawings — about a hundred words per picture, and
+   up to six snippets on a single page. Ten sections carried no image at all.
+
+   A section with no drawing is prose that wandered onto a catalog. It has
+   two proper homes and neither is the page: if it explains a picture, it is
+   a **caption on that picture**; if it explains a number, it is a **tuning
+   comment** next to the number, where the person changing it will actually
+   meet it. The check that this loses nothing is cheap and worth running —
+   before cutting the pyramidal page's paragraph on why `shaft` anchors sit
+   below the first spine, that reasoning was found already written at
+   `biodraw/neuro/pyramidal.py:120`.
+
+   There is **one snippet per page**: the one that draws the thing the page
+   is about. Five snippets showing five keyword combinations is five copies
+   of one snippet, and the variant grid already said it better.
+
+   Numbers, enforced by `check_catalog` in `tools/build_site.py`: ≤150 words
+   of prose per page, ≤1 code block, ≤20 words per caption, and no imageless
+   section. They took the site to 3,227 words and 10 snippets with all 66
+   drawings still on it. Rule 2 said "more images than prose" and was true
+   and unenforced for three sessions — which is the whole argument for
+   writing a rule as a number.
+
+8. **Hover may affirm, never replace.** The gallery's cards first cross-faded
    each portrait into that example's variant sheet on hover. It read as the
    card changing identity: two cards could not be compared, and what you
    clicked was not what you had been looking at. Hover is allowed to say

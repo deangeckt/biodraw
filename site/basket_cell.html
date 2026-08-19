@@ -37,19 +37,28 @@
 <section class="block">
 <h2 id="told-apart-without-colour">Told apart without colour</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/basket_cell/told_apart.png" alt="Pyramidal and basket, in colour and in mono" loading="lazy"><figcaption>Pyramidal and basket, in colour and in mono</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/basket_cell/told_apart.png" alt="Pyramidal and basket, in colour and in `mono`. Round soma, dendrites all round, no spines — every cue structural." loading="lazy"><figcaption>Pyramidal and basket, in colour and in `mono`. Round soma, dendrites all round, no spines — every cue structural.</figcaption></figure>
 </div>
-<p>Three cues do the work, and <strong>all three are structural</strong>: a <strong>round</strong> soma instead of a triangle; dendrites in every direction, rather than one up and two down; and <strong>smooth</strong> dendrites — a basket cell is aspiny, and drawing it that way is what a reader sees first.</p>
-<p>That matters because a hue difference does not survive greyscale printing, and the whole job of an inhibitory cell in a circuit panel is to be obviously not the excitatory one. The right-hand pair above is the <code>mono</code> palette.</p>
 </section>
 <section class="block">
-<h2 id="the-blueprint">The blueprint</h2>
+<h2 id="how-it-is-built">How it is built</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/basket_cell/blueprint.png" alt="Blueprint of the basket cell" loading="lazy"><figcaption>Blueprint of the basket cell</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/basket_cell/blueprint.png" alt="Blueprint of the basket cell, in three panels" loading="lazy"><figcaption>Blueprint of the basket cell, in three panels</figcaption></figure>
 </div>
-<p class="step"><strong>1 · Even slots, then knocked off them.</strong> Dendrites are placed on an even sweep round the soma and then displaced, by at most half a step so the order round the soma survives. Each is rooted <em>inside</em> the wall, so its flat base is swallowed by the soma&#x27;s fill and the two fuse rather than butt.</p>
-<p class="step"><strong>2 · A repeated part must not repeat exactly.</strong> At <code>jitter=0</code> with equal lengths the cell is a snowflake — the eye reads regularity as a diagram.</p>
-<p class="step"><strong>3 · Anchors.</strong> Round the soma, along every dendrite shaft, and at every tip.</p>
+<ol class="panel-notes">
+<li><strong>Even slots, then knocked off them.</strong> Displaced by at most half a step, so the order round the soma survives.</li>
+<li><strong>A repeated part must not repeat exactly.</strong> At <code>jitter=0</code> with equal lengths the cell reads as a snowflake.</li>
+<li><strong>Anchors.</strong> Round the soma, along every shaft, and at every tip.</li>
+</ol>
+<div class="tablewrap"><table><thead><tr>
+<th>anchor</th>
+<th>where</th>
+<th>count above</th>
+</tr></thead><tbody>
+<tr><td><code>soma</code></td><td>eight points round the wall</td><td>8</td></tr>
+<tr><td><code>shaft</code></td><td>both walls of every branch, three per branch</td><td>126</td></tr>
+<tr><td><code>tip</code></td><td>the end of each branch</td><td>21</td></tr>
+</tbody></table></div>
 </section>
 <section class="block">
 <h2 id="drawing-one">Drawing one</h2>
@@ -66,68 +75,33 @@ cell = bd.neuro.Basket(
 fig, ax = bd.canvas(figsize=(3.6, 3.6))
 cell.draw(ax=ax, wall_lw=1.0, gid=&quot;basket&quot;)
 cell.fit(ax, pad=0.14)
-bd.save(fig, &quot;basket.svg&quot;)</code></pre></div>
+bd.save(fig, &quot;basket.svg&quot;)
+
+top = cell.anchor(&quot;soma&quot;, deg=90.0)</code></pre></div>
 </section>
 <section class="block">
 <h2 id="body-plans">Body plans</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/basket_cell/body_plans.png" alt="Twelve body plans" loading="lazy"><figcaption>Twelve body plans</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/basket_cell/body_plans.png" alt="Twelve body plans: `dendrites` against `arc_deg`. A narrower arc gives a bitufted cell without another class." loading="lazy"><figcaption>Twelve body plans: `dendrites` against `arc_deg`. A narrower arc gives a bitufted cell without another class.</figcaption></figure>
 </div>
-<p>How many dendrites, and over how much of the soma they leave.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Basket(
-    dendrites=5,
-    arc_deg=200,            # 360 is multipolar; narrower gives a bitufted look
-    start_deg=-10,          # where the sweep begins, counter-clockwise from +x
-)</code></pre></div>
-<p>A narrower arc gives a bitufted or bipolar-looking cell without needing another class.</p>
 </section>
 <section class="block">
 <h2 id="branching">Branching</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/basket_cell/branching.png" alt="Nine branch settings" loading="lazy"><figcaption>Nine branch settings</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/basket_cell/branching.png" alt="Nine branch settings. Daughters are Rall-sized, so both come out thinner than what they leave — otherwise the joint spurs." loading="lazy"><figcaption>Nine branch settings. Daughters are Rall-sized, so both come out thinner than what they leave — otherwise the joint spurs.</figcaption></figure>
 </div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Basket(
-    dendrites=6,
-    forks=0.55,             # where along the dendrite it splits
-    fork_angle_deg=34,      # the total crotch angle
-    fork_ratio=0.76,        # the lesser daughter, as a fraction of the greater
-)</code></pre></div>
-<p>The daughters are sized by Rall — their cross-sections sum to the parent&#x27;s — so both come out thinner than what they leave. That is not decoration: a daughter as wide as its parent cannot have its base buried at <em>any</em> depth, and the joint shows a spur. See <code>paths.buried_base</code>.</p>
 </section>
 <section class="block">
 <h2 id="regularity">Regularity</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/basket_cell/regularity.png" alt="Nine regularity settings" loading="lazy"><figcaption>Nine regularity settings</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/basket_cell/regularity.png" alt="Nine regularity settings. Top-left is the failure case: identical dendrites at identical spacing." loading="lazy"><figcaption>Nine regularity settings. Top-left is the failure case: identical dendrites at identical spacing.</figcaption></figure>
 </div>
-<p>Top-left is the failure case: identical dendrites at identical spacing.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Basket(
-    dendrites=8,
-    jitter=0.22,            # 0 puts them on exact centres
-    length_ratio=0.68,      # 1.0 makes them all the same length
-)</code></pre></div>
 </section>
 <section class="block">
 <h2 id="seeds">Seeds</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/basket_cell/seeds.png" alt="Eight seeds" loading="lazy"><figcaption>Eight seeds</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/basket_cell/seeds.png" alt="Eight seeds. Same parameters, eight cells — same seed, same cell, forever." loading="lazy"><figcaption>Eight seeds. Same parameters, eight cells — same seed, same cell, forever.</figcaption></figure>
 </div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>row = [bd.neuro.Basket(dendrites=7, forks=0.55, seed=s) for s in range(8)]</code></pre></div>
-</section>
-<section class="block">
-<h2 id="anchors">Anchors</h2>
-<div class="tablewrap"><table><thead><tr>
-<th>kind</th>
-<th>where</th>
-<th>count on the cell above</th>
-</tr></thead><tbody>
-<tr><td><code>soma</code></td><td>eight points round the wall</td><td>8</td></tr>
-<tr><td><code>shaft</code></td><td>both walls of every branch, at three points along it</td><td>126</td></tr>
-<tr><td><code>tip</code></td><td>the end of each branch</td><td>21</td></tr>
-</tbody></table></div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>top   = cell.anchor(&quot;soma&quot;, deg=90.0)
-tip   = cell.anchor(&quot;tip&quot;, branch=&quot;dend0&quot;)
-near  = cell.anchors(&quot;soma&quot;).nearest(point=(-6.0, 0.0))   # the side it faces</code></pre></div>
-<p>See <a href="wiring.html">Wiring</a> for what to do with them.</p>
 </section>
 
   <p class="source-note">Every figure above is output, not a stored asset
@@ -138,7 +112,7 @@ near  = cell.anchors(&quot;soma&quot;).nearest(point=(-6.0, 0.0))   # the side i
 
 <aside class="rail">
   <p class="rail-head">On this page</p>
-  <ul><li><a href="#told-apart-without-colour">Told apart without colour</a></li><li><a href="#the-blueprint">The blueprint</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#body-plans">Body plans</a></li><li><a href="#branching">Branching</a></li><li><a href="#regularity">Regularity</a></li><li><a href="#seeds">Seeds</a></li><li><a href="#anchors">Anchors</a></li></ul>
+  <ul><li><a href="#told-apart-without-colour">Told apart without colour</a></li><li><a href="#how-it-is-built">How it is built</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#body-plans">Body plans</a></li><li><a href="#branching">Branching</a></li><li><a href="#regularity">Regularity</a></li><li><a href="#seeds">Seeds</a></li></ul>
 </aside>
 </main>
 <div class="lightbox" id="lightbox" hidden>

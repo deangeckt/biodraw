@@ -32,14 +32,13 @@
     <figcaption>A wired circuit panel</figcaption>
   </figure>
 
-  <p class="standfirst">Two cell types, one branching arbor, and four contacts placed perisomatically — which is what a basket cell does, and the reason it is drawn as a basket cell.</p>
+  <p class="standfirst">The mark at the far end is a claim, not decoration. Use one meaning per figure and say which in the key.</p>
 
 <section class="block">
 <h2 id="endcaps">Endcaps</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/wiring/endcaps.png" alt="The five endcaps" loading="lazy"><figcaption>The five endcaps</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/wiring/endcaps.png" alt="The five endcaps. Both ends are anchors, so a clearance means the same at any angle on any shape." loading="lazy"><figcaption>The five endcaps. Both ends are anchors, so a clearance means the same at any angle on any shape.</figcaption></figure>
 </div>
-<p>The mark at the far end is a claim, not decoration.</p>
 <div class="tablewrap"><table><thead><tr>
 <th>endcap</th>
 <th>what it says</th>
@@ -50,7 +49,12 @@
 <tr><td><code>&#x27;arrow&#x27;</code></td><td>flow, direction, causation</td></tr>
 <tr><td><code>None</code></td><td>the line simply reaches the wall</td></tr>
 </tbody></table></div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>bd.connect(
+</section>
+<section class="block">
+<h2 id="drawing-one">Drawing one</h2>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
+
+bd.connect(
     ax=ax,
     source=basket.anchor(&quot;soma&quot;, deg=270.0),
     target=pyramidal.anchor(&quot;soma&quot;, nearest=basket.at),
@@ -58,45 +62,32 @@
     drop=0.30,              # straight descent before the run begins
     rad=0.05,               # bow; positive always bows *up*
     endcap=&quot;bar&quot;,           # the claim
-)</code></pre></div>
-<p>Use one meaning per figure and say which in the key.</p>
-<p>Because both ends are <strong>anchors</strong>, the clearance means the same thing at any angle and on any shape. That is the whole reason a stand-off never has to be tuned per contact per figure.</p>
-</section>
-<section class="block">
-<h2 id="connector-shape">Connector shape</h2>
-<div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/wiring/connector_shapes.png" alt="Twelve connector shapes" loading="lazy"><figcaption>Twelve connector shapes</figcaption></figure>
-</div>
-<p><strong><code>drop</code></strong> — a process does not set off toward its target the moment it leaves the cell; it drops clear of the cell&#x27;s own dendrites first.</p>
-<p><strong><code>rad</code></strong> — how far the run bows. Positive bows <em>up</em> whichever way the connector runs, so a row wired in both directions does not come out with half its lines sagging into whatever is below.</p>
-<p><strong><code>smooth</code></strong> — how wide the turn out of the descent is. At 0 the join is a corner, and a schematic process that turns a hard corner reads as a circuit diagram&#x27;s wire.</p>
-</section>
-<section class="block">
-<h2 id="one-source-several-targets">One source, several targets</h2>
-<div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/wiring/one_to_many.png" alt="Separate strokes versus one arbor" loading="lazy"><figcaption>Separate strokes versus one arbor</figcaption></figure>
-</div>
-<p>Drawn as separate strokes, two outputs run side by side for as far as their targets agree — which reads as two axons — and on a staggered row they cross, since the lower target&#x27;s line starts above the higher one&#x27;s. One process that leaves and <em>branches</em> is both what the cell has and what a drawn arbor looks like.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>bd.connect_tree(
+)
+
+# One process that leaves and *branches*, rather than several strokes.
+bd.connect_tree(
     ax=ax,
     source=basket.anchor(&quot;soma&quot;, deg=270.0),
     targets=[cell.anchor(&quot;soma&quot;, nearest=basket.at) for cell in row],
     fork=0.45,              # how far along the shared stem it splits
     spread=0.4,             # how far each branch turns at the fork
     endcap=&quot;bar&quot;,
-)</code></pre></div>
+)
+
+# Which compartment a contact lands on is your claim, not the library&#x27;s.
+targets = [pyr.anchor(&quot;soma&quot;, side=1, t=t) for t in (0.24, 0.42, 0.60)]</code></pre></div>
 </section>
 <section class="block">
-<h2 id="where-contacts-land-is-yours-to-say">Where contacts land is yours to say</h2>
-<p>Deliberately <strong>not</strong> a feature. This library draws the cell and hands you the places on it; which compartment a contact lands on is a claim about the circuit, and the author makes it.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>targets = [pyr.anchor(&quot;soma&quot;, side=1, t=t) for t in (0.24, 0.42, 0.60)]</code></pre></div>
-<p>An earlier version had an allocator — &quot;eight contacts, five on spines, two on shaft, one on soma&quot; — and it was removed. Once a cell is drawn, marking it is a line of matplotlib against anchors that are already public, and a general drawing library has no business holding one paper&#x27;s argument about where synapses go.</p>
-<p>What survives is the part that really is drawing: a connector has to <em>end</em> in something, and whether that mark is an arrowhead or a bar is how the figure says excitation or inhibition.</p>
+<h2 id="connector-shape">Connector shape</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/wiring/connector_shapes.png" alt="Twelve connector shapes: `drop` clears the cell, `rad` bows the run, `smooth` widens the turn out of the descent." loading="lazy"><figcaption>Twelve connector shapes: `drop` clears the cell, `rad` bows the run, `smooth` widens the turn out of the descent.</figcaption></figure>
+</div>
 </section>
 <section class="block">
-<h2 id="why-there-is-no-axon-class">Why there is no axon class</h2>
-<p>There was one: a tapered tube with Gaussian bouton swellings and collaterals sized by Rall. It worked, and it was removed.</p>
-<p>At the size an axon appears in a circuit panel it read as a fat beaded worm, and pulled the eye away from the cells it existed to connect. A line with a mark on the end says the same thing and is parsed instantly. The test is not &quot;is this anatomically fuller&quot; but &quot;does the reader get the claim faster&quot;.</p>
+<h2 id="one-source-several-targets">One source, several targets</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/wiring/one_to_many.png" alt="Separate strokes versus one arbor. Separate strokes run side by side and cross on a staggered row." loading="lazy"><figcaption>Separate strokes versus one arbor. Separate strokes run side by side and cross on a staggered row.</figcaption></figure>
+</div>
 </section>
 
   <p class="source-note">Every figure above is output, not a stored asset
@@ -107,7 +98,7 @@
 
 <aside class="rail">
   <p class="rail-head">On this page</p>
-  <ul><li><a href="#endcaps">Endcaps</a></li><li><a href="#connector-shape">Connector shape</a></li><li><a href="#one-source-several-targets">One source, several targets</a></li><li><a href="#where-contacts-land-is-yours-to-say">Where contacts land is yours to say</a></li><li><a href="#why-there-is-no-axon-class">Why there is no axon class</a></li></ul>
+  <ul><li><a href="#endcaps">Endcaps</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#connector-shape">Connector shape</a></li><li><a href="#one-source-several-targets">One source, several targets</a></li></ul>
 </aside>
 </main>
 <div class="lightbox" id="lightbox" hidden>

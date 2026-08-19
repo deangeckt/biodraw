@@ -332,6 +332,42 @@ python tools/build_site.py               # fails on any image that is not on dis
 The site builder's image-existence check is the standing guard for the image
 half. The name half is still grep, so run it.
 
+### 11 · The page is a catalog, not an article about one
+
+From Dean, on the live site: *"its still too much text, its should be more
+catalog then code-snippet."* At the time the gallery held 6,662 words and 352
+lines of code across 66 drawings — about a hundred words per picture — and ten
+of its sections carried **no image at all**.
+
+The reason it got there is instructive: documentation rule 2, *more images
+than prose*, had been in `docs/PLAN.md` since session 1 and everyone agreed
+with it. Nothing measured it, so it drifted for three sessions. It is a number
+now.
+
+```bash
+python tools/build_site.py     # check_catalog fails the build on any of these
+```
+
+`check_catalog` enforces ≤150 words of prose per page, ≤1 code block, ≤20
+words per caption, and **no section without a drawing**. When you add or edit
+a page, the two judgement calls it cannot make for you:
+
+- **Where the prose goes.** A section with no image is not deleted, it is
+  *relocated*. If it explains a picture it becomes a caption or a numbered
+  panel note on that picture; if it explains a number it becomes a tuning
+  comment beside the number. Before cutting anything, grep for it — the
+  pyramidal page's paragraph on why `shaft` anchors sit below the first spine
+  was already written at `biodraw/neuro/pyramidal.py:120`, so the cut cost
+  nothing. **Check that before you cut, not after.**
+- **What survives as a table.** An essay listing four limitations is four
+  paragraphs; the same four as a two-column table is catalog data and costs
+  no prose budget. That is a real conversion, not a loophole — the cell
+  atlas's *what this shape cannot say* went that way and reads better for it.
+
+The failure this catches is not "the page is long". It is **a reader who
+wants to know whether a shape suits them having to read an essay to find
+out.**
+
 ---
 
 ## Reporting

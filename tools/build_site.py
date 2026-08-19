@@ -15,10 +15,34 @@ schema it cannot be violated: a section renders `images`, then `body`, then
 `code`, in that order, and there is no field that puts code above a picture.
 The rule is the data structure.
 
-The one check this runs is that **every image referenced exists on disk**. It
-is here because it caught a real defect the moment it was written:
-`examples/wiring/README.md` pointed at five images of `neuro.Axon`, a class
-deleted a session earlier, and nothing had noticed.
+A catalog, not an article
+-------------------------
+*"now that the website is live on gh pages; its still too much text, its
+should be more catalog then code-snippet."* Measured at the time: 6,662 words
+and 352 lines of code across 66 drawings — about a hundred words per picture,
+and up to six snippets on a page. That is an article with figures in it, and
+a reader looking for a shape has to read an essay to find out whether they
+want it.
+
+The rule that came out of it, and the reason `check_catalog` exists: **every
+section on a catalog page shows a drawing.** A section with no image is prose
+that wandered onto a catalog — either it belongs on the picture it is talking
+about, as a caption, or it belongs in the code's tuning comments where the
+reasoning already lives. The one exception is the single snippet that says how
+to draw the thing.
+
+`docs/PLAN.md` carries the rule; `BUDGET` below is the number, so it cannot
+creep back the way it got here.
+
+The checks this runs, each because something real got through:
+
+- **every image referenced exists on disk** — `examples/wiring/README.md`
+  pointed at five images of `neuro.Axon`, a class deleted a session earlier,
+  and nothing had noticed;
+- **no snippet needs a clone** — every page once ended in
+  `python tools/build_gallery.py <name>`, a maintainer's command on a
+  reader's page;
+- **the catalog budget** — see above.
 
 Images are referenced as `../examples/<slug>/<file>` rather than copied into
 `site/`, for two reasons: the seven folders are ~1.6 MB and `docs/PLAN.md`
@@ -151,6 +175,74 @@ def check_snippets(pages):
             + "\n  ".join(bad)
             + "\n\nGallery snippets must run after `pip install biodraw`. "
               "Maintainer commands belong in CONTRIBUTING.md.")
+
+
+# The catalog budget. These are the numbers behind "more catalog than
+# code-snippet", and they are here rather than in prose because a rule written
+# as prose gets read once and a rule written as a check gets run every time.
+#
+# `words` counts prose only — `intro`, `body`, `steps`, `after`. Captions,
+# panel notes and tables are not prose in this sense: a caption is part of
+# showing the drawing, and a table is the knobs as data. They get their own,
+# tighter, per-item cap.
+BUDGET = dict(
+    words=150,          # prose per page. Was 660 on average.
+    code_blocks=1,      # one snippet: how to draw the thing. Was 5.
+    caption_words=20,   # per image alt, and per panel note.
+)
+
+
+def _prose_words(page):
+    fields = ("body", "steps", "after")
+    n = sum(len(t.split()) for t in page.get("intro", ()))
+    for section in page["sections"]:
+        n += sum(len(t.split())
+                 for key in fields for t in section.get(key, ()))
+    return n
+
+
+def check_catalog(pages):
+    """The page is a catalog of drawings, not an article with figures.
+
+    Three things, all of them the same rule seen from different sides: a
+    section earns its place by showing something, prose is a caption rather
+    than an essay, and there is exactly one snippet — the one that draws the
+    thing on the page.
+    """
+    bad = []
+    for page in pages:
+        coded = [s for s in page["sections"] if s.get("code")]
+        if len(coded) > BUDGET["code_blocks"]:
+            bad.append(f"{page['slug']}: {len(coded)} code blocks, "
+                       f"budget is {BUDGET['code_blocks']} "
+                       f"({', '.join(s.get('title', '?') for s in coded)})")
+
+        for section in page["sections"]:
+            if section.get("images") or section.get("code"):
+                continue
+            bad.append(f"{page['slug']} / {section.get('title', '?')!r}: "
+                       f"a section with no drawing. Put it on the picture it "
+                       f"is about, or in the code's tuning comments.")
+
+        words = _prose_words(page)
+        if words > BUDGET["words"]:
+            bad.append(f"{page['slug']}: {words} words of prose, "
+                       f"budget is {BUDGET['words']}")
+
+        for section in page["sections"]:
+            for img in section.get("images", ()) or ():
+                for text in [img["alt"], *img.get("notes", ())]:
+                    if len(text.split()) > BUDGET["caption_words"]:
+                        bad.append(
+                            f"{page['slug']} / {img['src']}: caption is "
+                            f"{len(text.split())} words, budget is "
+                            f"{BUDGET['caption_words']} — {text[:50]}...")
+
+    if bad:
+        raise SystemExit(
+            "the catalog budget is exceeded:\n  " + "\n  ".join(bad)
+            + "\n\nSee `A catalog, not an article` in this file's docstring "
+              "and the documentation rules in docs/PLAN.md.")
 
 
 def check_images(pages):
@@ -325,36 +417,20 @@ def render_index(pages):
 <section class="pitch">
   <h2>Why not a stock illustration?</h2>
   <p>Because you almost never want <em>the</em> picture — you want a variation
-     on it. The same cell at three spine densities, this epithelium curved into
-     a duct, that neuron with one more basal because the panel beside it has
-     two. With a fixed asset that means pushing points by hand, and the figure
-     stops being reproducible the moment you do.</p>
-  <p>There are good free libraries of scientific art, and nothing here competes
-     with them: if you need a virion or a centrifuge, download one. What a
-     stock asset cannot do is become the <em>next</em> one. Here a variant is a
-     parameter and a rebuild is one command.</p>
+     on it. Free libraries of scientific art are good, and nothing here
+     competes with them: if you need a virion or a centrifuge, download one.
+     What a stock asset cannot do is become the <em>next</em> one.</p>
   <blockquote class="pullquote">
     <p>We already spent the tokens generating these drawings.<br>
        Let's not spend them again.</p>
   </blockquote>
-  <p>Deriving the shape of a dendritic spine — tracing it, getting the neck to
-     stretch without inflating the head, finding out that a mirrored fork reads
-     as a symbol rather than a bifurcation — took real work, once. None of it
-     should have to be paid for a second time, by the next person or the next
-     agent. That is the whole of what this library is: that work, kept.</p>
 </section>
 <section class="pitch">
   <h2>Described, not typed</h2>
   <p>Most figures built with this will never be written by hand. You install
-     it, point an agent at it, and describe what you want — which is why the
-     API is objects with <em>anchors</em> for people, and introspection and
-     checks for agents.</p>
-  <p>Three skills ship with the library and are the supported way to drive
-     it:</p>
+     it, point an agent at it, and describe what you want. Three skills ship
+     with the library and are the supported way to drive it:</p>
   <ul class="skills">{skill_items()}</ul>
-  <p>Writing your own skill for your own figure style is the intended
-     extension point — <a href="{GITHUB}/blob/main/skills/README.md">the
-     contract is here</a>.</p>
   <pre><code>pip install biodraw</code></pre>
 </section>
 </main>
@@ -423,6 +499,16 @@ def render_section(page, section):
                 f'<figcaption>{html.escape(img["alt"])}</figcaption>'
                 f"</figure>")
         parts.append("</div>")
+        # Panel notes: one line per numbered panel *of that drawing*. This is
+        # where the construction prose went when the pages were cut back to a
+        # catalog — a blueprint's panels are already titled inside the image,
+        # so the page says the one thing the picture cannot, and the long
+        # reasoning stays in the tuning comments of the code that draws it.
+        for img in images:
+            if img.get("notes"):
+                parts.append('<ol class="panel-notes">')
+                parts += [f"<li>{inline(n)}</li>" for n in img["notes"]]
+                parts.append("</ol>")
 
     for para in section.get("body", ()):
         parts.append(f"<p>{inline(para)}</p>")
@@ -563,6 +649,7 @@ def main():
     pages = load_pages()
     check_images(pages)
     check_snippets(pages)
+    check_catalog(pages)
 
     (SITE / "index.html").write_text(render_index(pages), encoding="utf-8",
                                      newline="\n")

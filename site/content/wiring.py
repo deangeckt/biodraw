@@ -4,6 +4,13 @@ Rewritten from `examples/wiring/README.md`, which had gone stale: it still
 documented `neuro.Axon` — removed a session earlier — and pointed at five
 images of it that were not on disk. Those sections are gone here. A projection
 is now a line with a mark on the end; see `docs/PLAN.md`, drawing rule 4.
+
+The two prose sections this page used to carry — *where contacts land is yours
+to say* and *why there is no axon class* — were cut when the pages went to a
+catalog. Neither was lost: the first is `docs/PLAN.md` and the placement
+engine's entry in `docs/STATE.md`, the second is the module docstring of
+`biodraw/neuro/__init__.py`, where someone reaching for `neuro.Axon` will
+actually meet it.
 """
 
 PAGE = dict(
@@ -30,16 +37,17 @@ PAGE = dict(
     ],
 
     intro=[
-        "Two cell types, one branching arbor, and four contacts placed "
-        "perisomatically — which is what a basket cell does, and the reason "
-        "it is drawn as a basket cell.",
+        "The mark at the far end is a claim, not decoration. Use one meaning "
+        "per figure and say which in the key.",
     ],
 
     sections=[
         dict(
             title="Endcaps",
-            images=[dict(src="endcaps.png", alt="The five endcaps")],
-            body=["The mark at the far end is a claim, not decoration."],
+            images=[dict(src="endcaps.png",
+                         alt="The five endcaps. Both ends are anchors, so a "
+                             "clearance means the same at any angle on any "
+                             "shape.")],
             table=dict(
                 head=["endcap", "what it says"],
                 rows=[
@@ -50,7 +58,13 @@ PAGE = dict(
                     ["`None`", "the line simply reaches the wall"],
                 ],
             ),
+        ),
+
+        dict(
+            title="Drawing one",
             code="""
+import biodraw as bd
+
 bd.connect(
     ax=ax,
     source=basket.anchor("soma", deg=270.0),
@@ -60,47 +74,8 @@ bd.connect(
     rad=0.05,               # bow; positive always bows *up*
     endcap="bar",           # the claim
 )
-""",
-            after=[
-                "Use one meaning per figure and say which in the key.",
-                "Because both ends are **anchors**, the clearance means the "
-                "same thing at any angle and on any shape. That is the whole "
-                "reason a stand-off never has to be tuned per contact per "
-                "figure.",
-            ],
-        ),
 
-        dict(
-            title="Connector shape",
-            images=[dict(src="connector_shapes.png",
-                         alt="Twelve connector shapes")],
-            body=[
-                "**`drop`** — a process does not set off toward its target "
-                "the moment it leaves the cell; it drops clear of the cell's "
-                "own dendrites first.",
-                "**`rad`** — how far the run bows. Positive bows *up* "
-                "whichever way the connector runs, so a row wired in both "
-                "directions does not come out with half its lines sagging "
-                "into whatever is below.",
-                "**`smooth`** — how wide the turn out of the descent is. At 0 "
-                "the join is a corner, and a schematic process that turns a "
-                "hard corner reads as a circuit diagram's wire.",
-            ],
-        ),
-
-        dict(
-            title="One source, several targets",
-            images=[dict(src="one_to_many.png",
-                         alt="Separate strokes versus one arbor")],
-            body=[
-                "Drawn as separate strokes, two outputs run side by side for "
-                "as far as their targets agree — which reads as two axons — "
-                "and on a staggered row they cross, since the lower target's "
-                "line starts above the higher one's. One process that leaves "
-                "and *branches* is both what the cell has and what a drawn "
-                "arbor looks like.",
-            ],
-            code="""
+# One process that leaves and *branches*, rather than several strokes.
 bd.connect_tree(
     ax=ax,
     source=basket.anchor("soma", deg=270.0),
@@ -109,47 +84,26 @@ bd.connect_tree(
     spread=0.4,             # how far each branch turns at the fork
     endcap="bar",
 )
-""",
-        ),
 
-        dict(
-            title="Where contacts land is yours to say",
-            body=[
-                "Deliberately **not** a feature. This library draws the cell "
-                "and hands you the places on it; which compartment a contact "
-                "lands on is a claim about the circuit, and the author makes "
-                "it.",
-            ],
-            code="""
+# Which compartment a contact lands on is your claim, not the library's.
 targets = [pyr.anchor("soma", side=1, t=t) for t in (0.24, 0.42, 0.60)]
 """,
-            after=[
-                "An earlier version had an allocator — \"eight contacts, five "
-                "on spines, two on shaft, one on soma\" — and it was removed. "
-                "Once a cell is drawn, marking it is a line of matplotlib "
-                "against anchors that are already public, and a general "
-                "drawing library has no business holding one paper's argument "
-                "about where synapses go.",
-                "What survives is the part that really is drawing: a "
-                "connector has to *end* in something, and whether that mark "
-                "is an arrowhead or a bar is how the figure says excitation "
-                "or inhibition.",
-            ],
         ),
 
         dict(
-            title="Why there is no axon class",
-            body=[
-                "There was one: a tapered tube with Gaussian bouton swellings "
-                "and collaterals sized by Rall. It worked, and it was "
-                "removed.",
-                "At the size an axon appears in a circuit panel it read as a "
-                "fat beaded worm, and pulled the eye away from the cells it "
-                "existed to connect. A line with a mark on the end says the "
-                "same thing and is parsed instantly. The test is not \"is "
-                "this anatomically fuller\" but \"does the reader get the "
-                "claim faster\".",
-            ],
+            title="Connector shape",
+            images=[dict(src="connector_shapes.png",
+                         alt="Twelve connector shapes: `drop` clears the "
+                             "cell, `rad` bows the run, `smooth` widens the "
+                             "turn out of the descent.")],
+        ),
+
+        dict(
+            title="One source, several targets",
+            images=[dict(src="one_to_many.png",
+                         alt="Separate strokes versus one arbor. Separate "
+                             "strokes run side by side and cross on a "
+                             "staggered row.")],
         ),
     ],
 )

@@ -387,6 +387,41 @@ main {
   padding: 0 0.7rem 0.6rem;
   text-align: center;
 }
+
+/* One line per numbered panel of the drawing above. The panels are already
+   titled inside the image, so these say the thing the picture cannot — kept
+   to a line each by the caption budget in tools/build_site.py. */
+.panel-notes {
+  margin: -0.8rem 0 1.4rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: panel;
+  display: grid;
+  gap: 0.45rem;
+}
+.panel-notes li {
+  counter-increment: panel;
+  position: relative;
+  padding-left: 1.7rem;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+.panel-notes li::before {
+  content: counter(panel);
+  position: absolute;
+  left: 0;
+  top: 0.05rem;
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  width: 1.15rem;
+  height: 1.15rem;
+  display: grid;
+  place-items: center;
+}
 .zoomable { cursor: zoom-in; }
 .zoomable:hover { border-color: var(--ink-faint); }
 

@@ -35,15 +35,26 @@
   <p class="standfirst">Where the <a href="generic_cell.html">generic cell</a> is one cell that is not one contour, this is many cells that must <strong>not</strong> become one.</p>
 
 <section class="block">
-<h2 id="the-blueprint">The blueprint</h2>
+<h2 id="how-it-is-built">How it is built</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/epithelial_sheet/blueprint.png" alt="Blueprint of the epithelial sheet" loading="lazy"><figcaption>Blueprint of the epithelial sheet</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/epithelial_sheet/blueprint.png" alt="Blueprint of the epithelial sheet, in four panels" loading="lazy"><figcaption>Blueprint of the epithelial sheet, in four panels</figcaption></figure>
 </div>
-<p class="step"><strong>1 · Why every cell is its own layer.</strong> The top row is five cells handed to a single <code>render_hollow</code> call: the union does exactly what it was asked and dissolves every shared wall, leaving one long cell. The bottom row is the same five outlines with a <code>Layer</code> each. Nothing about the geometry changed — only how many times it was drawn.</p>
-<p class="step"><strong>2 · The hairline between neighbours.</strong> <code>gap</code> is real page between two cells, and it cannot be zero for free: at zero the two walls land on the same line and each cell&#x27;s second pass erases half of the other&#x27;s, leaving a join at half weight. A visible boundary is also the more honest drawing — an epithelium is drawn with its boundaries showing, because the boundary is the point.</p>
-<p class="step"><strong>3 · The arc, derived from the pitch.</strong> <code>curve_deg</code> bends the row. The radius is not a knob — it follows from one cell&#x27;s width subtending one pitch angle, which is what makes <code>curve_deg=-360</code> close <em>exactly</em> at any cell count instead of leaving a wedge to tune away. Each cell then widens by <code>(r+h)/r</code> toward its apical surface, because on an arc the outer surface is longer; without that, a wedge opens between every pair and the tissue reads as tearing.</p>
-<p class="step"><strong>4 · Anchors.</strong> Apical and basal surface per cell, one nucleus, and one junction per boundary — placed at the apical end of the shared wall, which is where a tight junction is and so where a label about one points.</p>
-<p>A bug panel 2 caught: the lateral walls bow outward by <code>bow_side</code> × their own length, which at the defaults is 0.018 a side against a gap of 0.0276, so neighbours overlapped by 0.008. The quad is now set in by the bulge, and <code>gap</code> means what it says.</p>
+<ol class="panel-notes">
+<li><strong>Why every cell is its own layer.</strong> One union dissolves every shared wall into one long cell.</li>
+<li><strong>The hairline between neighbours.</strong> <code>gap</code> is real page. At zero, each cell&#x27;s second pass erases half the other&#x27;s wall.</li>
+<li><strong>The arc, derived from the pitch.</strong> One cell subtends one pitch angle, so <code>-360</code> closes exactly at any count.</li>
+<li><strong>Anchors.</strong> Apical and basal per cell, one nucleus, one junction at the apical end of each shared wall.</li>
+</ol>
+<div class="tablewrap"><table><thead><tr>
+<th>anchor</th>
+<th>where</th>
+<th>count on a 6-cell row</th>
+</tr></thead><tbody>
+<tr><td><code>apical</code></td><td>middle of each apical surface, pointing out</td><td>6</td></tr>
+<tr><td><code>basal</code></td><td>middle of each basal surface, pointing down</td><td>6</td></tr>
+<tr><td><code>nucleus</code></td><td>one per nucleus</td><td>6</td></tr>
+<tr><td><code>junction</code></td><td>the apical end of each shared wall — one <em>per cell</em> on a closed ring</td><td>5</td></tr>
+</tbody></table></div>
 </section>
 <section class="block">
 <h2 id="drawing-one">Drawing one</h2>
@@ -56,9 +67,12 @@ sheet = bd.cells.Sheet(
     gap=0.06,               # page left between neighbours, x cell_w
     nucleus=0.30,           # nuclear semi-axis, x cell_w
     nucleus_at=0.32,        # basal — the cheapest cue that the sheet has a polarity
+    nucleus_jitter=0.05,    # ...because a row of identical cells is a row of copies
+    height_jitter=0.04,     # and a level apical surface is the first thing the eye finds
     microvilli=5,           # brush border, per cell
+    curve_deg=0,            # -360 closes into a ring; refuses if height will not fit
     basement=True,          # the band the sheet stands on
-    seed=1,                 # fixes the nucleus and height jitter
+    seed=1,                 # fixes both jitters — still byte-identical on rebuild
 )
 
 fig, ax = bd.canvas(figsize=(4.4, 2.6))
@@ -68,75 +82,27 @@ sheet.draw(
     gid=&quot;epithelium&quot;,       # names the layers in the exported SVG
 )
 sheet.fit(ax, pad=0.10)
-bd.save(fig, &quot;epithelium.svg&quot;)</code></pre></div>
+bd.save(fig, &quot;epithelium.svg&quot;)
+
+lumen_side = sheet.anchor(&quot;apical&quot;, cell=2)</code></pre></div>
 </section>
 <section class="block">
 <h2 id="curvature">Curvature</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/epithelial_sheet/curvature.png" alt="Six curvatures" loading="lazy"><figcaption>Six curvatures</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/epithelial_sheet/curvature.png" alt="Six curvatures. Positive puts the apical surface outside; negative encloses a lumen and `-360` closes exactly." loading="lazy"><figcaption>Six curvatures. Positive puts the apical surface outside; negative encloses a lumen and `-360` closes exactly.</figcaption></figure>
 </div>
-<p>The one knob that turns a sheet into a fold, a villus, a duct, or a closed ring of cells around a lumen.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>sheet = bd.cells.Sheet(
-    cells=9,
-    curve_deg=-360,         # negative curls the apical surface inward
-    height=0.36,            # must stay inside the arc radius — see below
-    microvilli=4,
-)</code></pre></div>
-<p>Positive puts the apical surface on the outside; negative encloses a lumen. At <code>-360</code> the ring closes on itself exactly.</p>
-<p>Bend too far for the height and <code>Sheet</code> <strong>refuses</strong>, naming the three ways out, rather than drawing a row turned inside out: <em>&quot;curve_deg=-360 bends the row tighter than height=0.62 allows — the apical surface passes through the centre of the arc. Reduce the height, widen the cells, or bend less far.&quot;</em></p>
 </section>
 <section class="block">
 <h2 id="cell-shapes">Cell shapes</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/epithelial_sheet/cell_shapes.png" alt="Nine cell shapes" loading="lazy"><figcaption>Nine cell shapes</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/epithelial_sheet/cell_shapes.png" alt="Nine cell shapes — squamous, cuboidal, columnar — one object at three heights crossed with `taper`." loading="lazy"><figcaption>Nine cell shapes — squamous, cuboidal, columnar — one object at three heights crossed with `taper`.</figcaption></figure>
 </div>
-<p>Squamous, cuboidal, columnar — one object at three heights, crossed with what the taper does to each.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>sheet = bd.cells.Sheet(
-    cells=6,
-    height=0.34,            # 0.34 squamous · 0.70 cuboidal · 1.25 columnar
-    taper=0.72,             # apical pitch as a multiple of basal
-    nucleus=0.26,
-)</code></pre></div>
 </section>
 <section class="block">
 <h2 id="brush-border">Brush border</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/epithelial_sheet/borders.png" alt="Eight brush borders" loading="lazy"><figcaption>Eight brush borders</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/epithelial_sheet/borders.png" alt="Eight brush borders. Aimed along each cell&#x27;s own axis, not the local radius — which fans them into fraying." loading="lazy"><figcaption>Eight brush borders. Aimed along each cell&#x27;s own axis, not the local radius — which fans them into fraying.</figcaption></figure>
 </div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>sheet = bd.cells.Sheet(
-    cells=5,
-    microvilli=6,               # per cell
-    microvilli_len=0.40,        # x cell_w
-    microvilli_width=0.09,      # x cell_w
-)</code></pre></div>
-<p>Each villus belongs to its own cell&#x27;s layer, so it fuses with that cell and with nothing else — including the neighbour a millimetre away. They are aimed along their own cell&#x27;s axis rather than along the local radius: on a curved sheet the two differ, and following the radius fans them apart at the ends of a cell, which reads as fraying rather than as a border.</p>
-</section>
-<section class="block">
-<h2 id="no-two-cells-alike">No two cells alike</h2>
-<p>The nuclei wander, and so does each cell&#x27;s own apical height. A row of identical cells is a row of copies, and a perfectly level apical surface is the first thing the eye finds in the drawing.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>sheet = bd.cells.Sheet(
-    cells=6,
-    nucleus_jitter=0.05,    # x the cell height
-    height_jitter=0.04,     # x the cell height
-    seed=1,                 # ...and both are seeded, so it still redraws byte-identically
-)</code></pre></div>
-</section>
-<section class="block">
-<h2 id="anchors">Anchors</h2>
-<div class="tablewrap"><table><thead><tr>
-<th>kind</th>
-<th>where</th>
-<th>count on a 6-cell row</th>
-</tr></thead><tbody>
-<tr><td><code>apical</code></td><td>the middle of each apical surface, pointing out</td><td>6</td></tr>
-<tr><td><code>basal</code></td><td>the middle of each basal surface, pointing down</td><td>6</td></tr>
-<tr><td><code>nucleus</code></td><td>one per nucleus</td><td>6</td></tr>
-<tr><td><code>junction</code></td><td>the apical end of each shared wall</td><td>5</td></tr>
-</tbody></table></div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>lumen_side = sheet.anchor(&quot;apical&quot;, cell=2)         # third cell, apical face
-tight      = sheet.anchor(&quot;junction&quot;, rank=0)       # the first boundary
-under      = sheet.anchor(&quot;basal&quot;, cell=0)          # where the membrane is</code></pre></div>
-<p>A closed ring has one junction <em>per cell</em> rather than one fewer, because the last cell has a neighbour on both sides.</p>
 </section>
 
   <p class="source-note">Every figure above is output, not a stored asset
@@ -147,7 +113,7 @@ under      = sheet.anchor(&quot;basal&quot;, cell=0)          # where the membra
 
 <aside class="rail">
   <p class="rail-head">On this page</p>
-  <ul><li><a href="#the-blueprint">The blueprint</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#curvature">Curvature</a></li><li><a href="#cell-shapes">Cell shapes</a></li><li><a href="#brush-border">Brush border</a></li><li><a href="#no-two-cells-alike">No two cells alike</a></li><li><a href="#anchors">Anchors</a></li></ul>
+  <ul><li><a href="#how-it-is-built">How it is built</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#curvature">Curvature</a></li><li><a href="#cell-shapes">Cell shapes</a></li><li><a href="#brush-border">Brush border</a></li></ul>
 </aside>
 </main>
 <div class="lightbox" id="lightbox" hidden>

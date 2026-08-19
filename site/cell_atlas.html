@@ -32,14 +32,25 @@
     <figcaption>Twelve cell types drawn from one shape</figcaption>
   </figure>
 
-  <p class="standfirst">Every drawing on this page is <code>cells.Blob</code> with different keywords. Nothing was added to the library to make it, and that is the argument: a shape worth having reaches a dozen recognisable cells without a dozen classes.</p><p class="standfirst"><strong>They are cartoons keyed to what a reader recognises, not measured morphologies.</strong> A macrophage is drawn with pseudopodia and a busy cytoplasm because that is how a macrophage is drawn. Nothing here was traced off a micrograph. The library draws; what a figure claims stays yours.</p>
+  <p class="standfirst">Every drawing here is <code>cells.Blob</code> with different keywords — nothing was added to the library to make it. <strong>They are cartoons keyed to what a reader recognises, not measured morphologies.</strong></p>
 
 <section class="block">
 <h2 id="twelve-cells-one-class">Twelve cells, one class</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/cell_atlas/atlas.png" alt="Twelve cell types drawn from cells.Blob" loading="lazy"><figcaption>Twelve cell types drawn from cells.Blob</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/cell_atlas/atlas.png" alt="Twelve cell types from cells.Blob. Read each as a diff against the default — what is unnamed is deliberate." loading="lazy"><figcaption>Twelve cell types from cells.Blob. Read each as a diff against the default — what is unnamed is deliberate.</figcaption></figure>
 </div>
-<p>Read each of these as a diff against the default <code>Blob</code>. Anything not named below is left at its default on purpose, so the keywords that appear <em>are</em> the definition of that cell.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>what it cannot say</th>
+<th>why</th>
+</tr></thead><tbody>
+<tr><td>a lobed nucleus</td><td><code>nucleus</code> is one ring; a neutrophil&#x27;s is three or four connected lobes</td></tr>
+<tr><td>a cell wall as a second contour</td><td>the plant cell leans on <code>squareness=3.9</code> instead; a real wall is a <code>Layer</code> this shape does not build</td></tr>
+<tr><td>a bud, or two bodies</td><td>a budding yeast is two joined cells, <code>Blob</code> is one</td></tr>
+<tr><td>contents in part of the cytoplasm</td><td><code>core.scatter</code> takes exclusion regions, <code>Blob</code> does not expose them</td></tr>
+</tbody></table></div>
+</section>
+<section class="block">
+<h2 id="drawing-one">Drawing one</h2>
 <div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
 
 # a red cell: the anucleate case is not degenerate, it is a cell type
@@ -56,45 +67,27 @@ rbc = bd.cells.Blob(
 mac = bd.cells.Blob(
     organelles=9,           # a busy cytoplasm
     organelle_size=0.125,   # smaller, so nine of them fit
-    organelle_sep=0.26,     # ...and closer together
-    wobble=0.050,           # an irregular outline
     protrusions=6,          # pseudopodia
     protrusion_len=0.45,    # x the body radius — past ~0.4 it reads as reaching
-    protrusion_width=0.155, # thick enough to be a lobe, not a hair
+    wobble=0.050,           # an irregular outline
     seed=2,
-)</code></pre></div>
+)
+
+# true relative size is one number: `scale` multiplies every local length
+UM_PER_UNIT = 10.0
+mac = mac.moved(scale=(21.0 / UM_PER_UNIT) / (2 * mac.radius))</code></pre></div>
 </section>
 <section class="block">
 <h2 id="how-each-one-is-reached">How each one is reached</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/cell_atlas/derivations.png" alt="Three cells derived from the default Blob in three steps each" loading="lazy"><figcaption>Three cells derived from the default Blob in three steps each</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/cell_atlas/derivations.png" alt="Three cells derived in three steps each: the silhouette, then the contents, then the membrane. Work in that order." loading="lazy"><figcaption>Three cells derived in three steps each: the silhouette, then the contents, then the membrane. Work in that order.</figcaption></figure>
 </div>
-<p>Left to right: the default <code>Blob</code>, then the body, then the contents, then the membrane. That is the order to work in when you want a cell this page does not have — get the silhouette, fill it, then decide what comes out of it.</p>
-<p><strong>The fibroblast&#x27;s second step could not be a body change alone</strong>, and the caption says so rather than hiding it. At <code>aspect=0.30</code> the body is 0.165 local units half-tall while the default nucleus is 0.187 in radius, so it would stand straight through the wall — and the default six organelles do not fit either. That second part is not a judgement call: <code>scatter_in</code> raises. A flatter cell holds less, and its contents have to come down with it.</p>
 </section>
 <section class="block">
 <h2 id="one-number-true-relative-size">One number, true relative size</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/cell_atlas/to_scale.png" alt="Five cells drawn at their true relative sizes with a 10 micrometre bar" loading="lazy"><figcaption>Five cells drawn at their true relative sizes with a 10 micrometre bar</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/cell_atlas/to_scale.png" alt="Five cells at true relative size, 10 µm bar. Lay a row out on the ink, not the body." loading="lazy"><figcaption>Five cells at true relative size, 10 µm bar. Lay a row out on the ink, not the body.</figcaption></figure>
 </div>
-<p><code>scale</code> multiplies every local length in the shape, so one number resizes a cell coherently — the wall, the nucleus, the organelles and the protrusions all follow it, and nothing has to be re-tuned. That is what lets a panel be honest about size without anything being redrawn.</p>
-<p>The round numbers here are textbook ones, not measurements. An adipocyte at ~100 µm would be four times the width of the widest cell shown.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>UM_PER_UNIT = 10.0                      # one local unit is ten micrometres
-
-cell = bd.cells.Blob(**{...})           # any of the twelve above
-cell = cell.moved(
-    at=(x, 0.0),
-    scale=(diameter_um / UM_PER_UNIT) / (2 * cell.radius),
-)</code></pre></div>
-<p>Lay the row out on the <strong>ink</strong>, not on the body. A ciliated cell 20 µm across throws 27 µm of drawing, and spacing this row on body radii alone buried one cell&#x27;s wall under the next one&#x27;s cilia by 0.52 local units. <code>shape.points</code> is every drawn vertex, which is what the spacing is measured from.</p>
-</section>
-<section class="block">
-<h2 id="what-this-shape-cannot-say">What this shape cannot say</h2>
-<p>Worth naming, because the honest answer to &quot;can it draw X&quot; is sometimes no, and a page that only shows successes is not documentation:</p>
-<p><strong>A lobed nucleus.</strong> A neutrophil&#x27;s nucleus is three or four connected lobes, and <code>nucleus</code> is one ring. There is no lobe count and adding one for a single cell type would be the wrong trade.</p>
-<p><strong>A cell wall as a second contour.</strong> The plant cell above leans on <code>squareness=3.9</code> as a cue that it is walled. A real wall is a second closed outline outside the membrane, which is a <code>Layer</code> this shape does not build.</p>
-<p><strong>A bud, or anything with two bodies.</strong> A budding yeast is two joined cells; <code>Blob</code> is one.</p>
-<p><strong>Contents confined to part of the cytoplasm</strong> — the apical mucin granules of a goblet cell, say. <code>core.scatter</code> takes exclusion regions, but <code>Blob</code> does not expose them, so organelles spread through the whole cell.</p>
 </section>
 
   <p class="source-note">Every figure above is output, not a stored asset
@@ -105,7 +98,7 @@ cell = cell.moved(
 
 <aside class="rail">
   <p class="rail-head">On this page</p>
-  <ul><li><a href="#twelve-cells-one-class">Twelve cells, one class</a></li><li><a href="#how-each-one-is-reached">How each one is reached</a></li><li><a href="#one-number-true-relative-size">One number, true relative size</a></li><li><a href="#what-this-shape-cannot-say">What this shape cannot say</a></li></ul>
+  <ul><li><a href="#twelve-cells-one-class">Twelve cells, one class</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#how-each-one-is-reached">How each one is reached</a></li><li><a href="#one-number-true-relative-size">One number, true relative size</a></li></ul>
 </aside>
 </main>
 <div class="lightbox" id="lightbox" hidden>

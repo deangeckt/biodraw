@@ -170,36 +170,20 @@
 <section class="pitch">
   <h2>Why not a stock illustration?</h2>
   <p>Because you almost never want <em>the</em> picture — you want a variation
-     on it. The same cell at three spine densities, this epithelium curved into
-     a duct, that neuron with one more basal because the panel beside it has
-     two. With a fixed asset that means pushing points by hand, and the figure
-     stops being reproducible the moment you do.</p>
-  <p>There are good free libraries of scientific art, and nothing here competes
-     with them: if you need a virion or a centrifuge, download one. What a
-     stock asset cannot do is become the <em>next</em> one. Here a variant is a
-     parameter and a rebuild is one command.</p>
+     on it. Free libraries of scientific art are good, and nothing here
+     competes with them: if you need a virion or a centrifuge, download one.
+     What a stock asset cannot do is become the <em>next</em> one.</p>
   <blockquote class="pullquote">
     <p>We already spent the tokens generating these drawings.<br>
        Let's not spend them again.</p>
   </blockquote>
-  <p>Deriving the shape of a dendritic spine — tracing it, getting the neck to
-     stretch without inflating the head, finding out that a mirrored fork reads
-     as a symbol rather than a bifurcation — took real work, once. None of it
-     should have to be paid for a second time, by the next person or the next
-     agent. That is the whole of what this library is: that work, kept.</p>
 </section>
 <section class="pitch">
   <h2>Described, not typed</h2>
   <p>Most figures built with this will never be written by hand. You install
-     it, point an agent at it, and describe what you want — which is why the
-     API is objects with <em>anchors</em> for people, and introspection and
-     checks for agents.</p>
-  <p>Three skills ship with the library and are the supported way to drive
-     it:</p>
+     it, point an agent at it, and describe what you want. Three skills ship
+     with the library and are the supported way to drive it:</p>
   <ul class="skills"><li><a href="https://github.com/deangeckt/biodraw/blob/main/skills/draw-a-figure/SKILL.md"><code>draw-a-figure</code></a> — building a figure from shapes that already exist.</li><li><a href="https://github.com/deangeckt/biodraw/blob/main/skills/review-a-drawing/SKILL.md"><code>review-a-drawing</code></a> — the numeric checks to run before calling a drawing finished. An agent cannot see the figure, so every check is a measurement.</li><li><a href="https://github.com/deangeckt/biodraw/blob/main/skills/trace-a-shape/SKILL.md"><code>trace-a-shape</code></a> — turning a photograph of your own drawing into a shape the library does not have yet. Tracing is public API, not a story about how the bundled shapes were made.</li></ul>
-  <p>Writing your own skill for your own figure style is the intended
-     extension point — <a href="https://github.com/deangeckt/biodraw/blob/main/skills/README.md">the
-     contract is here</a>.</p>
   <pre><code>pip install biodraw</code></pre>
 </section>
 </main>

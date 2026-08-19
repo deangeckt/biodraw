@@ -32,21 +32,24 @@
     <figcaption>A cortical column</figcaption>
   </figure>
 
-  <p class="standfirst">A cortical column: layer II/III pyramidal cells with forked apicals, one large layer V cell, a basket cell making perisomatic contacts on it, and the layer V output leaving as a projection. The layer rules are the only horizontal lines in the figure — <strong>nothing else sits on a baseline by accident.</strong></p>
+  <p class="standfirst">A cortical column: layer II/III cells with forked apicals, one large layer V cell, a basket cell contacting it perisomatically, and the layer V output leaving as a projection. The layer rules are the only horizontal lines — <strong>nothing else sits on a baseline by accident.</strong></p>
 
 <section class="block">
 <h2 id="six-motifs">Six motifs</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/circuit_motifs/motifs.png" alt="Six circuit motifs" loading="lazy"><figcaption>Six circuit motifs</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/circuit_motifs/motifs.png" alt="Six circuit motifs. One colour and one mark per claim across all six, so the key is three lines." loading="lazy"><figcaption>Six circuit motifs. One colour and one mark per claim across all six, so the key is three lines.</figcaption></figure>
 </div>
-<p>One colour and one mark per claim, held across all six panels, so the key is three lines rather than a paragraph.</p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
 <th>claim</th>
 </tr></thead><tbody>
 <tr><td>red, arrowhead</td><td>excitation</td></tr>
 <tr><td>blue, bar</td><td>inhibition</td></tr>
+<tr><td><code>&#x27;open&#x27;</code></td><td>the same contact, <strong>not</strong> asserted</td></tr>
 </tbody></table></div>
+</section>
+<section class="block">
+<h2 id="drawing-one">Drawing one</h2>
 <div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
 
 pyr = bd.neuro.Pyramidal(spines=6, basal=2, at=(-1.9, 0.0), scale=0.55)
@@ -57,56 +60,34 @@ for cell in (pyr, bas):
 bd.connect(
     ax=ax,
     source=pyr.anchor(&quot;soma&quot;, nearest=bas.at),   # the flank facing the target
-    target=bas.anchor(&quot;soma&quot;, nearest=pyr.at),
+    target=bas.anchor(&quot;soma&quot;, nearest=pyr.at),   # ...and the one facing back
     gap=0.05,               # clearance at the wall, in local units
     drop=0.15,              # drop clear of the cell before running
     rad=0.07,               # bow; positive always bows up
     endcap=&quot;arrow&quot;,         # the claim: excitation
-)</code></pre></div>
-<p><code>nearest</code> is what makes this readable: each connector lands on the side of the cell it is arriving from rather than reaching around the back, without any per-panel tuning.</p>
-<p>Panel <strong>E</strong> uses <code>bd.connect_tree</code> rather than three separate calls — a cell reaching three targets has one axon that branches, not three axons. See <a href="wiring.html">Wiring</a> for the side-by-side.</p>
+)
+
+p = bd.style.palette.get(&quot;colorblind&quot;)   # or &#x27;default&#x27;, or &#x27;mono&#x27;</code></pre></div>
 </section>
 <section class="block">
 <h2 id="the-same-pair-four-claims">The same pair, four claims</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/circuit_motifs/claims.png" alt="Four claims" loading="lazy"><figcaption>Four claims</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/circuit_motifs/claims.png" alt="Four claims. Identical cells and geometry — only the endcap and the colour change." loading="lazy"><figcaption>Four claims. Identical cells and geometry — only the endcap and the colour change.</figcaption></figure>
 </div>
-<p>Identical cells, identical geometry. Only the endcap and the colour change, which is exactly how much should have to.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>bd.connect(ax=ax, source=src, target=dst, endcap=&quot;bar&quot;, color=INH)</code></pre></div>
-<p><code>&#x27;open&#x27;</code> is the one worth knowing about: a contact of the same kind that the figure is <strong>not</strong> asserting. If the data do not support the claim, the drawing should not make it.</p>
 </section>
 <section class="block">
 <h2 id="three-palettes">Three palettes</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/circuit_motifs/palettes.png" alt="One circuit, three palettes" loading="lazy"><figcaption>One circuit, three palettes</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/circuit_motifs/palettes.png" alt="One circuit, three palettes. `mono` is the check that a drawing still reads with its colours taken away." loading="lazy"><figcaption>One circuit, three palettes. `mono` is the check that a drawing still reads with its colours taken away.</figcaption></figure>
 </div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>p = bd.style.palette.get(&quot;colorblind&quot;)     # or &#x27;default&#x27;, or &#x27;mono&#x27;
-pyr.draw(ax=ax, edge=p[&quot;excitatory&quot;])
-bas.draw(ax=ax, edge=p[&quot;inhibitory&quot;])</code></pre></div>
-<p><strong><code>default</code></strong> — the palette the reference figure was drawn in.</p>
-<p><strong><code>colorblind</code></strong> — Okabe-Ito, distinguishable under all common forms of colour blindness. Use this for print.</p>
-<p><strong><code>mono</code></strong> — no hue at all, for journals that charge for colour, and as the check that a drawing still reads when its colours are taken away. If a figure only works in the first palette, it is relying on colour to carry a claim, and it will fail on someone&#x27;s greyscale printout.</p>
-<p>That check is why the two cell types differ <strong>structurally</strong> — a triangle with one apical, versus a round soma with dendrites in every direction — rather than only by hue. See <a href="basket_cell.html">Basket cell</a>.</p>
-</section>
-<section class="block">
-<h2 id="building-the-column">Building the column</h2>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>big = bd.neuro.Pyramidal(
-    spines=10, basal_spines=5,
-    trunk_len=2.9,          # apical reaching layer I
-    apical_fork=0.68,       # ...forking near the top, as a real one does
-    at=(0.1, -1.15), scale=1.05, seed=7,
-)
-
-bd.connect_tree(
-    ax=ax,
-    source=bas.anchor(&quot;soma&quot;, nearest=big.at),
-    # Perisomatic — what a basket cell does. Named outright, because which
-    # compartment a contact lands on is a claim, and the author makes it.
-    targets=[big.anchor(&quot;soma&quot;, side=1, t=t) for t in (0.24, 0.42, 0.60)],
-    gap=0.035, drop=0.28, fork=0.5, spread=0.42,
-    endcap=&quot;bar&quot;, color=INH,
-)</code></pre></div>
-<p>Every cell takes a <code>seed</code>, and cells that would otherwise be identical get different ones — three layer II/III cells drawn from one seed are three copies of one cell, which reads as a diagram rather than as tissue.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>palette</th>
+<th>for</th>
+</tr></thead><tbody>
+<tr><td><code>default</code></td><td>what the reference figure was drawn in</td></tr>
+<tr><td><code>colorblind</code></td><td>Okabe-Ito. Use this for print</td></tr>
+<tr><td><code>mono</code></td><td>greyscale journals, and as the check above</td></tr>
+</tbody></table></div>
 </section>
 
   <p class="source-note">Every figure above is output, not a stored asset
@@ -117,7 +98,7 @@ bd.connect_tree(
 
 <aside class="rail">
   <p class="rail-head">On this page</p>
-  <ul><li><a href="#six-motifs">Six motifs</a></li><li><a href="#the-same-pair-four-claims">The same pair, four claims</a></li><li><a href="#three-palettes">Three palettes</a></li><li><a href="#building-the-column">Building the column</a></li></ul>
+  <ul><li><a href="#six-motifs">Six motifs</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#the-same-pair-four-claims">The same pair, four claims</a></li><li><a href="#three-palettes">Three palettes</a></li></ul>
 </aside>
 </main>
 <div class="lightbox" id="lightbox" hidden>

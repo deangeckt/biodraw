@@ -3,8 +3,9 @@
 A running handoff. Read this, then [CLAUDE.md](../CLAUDE.md) for how the repo
 is developed and [PLAN.md](PLAN.md) for where it is going.
 
-Last updated: session 4 (2026-08-18). One commit (`start`); `examples/`
-and the whole tree are tracked.
+Last updated: session 5 (2026-08-19). Pushed to
+[github.com/deangeckt/biodraw](https://github.com/deangeckt/biodraw) and
+**live at [deangeckt.github.io/biodraw](https://deangeckt.github.io/biodraw/)**.
 
 ## Built and verified
 
@@ -24,7 +25,7 @@ machine — `python` is a Windows Store stub here.
 | `biodraw/style/` | three palettes |
 | `biodraw/io.py` | `canvas`, `fit`, `save` (vector, SVG hygiene, byte-reproducible), `save_compact` (rasters) + three quality profiles |
 | `examples/` | `dendritic_spine`, `pyramidal_cell`, `generic_cell`, `cell_atlas`, `epithelial_sheet`, `basket_cell`, `bacteria`, `wiring`, `circuit_motifs` — `build.py` + images, ~2.2 MB at `review` quality |
-| `site/` | the gallery: index with category filter and search, nine detail pages across five categories, built from `site/content/*.py` by `tools/build_site.py`. Root `index.html` + `.nojekyll` so GitHub Pages can serve it from the repository root |
+| `site/` | the gallery: index with category filter and search, nine detail pages across five categories, built from `site/content/*.py` by `tools/build_site.py`. Root `index.html` + `.nojekyll` so GitHub Pages serves it from the repository root — **live**, and held to the catalog budget by `check_catalog` |
 | `tests/` | 60 numeric shape pins + 2 image baselines |
 
 ## Decisions taken
@@ -242,44 +243,64 @@ example rather than at new code:
 
 0b. **Two reference figures Dean has pointed at are unread — both paywalled.**
    Nothing has been derived from either, and nothing should be until he sends
-   a screenshot:
+   a screenshot. **Do not spend another attempt on these.** Both were re-tried
+   in session 5, after Dean asked a second time, and both failed exactly as
+   before:
 
    - **Figure 7, `nature.com/articles/s41593-025-02004-2`** — "very very
      simple neuronal-like summary figures", to be *similar to* rather than a
-     copy of. Behind an auth redirect.
+     copy of. 303s to `idp.nature.com/authorize`. No PMC copy; a search for
+     the DOI returns other articles.
    - **Figure 1, `doi.org/10.1016/j.tibtech.2023.03.007`** (Trends in
      Biotechnology) — Dean's case for a **genetics** category over a proteins
      one: "many examples that this repo/catalog can reproduce and expand".
-     Behind Elsevier's gate.
+     302s to an Elsevier `linkinghub` interstitial that serves only
+     "Redirecting".
 
-1. **`bend` has the same length-scaling problem the waver had, and is not
-   fixed.** It is an absolute across-offset at the tip, so a short branch
-   leans at a steeper angle for the same number: the forked trunk still peaks
-   at 31° off axis against the unforked apical's 22°, and the lean term is
-   what dominates that. The waver fix took the trunk from 44° to 31° and
-   removed all four sign reversals, so the S-kink is gone — but the remaining
-   9° is this. It is **not obviously a bug**: an absolute offset means a
-   longer branch is gently bowed and a short one visibly bent, which may be
-   what a drawing wants. Making it a fraction of length would change how wide
-   every fork splays, so it wants a decision rather than a patch.
-2. **Milestone 4 — layout, style presets, export.** The multi-panel assembler,
-   `style.use('paper'|'poster'|'slides')` to own the point-valued knobs, panel
-   letters. `examples/circuit_motifs/` currently does its panels by hand with
-   `plt.subplots`, which is exactly the thing milestone 4 should absorb.
-3. `neck_polygon` is still specialised to an upright triangle meeting a
+   Dean chose *"you send screenshots"* over starting from a generic genetics
+   inventory, which is the right call and the one `skills/trace-a-shape`
+   requires: the whole point of naming a figure is that the inventory comes
+   off **that** figure. Genetics is blocked until the images arrive, and
+   guessing at a plausible shape list would produce a category nobody asked
+   for.
+
+1. **Milestone 4 — layout, style presets, export.** Not built, but **the two
+   design decisions it was stuck on are taken** (session 5, with Dean), so it
+   is ready to start:
+
+   - **`style.use` writes matplotlib rcParams and nothing else.** biodraw's
+     point-valued knobs take their defaults from the rc key that already means
+     that thing: `wall_lw` ← `patch.linewidth` (walls are `PathPatch`es),
+     connector `lw` ← `lines.linewidth`, `cap_size` ← `lines.markersize ** 2`
+     (the endcap dot is a marker). The reason is **bug 15**: `build_gallery.py`
+     wraps each script in `matplotlib.rc_context()`, which protects rcParams
+     and would *not* protect biodraw-owned module state — so a global
+     `style.use` over its own registry reopens that bug in a form the existing
+     fix cannot catch. As a bonus this subsumes the 7 hand-styled
+     `ax.legend(fontsize=7.5, frameon=False)` calls and the 12 hand-styled
+     `ax.set_title(fontsize=10, loc="left")` calls, which are rcParams already.
+   - **`bd.panels` does setup only** — `panels(rows, cols, size=, titles=,
+     letters=)` returns axes already frameless, aspect-locked, titled and
+     lettered, and `tight_layout`s on the way out. **`bd.fit` stays the
+     caller's**, because it genuinely varies: several sites fit to a custom
+     bounding box rather than to `shape.points`.
+
+   Scope is **15 sites across 9 `build.py` files** repeating
+   `plt.subplots(dpi=150)` → `bd.canvas(ax=ax)` → draw → `bd.fit` →
+   `ax.set_title(...)` → `fig.tight_layout()`.
+
+   One measurement worth having before starting: **every image-producing call
+   in `examples/` passes `wall_lw`, `lw` and `cap_size` explicitly** — only
+   the reader-facing snippets in `site/content/` use the defaults. So the
+   signature defaults can move to rcParams **without moving a single committed
+   image**, and `paper` should be defined as exactly today's numbers
+   (`patch.linewidth` 1.0, `lines.linewidth` 1.2, `lines.markersize`
+   `sqrt(26)`). That makes byte-identity the acceptance test for the whole
+   refactor. `figure.dpi` deliberately stays **out** of the presets:
+   `io.QUALITY` already owns pixels, and two owners of dpi is a conflict.
+2. `neck_polygon` is still specialised to an upright triangle meeting a
    vertical tube; the general version would subsume it.
-4. GitHub URLs guess `deangeckt/biodraw` in `pyproject.toml` and
-   `CITATION.cff`.
-5. **GitHub Pages is prepared but not switched on.** The repo side is done —
-   a root `index.html` redirecting to `site/index.html`, and a `.nojekyll` so
-   Pages does not run the whole tree through Jekyll. Verified locally by
-   serving the repository root: `/` lands on the gallery and
-   `../examples/<slug>/<file>` resolves 200. What is left is one setting in
-   the GitHub UI: **Pages → Deploy from a branch → `main` / `/ (root)`.** It
-   must be the root and not `site/`, because pages reference their drawings as
-   `../examples/...` rather than carrying their own copies of ~2.2 MB of
-   images.
-6. **The variant pop-out is designed but not built.** Hovering one cell of an
+3. **The variant pop-out is designed but not built.** Hovering one cell of an
    18-cell contact sheet and having that variant open full-size would make
    *variants are the unit of documentation* interactive at zero extra image
    weight. CSS-cropping the sheet **will not work**: `layout/sheet.py` ends in
@@ -289,6 +310,39 @@ example rather than at new code:
    `contact_sheet` emits a sidecar JSON of each cell's rectangle from
    `ax.get_position()`, a few hundred bytes per sheet. Cost is a change to
    `contact_sheet` plus a rebuild of every sheet.
+
+## Closed in session 5
+
+- **GitHub Pages is live** at
+  [deangeckt.github.io/biodraw](https://deangeckt.github.io/biodraw/),
+  serving from `main` / `/ (root)` as required — enabled over the API rather
+  than the UI (`gh api repos/deangeckt/biodraw/pages -X POST -f
+  "source[branch]=main" -f "source[path]=/"`). Verified after the first build
+  by fetching **every relative reference on all ten pages: 115 of them, all
+  200.** Worth keeping: a headless check that only looks at `document.images`
+  reports all nine index cards broken, because they are `loading="lazy"` and
+  an undisplayed pane never scrolls them into view. They decode fine. Check
+  the response code, not the DOM.
+- **GitHub URLs are confirmed, not guessed.** `pyproject.toml` and
+  `CITATION.cff` already said `deangeckt/biodraw`, which now matches the
+  actual remote.
+- **The gallery was cut from an article to a catalog** — Dean, on the live
+  site: *"its still too much text, its should be more catalog then
+  code-snippet."* 6,662 words → 3,227, 43 code blocks → 10 (one per page),
+  and all 66 drawings kept. See documentation rule 7 in
+  [PLAN.md](PLAN.md), `check_catalog` in `tools/build_site.py`, and check 11
+  of `review-a-drawing`.
+
+  The part worth remembering is *why* it drifted: documentation rule 2, **more
+  images than prose**, had been in `PLAN.md` since session 1, was never
+  disputed, and was never measured. Three sessions of prose accreted under a
+  rule everyone agreed with. Nothing here has ever been fixed by writing the
+  rule down more firmly — only by turning it into a number that fails a build.
+- **`bend` stays an absolute offset** (was open item 1). Not a bug, and
+  decided rather than patched: a long branch gently bowed and a short one
+  visibly bent is what a drawing usually wants, and making it a fraction of
+  length would change how wide every fork splays and move a great many pins
+  for no gain anyone had asked for.
 
 ## The gallery
 

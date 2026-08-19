@@ -35,14 +35,26 @@
   <p class="standfirst">This is the reason <code>biodraw.core.shape.Layer</code> exists.</p>
 
 <section class="block">
-<h2 id="the-blueprint">The blueprint</h2>
+<h2 id="how-it-is-built">How it is built</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/generic_cell/blueprint.png" alt="Blueprint of the generic cell" loading="lazy"><figcaption>Blueprint of the generic cell</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/generic_cell/blueprint.png" alt="Blueprint of the generic cell, in four panels" loading="lazy"><figcaption>Blueprint of the generic cell, in four panels</figcaption></figure>
 </div>
-<p class="step"><strong>1 · Four layers, not one union.</strong> Every shape before this one drew in a single <code>render_hollow</code> call, because a pyramidal cell really is one contour — soma, dendrites and spines all fusing. A cell with a nucleus cannot be. Each layer is its own render pass at its own zorder, so it <em>covers</em> the one beneath instead of joining it. The wall and its protrusions still share a layer, because those two should fuse.</p>
-<p class="step"><strong>2 · The same parts, unioned.</strong> What happens without layers, drawn from the identical outlines: the nucleus, the nucleolus and all seven organelles are still there. They have simply become part of the body&#x27;s fill. There is no boolean difference in matplotlib, so &quot;inside and still visible&quot; can only be said by drawing again, higher up.</p>
-<p class="step"><strong>3 · <code>scatter_in</code>, and what it avoids.</strong> Nothing here grows along a path, so the branch engine has nothing to offer. The organelles are rejection-sampled inside the wall, with a margin off the membrane, a clearance from the nucleus, and a minimum separation from each other. Ask for more than fits and it <strong>raises</strong> — silently drawing four when nine were asked for would make the picture a claim the code never made.</p>
-<p class="step"><strong>4 · Anchors.</strong> Round the wall, on the nuclear envelope, one per organelle and one per protrusion tip. Same anchors as any other shape, so connectors and labels work here for free.</p>
+<ol class="panel-notes">
+<li><strong>Four layers, not one union.</strong> Each is its own render pass at its own zorder, <em>covering</em> what is beneath.</li>
+<li><strong>The same parts, unioned.</strong> What happens without layers: everything is still there, absorbed into the body&#x27;s fill.</li>
+<li><strong><code>scatter_in</code>.</strong> Rejection-sampled with a wall margin and a separation. Ask for more than fits and it <strong>raises</strong>.</li>
+<li><strong>Anchors.</strong> Round the wall, on the nuclear envelope, one per organelle, one per protrusion tip.</li>
+</ol>
+<div class="tablewrap"><table><thead><tr>
+<th>anchor</th>
+<th>where</th>
+<th>count above</th>
+</tr></thead><tbody>
+<tr><td><code>wall</code></td><td>eight round the membrane — on the <em>wobbled</em> outline, not the ideal superellipse</td><td>8</td></tr>
+<tr><td><code>nucleus</code></td><td>top and bottom of the nuclear envelope</td><td>2</td></tr>
+<tr><td><code>organelle</code></td><td>one each, pointing away from the centre</td><td>7</td></tr>
+<tr><td><code>tip</code></td><td>the end of each protrusion</td><td>9</td></tr>
+</tbody></table></div>
 </section>
 <section class="block">
 <h2 id="drawing-one">Drawing one</h2>
@@ -55,6 +67,7 @@ cell = bd.cells.Blob(
     nucleus=0.34,           # nuclear radius, x the body radius
     nucleolus=0.36,         # ...and the nucleolus, x the nuclear radius
     organelles=7,           # scattered in the cytoplasm
+    protrusions=0,          # microvilli, filopodia or pseudopodia
     seed=3,                 # fixes the scatter — same seed, same cell, forever
 )
 
@@ -62,77 +75,36 @@ fig, ax = bd.canvas(figsize=(3.4, 3.2))
 cell.draw(
     ax=ax,
     wall_lw=1.0,            # wall thickness, in points
-    gid=&quot;cell&quot;,             # names the layers in the exported SVG
-)
+    gid=&quot;cell&quot;,             # names each layer in the exported SVG:
+)                           # cell.nucleus.wall, cell.organelles.fill, ...
 cell.fit(ax, pad=0.12)
-bd.save(fig, &quot;cell.svg&quot;)</code></pre></div>
-<p>The exported SVG carries one named group per layer — <code>cell.nucleus.wall</code>, <code>cell.organelles.fill</code> — so &quot;select all the organelles&quot; is one click in Illustrator rather than a hunt through anonymous paths.</p>
+bd.save(fig, &quot;cell.svg&quot;)
+
+top = cell.anchor(&quot;wall&quot;, deg=90.0)</code></pre></div>
 </section>
 <section class="block">
 <h2 id="how-much-is-in-it">How much is in it</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/generic_cell/contents.png" alt="Six organelle counts" loading="lazy"><figcaption>Six organelle counts</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/generic_cell/contents.png" alt="Six organelle counts. Past ten `scatter_in` raises — more means smaller and closer, a claim you must make." loading="lazy"><figcaption>Six organelle counts. Past ten `scatter_in` raises — more means smaller and closer, a claim you must make.</figcaption></figure>
 </div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.cells.Blob(
-    organelles=10,          # the most that fits at the default size
-    organelle_size=0.17,    # long semi-axis, x the body radius
-    organelle_sep=0.34,     # closest two may sit, x the body radius
-)</code></pre></div>
-<p>Past ten, <code>scatter_in</code> raises rather than drawing fewer. Getting more in means smaller organelles packed closer — which is a statement about the cell, not a rendering detail, so you have to say it: <code>organelles=22, organelle_size=0.115, organelle_sep=0.22</code>.</p>
 </section>
 <section class="block">
 <h2 id="body-plans">Body plans</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/generic_cell/body_shapes.png" alt="Eighteen body shapes" loading="lazy"><figcaption>Eighteen body shapes</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/generic_cell/body_shapes.png" alt="Eighteen body shapes: `squareness` against `aspect`. Wobble past 0.08 stops reading as a cell and starts reading as damage." loading="lazy"><figcaption>Eighteen body shapes: `squareness` against `aspect`. Wobble past 0.08 stops reading as a cell and starts reading as damage.</figcaption></figure>
 </div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.cells.Blob(
-    squareness=2.6,         # 2.0 ellipse · 2.6 settled cell · 3.6 rounded box
-    wobble=0.03,            # 0 is visibly an equation; past 0.08 reads as damage
-    wobble_n=5,             # how many swells go round
-    aspect=0.62,            # semi-axis along y, x radius — below 1 it lies down
-)</code></pre></div>
 </section>
 <section class="block">
 <h2 id="membranes">Membranes</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/generic_cell/membranes.png" alt="Nine membrane treatments" loading="lazy"><figcaption>Nine membrane treatments</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/generic_cell/membranes.png" alt="Nine membrane treatments — the same `Branch` engine that draws a dendrite, doing microvilli, filopodia and pseudopodia." loading="lazy"><figcaption>Nine membrane treatments — the same `Branch` engine that draws a dendrite, doing microvilli, filopodia and pseudopodia.</figcaption></figure>
 </div>
-<p>The same <code>Branch</code> engine that draws a dendrite, doing microvilli, filopodia and pseudopodia — which is the domain-neutrality claim being cashed rather than asserted.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.cells.Blob(
-    protrusions=10,             # short tubes out of the wall
-    protrusion_len=0.34,        # x the body radius
-    protrusion_width=0.07,      # x the body radius
-    protrusion_arc_deg=180,     # sweep of wall they cover — 360 goes all round
-    protrusion_start_deg=0,     # counter-clockwise from +x
-)</code></pre></div>
-<p>They are rooted <em>inside</em> the wall so their flat base is swallowed by the body&#x27;s fill, and they share the body&#x27;s layer so the two fuse. That is the same trick a basal dendrite uses on a soma corner.</p>
 </section>
 <section class="block">
 <h2 id="seeds">Seeds</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/generic_cell/seeds.png" alt="Eight seeds of the same cell" loading="lazy"><figcaption>Eight seeds of the same cell</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/generic_cell/seeds.png" alt="Eight seeds. At `protrusion_jitter=0` they sit on perfect 40° centres and the cell reads as a gear." loading="lazy"><figcaption>Eight seeds. At `protrusion_jitter=0` they sit on perfect 40° centres and the cell reads as a gear.</figcaption></figure>
 </div>
-<p>Nothing differs between these but <code>seed</code>. It fixes the organelle scatter, their angles, and how far each protrusion is knocked off its even slot — because <strong>a repeated part must not repeat exactly</strong>. At <code>protrusion_jitter=0</code> the protrusions sit on perfect 40° centres and the cell reads as a gear.</p>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>row = [bd.cells.Blob(organelles=8, protrusions=9, seed=s) for s in range(8)]</code></pre></div>
-<p>Same seed, same bytes — every time, on any machine with the same matplotlib. That is what makes a figure regenerable a year later when a reviewer asks for one more panel.</p>
-</section>
-<section class="block">
-<h2 id="anchors">Anchors</h2>
-<div class="tablewrap"><table><thead><tr>
-<th>kind</th>
-<th>where</th>
-<th>count on the cell above</th>
-</tr></thead><tbody>
-<tr><td><code>wall</code></td><td>eight points round the membrane, on the axes and the diagonals</td><td>8</td></tr>
-<tr><td><code>nucleus</code></td><td>top and bottom of the nuclear envelope</td><td>2</td></tr>
-<tr><td><code>organelle</code></td><td>one per organelle, pointing away from the cell&#x27;s centre</td><td>7</td></tr>
-<tr><td><code>tip</code></td><td>the end of each protrusion</td><td>9</td></tr>
-</tbody></table></div>
-<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>top    = cell.anchor(&quot;wall&quot;, deg=90.0)          # the top of the membrane
-nuc    = cell.anchor(&quot;nucleus&quot;, deg=90.0)       # the nuclear envelope
-third  = cell.anchor(&quot;organelle&quot;, rank=2)       # the third organelle placed
-label_at = top.offset(0.08)                     # 0.08 clear of the wall</code></pre></div>
-<p><code>wall</code> anchors sit on the <strong>wobbled</strong> outline, not the ideal superellipse — <code>superellipse_radius</code> gives the un-wobbled wall, and an anchor placed with it alone floats off a cell that has any wobble at all.</p>
 </section>
 
   <p class="source-note">Every figure above is output, not a stored asset
@@ -143,7 +115,7 @@ label_at = top.offset(0.08)                     # 0.08 clear of the wall</code><
 
 <aside class="rail">
   <p class="rail-head">On this page</p>
-  <ul><li><a href="#the-blueprint">The blueprint</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#how-much-is-in-it">How much is in it</a></li><li><a href="#body-plans">Body plans</a></li><li><a href="#membranes">Membranes</a></li><li><a href="#seeds">Seeds</a></li><li><a href="#anchors">Anchors</a></li></ul>
+  <ul><li><a href="#how-it-is-built">How it is built</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#how-much-is-in-it">How much is in it</a></li><li><a href="#body-plans">Body plans</a></li><li><a href="#membranes">Membranes</a></li><li><a href="#seeds">Seeds</a></li></ul>
 </aside>
 </main>
 <div class="lightbox" id="lightbox" hidden>
