@@ -19,7 +19,12 @@ import numpy as np
 from ..core.anchor import Anchor, AnchorSet
 from ..core.branch import Branch
 from ..core.geom import rot, unit
-from ..core.paths import superellipse, superellipse_radius, tube
+from ..core.paths import (
+    superellipse,
+    superellipse_param,
+    superellipse_radius,
+    tube,
+)
 from ..core.scatter import scatter_in
 from ..core.shape import Layer, Shape
 from ..style.palette import get as get_palette
@@ -166,13 +171,23 @@ class Blob(Shape):
         rooted with it — a protrusion, a wall anchor — floats a little off a
         wobbled outline or sinks into it. Re-applying the same swell here is
         what keeps them on it, and it has to be the *same* expression as
-        `superellipse` uses or they drift apart the moment a phase changes.
+        `superellipse` uses, **evaluated at the same angle**.
+
+        That second half was wrong for a session. `superellipse` sweeps a
+        parameter `t` and wobbles on `sin(wobble_n * t)`; this took `deg`,
+        the polar angle, which is a different number on any body that is not
+        round. The error was exactly 0 on every circular cell and grew with
+        flattening — 0.011 local units on `examples/cell_atlas/`'s platelet at
+        `aspect=0.72`, against a body radius of 0.55 — so every drawing that
+        exercised it looked fine. `paths.superellipse_param` is the inverse
+        that converts one angle to the other.
         """
         a, b = self.semi
         d = rot((1.0, 0.0), deg)
         r = superellipse_radius(d, a, b, self.squareness)
+        t = superellipse_param(d, a, b, self.squareness)
         return d, r * (1.0 + self.wobble
-                       * np.sin(self.wobble_n * np.deg2rad(deg)
+                       * np.sin(self.wobble_n * t
                                 + 2 * np.pi * self.wobble_phase))
 
     def _branch_kw(self, **over):
@@ -181,6 +196,14 @@ class Blob(Shape):
         # same `wave_n` that reads as a hand on a long dendrite reads as a
         # corkscrew on a stub — the identical trap that threw the apical fork
         # off by 39.5 degrees. See `Branch.child` on `relative_to`.
+        #
+        # `wave_n` here therefore means "cycles on a protrusion of the
+        # *nominal* length", and `_protrusions` turns it into a wavelength
+        # before it reaches `Branch`. It has to: `protrusion_jitter` varies
+        # the lengths by design, and a count shared across them makes the
+        # short ones wiggle faster than the long ones — measured at 1.88x
+        # across the six pseudopodia of `examples/cell_atlas/`'s macrophage,
+        # against the 1.2x this library's own review checklist allows.
         kw = dict(bend=0.06, wave_amp=0.012, wave_n=0.7, wave_phase=0.25,
                   n_pts=24)
         kw.update({k: v for k, v in self.geom_kw.items() if k in kw})
@@ -272,6 +295,16 @@ class Blob(Shape):
         step = self.protrusion_arc_deg / (n if full or n == 1 else n - 1)
         j = self.protrusion_jitter
 
+        width = self.protrusion_width * self.radius
+        # The waver's *wavelength*, fixed once for the whole cell from the
+        # nominal protrusion length, so every protrusion is equally wavy per
+        # unit of itself however far the jitter moved it. `wave_n` keeps its
+        # meaning as a count at that nominal length, which is what `geom_kw`
+        # passes and what the tuned default is expressed in.
+        nominal = self.protrusion_len * self.radius + width
+        cycles = float(self._branch_kw()["wave_n"])
+        wave_per = nominal / cycles if cycles else None
+
         out = []
         for k in range(n):
             # Half the step is the most a slot can move without swapping with
@@ -280,12 +313,17 @@ class Blob(Shape):
             deg = (self.protrusion_start_deg + step * k
                    + rng.uniform(-1.0, 1.0) * j * 0.5 * step)
             d, r = self.wall_radius(deg)
-            width = self.protrusion_width * self.radius
             length = (self.protrusion_len * self.radius
                       * (1.0 + rng.uniform(-1.0, 1.0) * j))
+            kw = self._branch_kw(bend=0.06 * (-1) ** k)
+            if wave_per:
+                # A wavelength supersedes the count it was derived from;
+                # handing `Branch` both would leave two knobs saying the same
+                # thing, one of them ignored.
+                kw.pop("wave_n")
+                kw["wave_per"] = wave_per
             br = Branch(origin=d * (r - width), direction=d,
-                        length=length + width,
-                        **self._branch_kw(bend=0.06 * (-1) ** k))
+                        length=length + width, **kw)
             out.append({"branch": br, "width": width, "deg": float(deg)})
         return out
 

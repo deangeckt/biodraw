@@ -251,7 +251,7 @@ BUILDS = (blueprint, portrait, contents, body_shapes, membranes, seeds)
 def main():
     for build in BUILDS:
         fig, name = build()
-        # Compact raster for anything that lives in a README — see
+        # Compact raster for anything the gallery shows — see
         # `biodraw.io.QUALITY` for the three profiles and which one is in
         # force. `--quality debug` on the gallery builder is how you get an
         # image big enough to actually check geometry in.

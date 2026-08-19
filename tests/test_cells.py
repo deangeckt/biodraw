@@ -14,7 +14,7 @@ import pytest
 
 import biodraw as bd
 from biodraw.cells import Blob, Sheet
-from biodraw.core.scatter import scatter_in
+from biodraw.core.scatter import _distance_to, scatter_in
 
 # -- Blob --------------------------------------------------------------------
 
@@ -80,14 +80,52 @@ def test_wall_anchors_point_away_from_the_centre():
         assert np.isclose(np.linalg.norm(a.normal), 1.0)
 
 
-def test_wall_anchors_land_on_the_wobbled_wall():
+@pytest.mark.parametrize("aspect", [1.0, 0.72, 0.30])
+def test_wall_anchors_land_on_the_wobbled_wall(aspect):
     """`superellipse_radius` gives the un-wobbled wall; an anchor placed with
-    it alone floats off a wobbled outline."""
-    cell = Blob(wobble=0.06, wobble_n=5)
+    it alone floats off a wobbled outline.
+
+    This test existed before the bug it is named for and did not catch it,
+    which is the interesting part. It ran only at the default `aspect=0.88`,
+    and it measured to the nearest **vertex** at a tolerance of 0.02 — while
+    the wall carries 240 vertices, so the spacing alone is ~0.012.
+
+    The defect was that `Blob.wall_radius` re-applied the wobble at the polar
+    angle while `superellipse` applies it at the parameter angle. Those agree
+    exactly on a round body and diverge as it flattens, so a near-round cell
+    measured against its own vertices reported nothing at all. Hence the
+    flattened cases, and the distance to the nearest *edge*.
+    """
+    # Bare: a flattened body does not hold the default contents, and this is
+    # a test about where the wall is.
+    cell = Blob(aspect=aspect, wobble=0.06, wobble_n=5, organelles=0,
+                nucleus=None)
     ring = cell.geometry["wall"]
-    for a in cell.anchors("wall"):
-        gap = np.linalg.norm(ring - a.xy, axis=1).min()
-        assert gap < 0.02, f"anchor at {a.meta['deg']}deg sits {gap:.3f} off"
+    anchors = cell.anchors("wall")
+    # The library's own point-to-outline distance, for the reason its
+    # docstring gives: nearest-vertex overstates the clearance by most of the
+    # sample spacing, which is precisely what hid this.
+    gaps = _distance_to(anchors.points(), ring)
+    worst = float(gaps.max())
+    assert worst < 1e-3, (
+        f"at aspect={aspect}, a wall anchor sits {worst:.4f} off the drawn "
+        f"wall")
+
+
+def test_protrusions_are_equally_wavy_per_unit_of_themselves():
+    """`protrusion_jitter` varies their lengths, so a shared cycle *count*
+    makes the short ones wiggle faster than the long ones.
+
+    The library's own rule (`docs/PLAN.md` drawing rule 2, and check 1 of
+    `skills/review-a-drawing`), which `Blob` was breaking: measured at 1.88x
+    across the six pseudopodia of `examples/cell_atlas/`'s macrophage, against
+    the 1.2x the checklist allows.
+    """
+    cell = Blob(protrusions=6, protrusion_len=0.45, protrusion_jitter=0.42)
+    branches = [p["branch"] for p in cell.geometry["protrusions"]]
+    assert np.std([b.length for b in branches]) > 1e-6      # lengths do vary
+    rate = np.array([b.wave_n / b.length for b in branches])
+    assert rate.max() / rate.min() < 1.01
 
 
 def test_repeated_parts_differ_but_stay_in_order():

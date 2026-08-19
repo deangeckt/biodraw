@@ -64,8 +64,14 @@ point-valued knobs for a medium.
 ## Determinism
 
 Any shape with jitter takes a `seed`. Figures must regenerate byte-identically
-— CI enforces it on `examples/`. Never call `np.random` without a seeded
-generator.
+— `python tools/build_gallery.py --check` verifies it on `examples/`. Never
+call `np.random` without a seeded generator.
+
+**Byte-identity holds on one machine, not across them.** matplotlib's
+rasters move with the libpng/AGG build and its SVG text advances move with
+freetype, so the same code on Linux and on Windows produces different bytes
+for every file. `--check` is a same-machine test; do not wire it to a
+cross-platform runner expecting it to pass.
 
 ## When you change a drawing
 

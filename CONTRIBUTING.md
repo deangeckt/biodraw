@@ -16,9 +16,9 @@ pytest --mpl
 ## The one architectural rule
 
 `biodraw.core` knows nothing about biology. Cells, dendrites and synapses live
-in domain packages (`biodraw.neuro`, `biodraw.cells`) built entirely on the
-core's primitives — profiles, branches, tubes, bodies, connectors, anchors,
-hollow rendering.
+in domain packages (`biodraw.neuro`, `biodraw.cells`, `biodraw.micro`) built
+entirely on the core's primitives — profiles, branches, tubes, bodies,
+connectors, anchors, hollow rendering.
 
 If your shape cannot be expressed with those, **extend the core**. Do not
 special-case it upstairs. The last time a drawing kit grew neuron-shaped
@@ -84,16 +84,28 @@ a review anyone can do.
 
 ## Example images
 
-Each folder under `examples/` owns a `build.py` that regenerates every image in
-its README:
+Each folder under `examples/` owns a `build.py` that regenerates every image
+the gallery shows for it:
 
 ```bash
 python tools/build_gallery.py           # rebuild all
-python tools/build_gallery.py --check   # rebuild and fail on any diff (CI)
+python tools/build_gallery.py --check   # rebuild and fail on any diff
 ```
 
+The page that reads those images is `site/content/<name>.py`, and the two
+rebuild separately:
+
+```bash
+python tools/build_site.py              # the gallery, from site/content/*.py
+```
+
+Adding an example means adding both — a folder under `examples/` and a content
+module — and nothing else; neither tool keeps a list.
+
 Images must regenerate byte-identically, so nothing may depend on unseeded
-randomness.
+randomness — on *one machine*. matplotlib's raster and SVG output both move
+with the underlying libpng/freetype build, so rebuilding on a different OS
+changes every file and proves nothing.
 
 ## Code style
 

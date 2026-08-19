@@ -49,7 +49,8 @@ DEFAULT_QUALITY = "review"
 
 #: Salt for the ids matplotlib puts on SVG clip paths and gradients. Fixed
 #: rather than left to a per-process `uuid4`, so the same figure written twice
-#: is the same file — which is what lets CI diff `examples/` and mean it. Any
+#: is the same file — which is what lets a rebuild of `examples/` be diffed
+#: and mean something. Any
 #: constant string does; changing it rewrites every committed SVG for nothing.
 SVG_HASHSALT = "biodraw"
 
@@ -199,7 +200,7 @@ def save(fig, path, dpi=300, transparent=False, tight=True, check=True):
     are not: an SVG carries a `<dc:date>` of the moment it was written, and
     its clip-path ids come from a `uuid4` regenerated per process. Two
     identical figures therefore produced two different files, which quietly
-    breaks the determinism CI enforces on `examples/` and makes every rebuild
+    breaks the determinism required of `examples/` and makes every rebuild
     a diff. Both are pinned here — see `SVG_HASHSALT`.
     """
     import matplotlib as mpl

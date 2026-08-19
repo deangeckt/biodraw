@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bacteria — biodraw</title>
+<meta name="description" content="A capsule body and what is hung off it. The named forms — coccus, bacillus, vibrio, spirillum — are settings of three knobs, so the space between them is drawable too.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="index.html">biodraw</a>
+    <nav class="masthead-links">
+      <a href="https://github.com/deangeckt/biodraw">GitHub</a>
+      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+    </nav>
+  </div>
+</header>
+<main class="detail">
+<article>
+  <p class="crumb"><a href="index.html">All examples</a>
+     <span aria-hidden="true">·</span> Microbes</p>
+
+  <h1>Bacteria</h1>
+  <p class="standfirst">A capsule body and what is hung off it. The named forms — coccus, bacillus, vibrio, spirillum — are settings of three knobs, so the space between them is drawable too.</p>
+  <p class="chips"><span class="chip">micro.Bacterium</span><span class="chip">paths.tube</span></p>
+
+  <figure class="hero plate zoomable">
+    <img src="../examples/bacteria/bacterium.png"
+         alt="A flagellated bacillus with capsule, nucleoid and granules">
+    <figcaption>A flagellated bacillus with capsule, nucleoid and granules</figcaption>
+  </figure>
+
+  <p class="standfirst">The third domain on <code>biodraw.core</code>, and the first whose body is a <strong>tube</strong> rather than a ring. A <code>Blob</code> is a closed outline with things inside it; a bacillus is a centreline with a width, which is structurally the same object a dendrite is.</p>
+
+<section class="block">
+<h2 id="the-blueprint">The blueprint</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/bacteria/blueprint.png" alt="Blueprint of the bacterial cell" loading="lazy"><figcaption>Blueprint of the bacterial cell</figcaption></figure>
+</div>
+<p class="step"><strong>1 · The axis.</strong> Three terms on one centreline: a straight run, bent into a circular arc by <code>curve_deg</code>, then waved by <code>twists</code>. They compose rather than switch, which is why a curved rod with a twist in it is as reachable as either on its own. The arc keeps the same arclength, so bending a cell changes its shape and not how much cell there is.</p>
+<p class="step"><strong>2 · Both ends, or it is not a cell.</strong> Every tube in this library until now grew out of something, so its near end was a flat chord waiting to be buried in a parent. A free-floating cell has no parent, and the flat end reads as a specimen that was sectioned. <code>paths.tube(cap_base=True)</code> is the one thing this domain needed from the core — a semicircle, in the primitive that already drew the other one.</p>
+<p class="step"><strong>3 · <code>flagella_arc_deg</code>.</strong> Where an appendage leaves, as a sweep of the outline with <strong>0° at one pole and 180° at the other</strong>. It is resolved against the outline <em>as drawn</em>, so a cap, a taper or a bend is accounted for rather than idealised away. This is <code>Blob</code>&#x27;s protrusion vocabulary reused exactly: a reader who has met one shape already knows this one.</p>
+<p class="step"><strong>4 · Anchors.</strong> Two poles, eight round the wall, one per appendage tip. Same anchors as any other shape, so connectors and labels work here for free.</p>
+</section>
+<section class="block">
+<h2 id="six-forms-a-reader-can-name">Six forms a reader can name</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/bacteria/named.png" alt="Six named bacterial forms" loading="lazy"><figcaption>Six named bacterial forms</figcaption></figure>
+</div>
+<p><strong>These are settings, not classes.</strong> The textbook names each describe one axis — how long the body is, how far it bends, how many times it twists — so given those three as numbers every named form is a value and the ones in between are drawable. An enum would have made the six names the only reachable shapes and turned the space between them into dead code.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
+
+coccus    = bd.micro.Bacterium(length=0.0, width=0.62)       # a capsule of no length is a circle
+bacillus  = bd.micro.Bacterium(length=1.40)
+vibrio    = bd.micro.Bacterium(length=1.40, curve_deg=72)    # the comma
+spirillum = bd.micro.Bacterium(
+    length=2.20,
+    twists=1.8,             # helical turns along the body
+    twist_amp=0.62,         # how far the wave swings, x width
+)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="the-space-between-them">The space between them</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/bacteria/forms.png" alt="Twenty bodies sweeping length, curvature and twist" loading="lazy"><figcaption>Twenty bodies sweeping length, curvature and twist</figcaption></figure>
+</div>
+<p>Length across; what the axis does, down. Nothing here is a mode — the bottom row is a cell that is bent <em>and</em> twisted, which no list of named forms has a name for.</p>
+</section>
+<section class="block">
+<h2 id="flagella">Flagella</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/bacteria/flagella.png" alt="The four flagellar arrangements" loading="lazy"><figcaption>The four flagellar arrangements</figcaption></figure>
+</div>
+<p>The four textbook arrangements are two numbers each: how many, and over how much of the outline. The flagella themselves are <code>Branch</code> tubes — the waver that makes a dendrite look hand-drawn, turned up until it is the whole shape.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>mono  = bd.micro.Bacterium(flagella=1, flagella_arc_deg=0)     # one, at one pole
+amphi = bd.micro.Bacterium(flagella=2, flagella_arc_deg=360)   # one at each pole
+lopho = bd.micro.Bacterium(
+    flagella=4,
+    flagella_arc_deg=74,        # a narrow sweep...
+    flagella_start_deg=-37,     # ...centred on one pole: a tuft
+)
+peri  = bd.micro.Bacterium(flagella=9, flagella_arc_deg=360)   # all round</code></pre></div>
+<p><code>flagellum_waves</code> is a cycle <strong>count</strong>, and it is turned into a wavelength before it reaches <code>Branch</code>. That matters because <code>jitter</code> varies the lengths: a shared count makes the short ones wiggle faster than the long ones. This library has now had to fix that in three separate places, which is why it is check 1 of <code>review-a-drawing</code>.</p>
+</section>
+<section class="block">
+<h2 id="envelope-and-contents">Envelope and contents</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/bacteria/envelope.png" alt="Capsule, nucleoid, granules and pili" loading="lazy"><figcaption>Capsule, nucleoid, granules and pili</figcaption></figure>
+</div>
+<p>The capsule is the first thing in this library that has to go <strong>under</strong> a body rather than over it — and it still needs its own <code>Layer</code>, because unioned with the cell it would simply become a fatter cell.</p>
+<p>There is a nucleoid and deliberately no nucleus. Drawing a bacterium with a nuclear envelope is the single loudest error this shape could make, so the nucleoid follows the body&#x27;s own centreline as a shrunken tube: both what it looks like, and impossible to mistake for the other thing.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.micro.Bacterium(
+    length=1.40,
+    capsule=0.20,           # slime layer thickness, x width — drawn under the wall
+    nucleoid=0.66,          # x the body half-width, following its own axis
+    granules=5,             # inclusions, scattered by core.scatter
+    pili=20,                # fimbriae: many more and much shorter than flagella
+)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="arrangements-are-composition">Arrangements are composition</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/bacteria/colony.png" alt="Diplococcus, streptococcus, staphylococcus and a palisade" loading="lazy"><figcaption>Diplococcus, streptococcus, staphylococcus and a palisade</figcaption></figure>
+</div>
+<p>A diplococcus is two cocci. There is deliberately <strong>no</strong> <code>arrangement=</code> keyword: placing cells relative to each other is <code>moved()</code>, which every shape here already has, and a colony keyword would be one person&#x27;s idea of a colony living inside a general drawing library. Same argument that removed the contact-placement engine.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>r = 0.27
+cells = [
+    bd.micro.Bacterium(length=0.0, width=0.54).moved(at=(0.0, 0.0)),
+    bd.micro.Bacterium(length=0.0, width=0.54).moved(at=(2.05 * r, 0.0)),
+]
+for cell in cells:
+    cell.draw(ax=ax, wall_lw=0.9)</code></pre></div>
+<p>Spacing is a clearance, not a look. Two cocci of radius <code>r</code> draw through each other below <code>2r</code>, and the seeded jitter can take another 0.16 <code>r</code> out of any gap — the first version of that cluster had eleven overlapping pairs out of twenty-one, from slots written as if they were in diameters.</p>
+</section>
+<section class="block">
+<h2 id="anchors">Anchors</h2>
+<div class="tablewrap"><table><thead><tr>
+<th>kind</th>
+<th>where</th>
+<th>count on the cell above</th>
+</tr></thead><tbody>
+<tr><td><code>pole</code></td><td>the two ends of the axis, each pointing away from the body</td><td>2</td></tr>
+<tr><td><code>wall</code></td><td>eight points round the outline, swept from the +axis pole</td><td>8</td></tr>
+<tr><td><code>flagellum</code></td><td>the free end of each flagellum</td><td>7</td></tr>
+<tr><td><code>pilus</code></td><td>the free end of each pilus</td><td>16</td></tr>
+</tbody></table></div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>head = cell.anchor(&quot;pole&quot;, end=&quot;far&quot;)       # one end of the axis
+side = cell.anchor(&quot;wall&quot;, deg=90.0)        # the flank
+tip  = cell.anchor(&quot;flagellum&quot;, rank=0)     # the first flagellum&#x27;s free end</code></pre></div>
+<p><code>wall_at(deg)</code> is public, and exact on a rod. On a strongly twisted spirillum it is not: a ray from the centre can cross the outline more than once, and it takes the best-aligned vertex. Flagella on a spirillum are polar in practice, so the ambiguous region is not where they are asked for — but it is a real limit, and it is a method you can check rather than arithmetic buried in a constructor.</p>
+</section>
+
+  <p class="source-note">Every figure above is output, not a stored asset
+     — <a href="https://github.com/deangeckt/biodraw/blob/main/examples/bacteria/build.py">the full script that draws them</a>.</p>
+
+  <nav class="pager"><a class="prev" href="epithelial_sheet.html"><span>Previous</span>Epithelial sheet</a></nav>
+</article>
+
+<aside class="rail">
+  <p class="rail-head">On this page</p>
+  <ul><li><a href="#the-blueprint">The blueprint</a></li><li><a href="#six-forms-a-reader-can-name">Six forms a reader can name</a></li><li><a href="#the-space-between-them">The space between them</a></li><li><a href="#flagella">Flagella</a></li><li><a href="#envelope-and-contents">Envelope and contents</a></li><li><a href="#arrangements-are-composition">Arrangements are composition</a></li><li><a href="#anchors">Anchors</a></li></ul>
+</aside>
+</main>
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox-close" type="button"
+          aria-label="Close">&times;</button>
+  <figure><img id="lightbox-img" alt=""><figcaption id="lightbox-cap">
+  </figcaption></figure>
+</div>
+<script>
+(function () {
+  var box = document.getElementById('lightbox');
+  var img = document.getElementById('lightbox-img');
+  var cap = document.getElementById('lightbox-cap');
+  function open(src, alt) {
+    img.src = src; img.alt = alt; cap.textContent = alt;
+    box.hidden = false; document.body.classList.add('no-scroll');
+  }
+  function close() {
+    box.hidden = true; img.removeAttribute('src');
+    document.body.classList.remove('no-scroll');
+  }
+  document.querySelectorAll('.zoomable').forEach(function (fig) {
+    fig.addEventListener('click', function () {
+      var i = fig.querySelector('img');
+      open(i.getAttribute('src'), i.getAttribute('alt'));
+    });
+  });
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !box.hidden) close();
+  });
+})();
+</script>
+<script>
+document.querySelectorAll('.copy').forEach(function (b) {
+  b.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var code = b.parentElement.querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(function () {
+      b.textContent = 'Copied';
+      b.classList.add('is-done');
+      setTimeout(function () {
+        b.textContent = 'Copy'; b.classList.remove('is-done');
+      }, 1400);
+    });
+  });
+});
+(function () {
+  var links = Array.prototype.slice.call(
+    document.querySelectorAll('.rail a'));
+  var heads = links.map(function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  function mark() {
+    var best = 0;
+    heads.forEach(function (h, i) {
+      if (h && h.getBoundingClientRect().top < 140) best = i;
+    });
+    links.forEach(function (a, i) {
+      a.classList.toggle('is-here', i === best);
+    });
+  }
+  window.addEventListener('scroll', mark, { passive: true });
+  mark();
+})();
+</script>
+<footer class="foot">
+  <div class="foot-inner">
+    <p><strong>biodraw</strong> — MIT. Runtime dependencies: numpy and
+       matplotlib, nothing else.</p>
+    <p>Every drawing here is regenerated from the <code>build.py</code>
+       committed beside it. Nothing on this site is a stored asset.</p>
+    <p><a href="https://github.com/deangeckt/biodraw">Source</a></p>
+  </div>
+</footer>
+</body>
+</html>

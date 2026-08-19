@@ -64,7 +64,7 @@ def spininess():
 
 def body_plans():
     """The shape space: how many basals, how wide, and whether the apical
-    forks. Cheap to show all of it — see the note on cost in the README."""
+    forks. Cheap to show all of it — a variant in a shared sheet is ~0.8 kB."""
     basals, angles = (0, 1, 2), (25, 40, 55)
     variants = [
         dict(spines=0 if fork else 7, apical_fork=fork, fork_spines=4,
@@ -234,7 +234,7 @@ BUILDS = (blueprint, portrait, spininess, body_plans, forks)
 def main():
     for build in BUILDS:
         fig, name = build()
-        # Compact raster for anything that lives in a README — see
+        # Compact raster for anything the gallery shows — see
         # `biodraw.io.save_compact` for why documentation is the one place
         # this library is not vector.
         bd.save_compact(fig, HERE / name)

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>biodraw — bio-inspired vector drawings</title>
+<meta name="description" content="A browsable gallery of parametric biological drawings for matplotlib. Every shape is a few parameters and a seed.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="index.html">biodraw</a>
+    <nav class="masthead-links">
+      <a href="https://github.com/deangeckt/biodraw">GitHub</a>
+      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+    </nav>
+  </div>
+</header>
+<main>
+<section class="hero-copy">
+  <h1>Bio-inspired vector drawings<br>for papers, posters and slides</h1>
+  <p class="standfirst">Hand-drawn shapes, turned into maths, placeable
+     anywhere. Every drawing below is a few parameters and a seed — not a file
+     someone saved.</p>
+</section>
+
+<section class="controls">
+  <div class="filters"><button class="filter is-on" data-category="">All<span class="count">9</span></button><button class="filter" data-category="Neurons">Neurons<span class="count">2</span></button><button class="filter" data-category="Dendrites &amp; spines">Dendrites &amp; spines<span class="count">1</span></button><button class="filter" data-category="Circuits">Circuits<span class="count">2</span></button><button class="filter" data-category="Cells &amp; tissues">Cells &amp; tissues<span class="count">3</span></button><button class="filter" data-category="Microbes">Microbes<span class="count">1</span></button></div>
+  <input id="search" type="search" placeholder="Search shapes, tissue, knobs…"
+         autocomplete="off" aria-label="Search examples">
+</section>
+
+<p class="tally"><strong>9</strong> examples ·
+   <strong>48</strong> figures · every one a parameter away from the
+   next</p>
+
+<section class="grid" id="grid">
+  <a class="card" href="pyramidal_cell.html"
+     data-category="Neurons"
+     data-search="pyramidal cell a triangular soma with spiny dendrites out of it — apical up, basals down — soma, dendrites and every spine forming one unbroken outline. neuro.pyramidal pyramidal neuron excitatory soma apical basal cortex spiny fork dendrite neurons">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/pyramidal_cell/pyramidal.png"
+           alt="A pyramidal cell" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Neurons</span>
+      <span class="card-title">Pyramidal cell</span>
+      <span class="card-tagline">A triangular soma with spiny dendrites out of it — apical up, basals down — soma, dendrites and every spine forming one unbroken outline.</span>
+      <span class="chips"><span class="chip">neuro.Pyramidal</span></span>
+    </span>
+  </a>
+  <a class="card" href="basket_cell.html"
+     data-category="Neurons"
+     data-search="basket cell a round soma with smooth dendrites leaving in every direction — the counterpart to the pyramidal cell, drawn to be told apart from it at a glance. neuro.basket basket interneuron inhibitory aspiny multipolar bitufted bipolar dendrite neuron neurons">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/basket_cell/basket.png"
+           alt="A basket cell" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Neurons</span>
+      <span class="card-title">Basket cell</span>
+      <span class="card-tagline">A round soma with smooth dendrites leaving in every direction — the counterpart to the pyramidal cell, drawn to be told apart from it at a glance.</span>
+      <span class="chips"><span class="chip">neuro.Basket</span></span>
+    </span>
+  </a>
+  <a class="card" href="dendritic_spine.html"
+     data-category="Dendrites &amp; spines"
+     data-search="dendritic spine the shape biodraw grew out of, and the clearest example of why it traces rather than synthesises. profile.get(&#x27;spine&#x27;) branch spine dendrite profile traced neck head extend density synapse dendrites &amp; spines">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/dendritic_spine/spine.png"
+           alt="A dendritic spine" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Dendrites &amp; spines</span>
+      <span class="card-title">Dendritic spine</span>
+      <span class="card-tagline">The shape biodraw grew out of, and the clearest example of why it traces rather than synthesises.</span>
+      <span class="chips"><span class="chip">profile.get(&#x27;spine&#x27;)</span><span class="chip">Branch</span></span>
+    </span>
+  </a>
+  <a class="card" href="wiring.html"
+     data-category="Circuits"
+     data-search="wiring everything needed to connect one cell to another: connectors, and the endcaps that say what a connection is. connect connect_tree connectors.endcap connector endcap arrow bar synapse contact axon projection arbor circuit circuits">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/wiring/circuit.png"
+           alt="A wired circuit panel" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Circuits</span>
+      <span class="card-title">Wiring</span>
+      <span class="card-tagline">Everything needed to connect one cell to another: connectors, and the endcaps that say what a connection is.</span>
+      <span class="chips"><span class="chip">connect</span><span class="chip">connect_tree</span><span class="chip">connectors.endcap</span></span>
+    </span>
+  </a>
+  <a class="card" href="circuit_motifs.html"
+     data-category="Circuits"
+     data-search="circuit motifs cells wired to each other — which is what everything else in this library was building toward. neuro.pyramidal neuro.basket connect_tree circuit motif column cortical layer excitation inhibition palette colorblind mono circuits">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/circuit_motifs/column.png"
+           alt="A cortical column" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Circuits</span>
+      <span class="card-title">Circuit motifs</span>
+      <span class="card-tagline">Cells wired to each other — which is what everything else in this library was building toward.</span>
+      <span class="chips"><span class="chip">neuro.Pyramidal</span><span class="chip">neuro.Basket</span><span class="chip">connect_tree</span></span>
+    </span>
+  </a>
+  <a class="card" href="generic_cell.html"
+     data-category="Cells &amp; tissues"
+     data-search="generic cell a body, a nucleus, and whatever is loose in the cytoplasm. the first shape in this library that is not one unbroken outline. cells.blob core.scatter shape.layer cell nucleus nucleolus organelle membrane microvilli filopodia pseudopodia protrusion cytoplasm cells &amp; tissues">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/generic_cell/cell.png"
+           alt="A generic cell with nucleus, nucleolus and organelles" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Cells &amp; tissues</span>
+      <span class="card-title">Generic cell</span>
+      <span class="card-tagline">A body, a nucleus, and whatever is loose in the cytoplasm. The first shape in this library that is not one unbroken outline.</span>
+      <span class="chips"><span class="chip">cells.Blob</span><span class="chip">core.scatter</span><span class="chip">shape.Layer</span></span>
+    </span>
+  </a>
+  <a class="card" href="cell_atlas.html"
+     data-category="Cells &amp; tissues"
+     data-search="cell atlas twelve cells a reader can name, from one class and no new code. the unit of documentation is a variant, and this is what that buys. cells.blob erythrocyte red blood cell platelet lymphocyte macrophage fibroblast smooth muscle adipocyte oocyte spermatozoon amoeba cilia plant cell cell types scale bar cells &amp; tissues">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/cell_atlas/atlas.png"
+           alt="Twelve cell types drawn from one shape" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Cells &amp; tissues</span>
+      <span class="card-title">Cell atlas</span>
+      <span class="card-tagline">Twelve cells a reader can name, from one class and no new code. The unit of documentation is a variant, and this is what that buys.</span>
+      <span class="chips"><span class="chip">cells.Blob</span></span>
+    </span>
+  </a>
+  <a class="card" href="epithelial_sheet.html"
+     data-category="Cells &amp; tissues"
+     data-search="epithelial sheet a row of cells standing on a basement membrane — many cells that must not become one. cells.sheet shape.layer epithelium epithelial tissue duct villus lumen brush border columnar cuboidal squamous basement membrane junction polarity cells &amp; tissues">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/epithelial_sheet/epithelium.png"
+           alt="A columnar epithelium with a brush border" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Cells &amp; tissues</span>
+      <span class="card-title">Epithelial sheet</span>
+      <span class="card-tagline">A row of cells standing on a basement membrane — many cells that must not become one.</span>
+      <span class="chips"><span class="chip">cells.Sheet</span><span class="chip">shape.Layer</span></span>
+    </span>
+  </a>
+  <a class="card" href="bacteria.html"
+     data-category="Microbes"
+     data-search="bacteria a capsule body and what is hung off it. the named forms — coccus, bacillus, vibrio, spirillum — are settings of three knobs, so the space between them is drawable too. micro.bacterium paths.tube bacteria bacterium microbe coccus bacillus rod vibrio spirillum spirochaete flagellum flagella pili fimbriae capsule nucleoid colony diplococcus streptococcus staphylococcus microbes">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/bacteria/bacterium.png"
+           alt="A flagellated bacillus with capsule, nucleoid and granules" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Microbes</span>
+      <span class="card-title">Bacteria</span>
+      <span class="card-tagline">A capsule body and what is hung off it. The named forms — coccus, bacillus, vibrio, spirillum — are settings of three knobs, so the space between them is drawable too.</span>
+      <span class="chips"><span class="chip">micro.Bacterium</span><span class="chip">paths.tube</span></span>
+    </span>
+  </a>
+</section>
+
+<p class="empty" id="empty" hidden>Nothing matches that.
+   <button class="linky" id="reset">Show everything</button></p>
+
+<section class="pitch">
+  <h2>Why not a stock illustration?</h2>
+  <p>Because you almost never want <em>the</em> picture — you want a variation
+     on it. The same cell at three spine densities, this epithelium curved into
+     a duct, that neuron with one more basal because the panel beside it has
+     two. With a fixed asset that means pushing points by hand, and the figure
+     stops being reproducible the moment you do.</p>
+  <p>There are good free libraries of scientific art, and nothing here competes
+     with them: if you need a virion or a centrifuge, download one. What a
+     stock asset cannot do is become the <em>next</em> one. Here a variant is a
+     parameter and a rebuild is one command.</p>
+  <blockquote class="pullquote">
+    <p>We already spent the tokens generating these drawings.<br>
+       Let's not spend them again.</p>
+  </blockquote>
+  <p>Deriving the shape of a dendritic spine — tracing it, getting the neck to
+     stretch without inflating the head, finding out that a mirrored fork reads
+     as a symbol rather than a bifurcation — took real work, once. None of it
+     should have to be paid for a second time, by the next person or the next
+     agent. That is the whole of what this library is: that work, kept.</p>
+</section>
+<section class="pitch">
+  <h2>Described, not typed</h2>
+  <p>Most figures built with this will never be written by hand. You install
+     it, point an agent at it, and describe what you want — which is why the
+     API is objects with <em>anchors</em> for people, and introspection and
+     checks for agents.</p>
+  <p>Three skills ship with the library and are the supported way to drive
+     it:</p>
+  <ul class="skills"><li><a href="https://github.com/deangeckt/biodraw/blob/main/skills/draw-a-figure/SKILL.md"><code>draw-a-figure</code></a> — building a figure from shapes that already exist.</li><li><a href="https://github.com/deangeckt/biodraw/blob/main/skills/review-a-drawing/SKILL.md"><code>review-a-drawing</code></a> — the numeric checks to run before calling a drawing finished. An agent cannot see the figure, so every check is a measurement.</li><li><a href="https://github.com/deangeckt/biodraw/blob/main/skills/trace-a-shape/SKILL.md"><code>trace-a-shape</code></a> — turning a photograph of your own drawing into a shape the library does not have yet. Tracing is public API, not a story about how the bundled shapes were made.</li></ul>
+  <p>Writing your own skill for your own figure style is the intended
+     extension point — <a href="https://github.com/deangeckt/biodraw/blob/main/skills/README.md">the
+     contract is here</a>.</p>
+  <pre><code>pip install biodraw</code></pre>
+</section>
+</main>
+<footer class="foot">
+  <div class="foot-inner">
+    <p><strong>biodraw</strong> — MIT. Runtime dependencies: numpy and
+       matplotlib, nothing else.</p>
+    <p>Every drawing here is regenerated from the <code>build.py</code>
+       committed beside it. Nothing on this site is a stored asset.</p>
+    <p><a href="https://github.com/deangeckt/biodraw">Source</a></p>
+  </div>
+</footer>
+</body>
+</html>
+<script>
+(function () {
+  var grid = document.getElementById('grid');
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.card'));
+  var search = document.getElementById('search');
+  var empty = document.getElementById('empty');
+  var filters = Array.prototype.slice.call(
+    document.querySelectorAll('.filter'));
+  var category = '';
+
+  function apply() {
+    var q = search.value.trim().toLowerCase();
+    var shown = 0;
+    cards.forEach(function (c) {
+      var on = (!category || c.dataset.category === category) &&
+               (!q || c.dataset.search.indexOf(q) !== -1);
+      c.hidden = !on;
+      if (on) shown++;
+    });
+    empty.hidden = shown !== 0;
+  }
+
+  filters.forEach(function (b) {
+    b.addEventListener('click', function () {
+      filters.forEach(function (o) { o.classList.remove('is-on'); });
+      b.classList.add('is-on');
+      category = b.dataset.category;
+      apply();
+    });
+  });
+  search.addEventListener('input', apply);
+  document.getElementById('reset').addEventListener('click', function () {
+    search.value = '';
+    filters[0].click();
+  });
+})();
+</script>

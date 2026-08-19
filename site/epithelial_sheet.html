@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Epithelial sheet — biodraw</title>
+<meta name="description" content="A row of cells standing on a basement membrane — many cells that must not become one.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="index.html">biodraw</a>
+    <nav class="masthead-links">
+      <a href="https://github.com/deangeckt/biodraw">GitHub</a>
+      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+    </nav>
+  </div>
+</header>
+<main class="detail">
+<article>
+  <p class="crumb"><a href="index.html">All examples</a>
+     <span aria-hidden="true">·</span> Cells &amp; tissues</p>
+
+  <h1>Epithelial sheet</h1>
+  <p class="standfirst">A row of cells standing on a basement membrane — many cells that must not become one.</p>
+  <p class="chips"><span class="chip">cells.Sheet</span><span class="chip">shape.Layer</span></p>
+
+  <figure class="hero plate zoomable">
+    <img src="../examples/epithelial_sheet/epithelium.png"
+         alt="A columnar epithelium with a brush border">
+    <figcaption>A columnar epithelium with a brush border</figcaption>
+  </figure>
+
+  <p class="standfirst">Where the <a href="generic_cell.html">generic cell</a> is one cell that is not one contour, this is many cells that must <strong>not</strong> become one.</p>
+
+<section class="block">
+<h2 id="the-blueprint">The blueprint</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/epithelial_sheet/blueprint.png" alt="Blueprint of the epithelial sheet" loading="lazy"><figcaption>Blueprint of the epithelial sheet</figcaption></figure>
+</div>
+<p class="step"><strong>1 · Why every cell is its own layer.</strong> The top row is five cells handed to a single <code>render_hollow</code> call: the union does exactly what it was asked and dissolves every shared wall, leaving one long cell. The bottom row is the same five outlines with a <code>Layer</code> each. Nothing about the geometry changed — only how many times it was drawn.</p>
+<p class="step"><strong>2 · The hairline between neighbours.</strong> <code>gap</code> is real page between two cells, and it cannot be zero for free: at zero the two walls land on the same line and each cell&#x27;s second pass erases half of the other&#x27;s, leaving a join at half weight. A visible boundary is also the more honest drawing — an epithelium is drawn with its boundaries showing, because the boundary is the point.</p>
+<p class="step"><strong>3 · The arc, derived from the pitch.</strong> <code>curve_deg</code> bends the row. The radius is not a knob — it follows from one cell&#x27;s width subtending one pitch angle, which is what makes <code>curve_deg=-360</code> close <em>exactly</em> at any cell count instead of leaving a wedge to tune away. Each cell then widens by <code>(r+h)/r</code> toward its apical surface, because on an arc the outer surface is longer; without that, a wedge opens between every pair and the tissue reads as tearing.</p>
+<p class="step"><strong>4 · Anchors.</strong> Apical and basal surface per cell, one nucleus, and one junction per boundary — placed at the apical end of the shared wall, which is where a tight junction is and so where a label about one points.</p>
+<p>A bug panel 2 caught: the lateral walls bow outward by <code>bow_side</code> × their own length, which at the defaults is 0.018 a side against a gap of 0.0276, so neighbours overlapped by 0.008. The quad is now set in by the bulge, and <code>gap</code> means what it says.</p>
+</section>
+<section class="block">
+<h2 id="drawing-one">Drawing one</h2>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
+
+sheet = bd.cells.Sheet(
+    cells=6,                # how many, side by side
+    cell_w=0.46,            # the pitch, at the basal line
+    height=1.0,             # basal surface to apical surface
+    gap=0.06,               # page left between neighbours, x cell_w
+    nucleus=0.30,           # nuclear semi-axis, x cell_w
+    nucleus_at=0.32,        # basal — the cheapest cue that the sheet has a polarity
+    microvilli=5,           # brush border, per cell
+    basement=True,          # the band the sheet stands on
+    seed=1,                 # fixes the nucleus and height jitter
+)
+
+fig, ax = bd.canvas(figsize=(4.4, 2.6))
+sheet.draw(
+    ax=ax,
+    wall_lw=1.0,            # wall thickness, in points
+    gid=&quot;epithelium&quot;,       # names the layers in the exported SVG
+)
+sheet.fit(ax, pad=0.10)
+bd.save(fig, &quot;epithelium.svg&quot;)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="curvature">Curvature</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/epithelial_sheet/curvature.png" alt="Six curvatures" loading="lazy"><figcaption>Six curvatures</figcaption></figure>
+</div>
+<p>The one knob that turns a sheet into a fold, a villus, a duct, or a closed ring of cells around a lumen.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>sheet = bd.cells.Sheet(
+    cells=9,
+    curve_deg=-360,         # negative curls the apical surface inward
+    height=0.36,            # must stay inside the arc radius — see below
+    microvilli=4,
+)</code></pre></div>
+<p>Positive puts the apical surface on the outside; negative encloses a lumen. At <code>-360</code> the ring closes on itself exactly.</p>
+<p>Bend too far for the height and <code>Sheet</code> <strong>refuses</strong>, naming the three ways out, rather than drawing a row turned inside out: <em>&quot;curve_deg=-360 bends the row tighter than height=0.62 allows — the apical surface passes through the centre of the arc. Reduce the height, widen the cells, or bend less far.&quot;</em></p>
+</section>
+<section class="block">
+<h2 id="cell-shapes">Cell shapes</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/epithelial_sheet/cell_shapes.png" alt="Nine cell shapes" loading="lazy"><figcaption>Nine cell shapes</figcaption></figure>
+</div>
+<p>Squamous, cuboidal, columnar — one object at three heights, crossed with what the taper does to each.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>sheet = bd.cells.Sheet(
+    cells=6,
+    height=0.34,            # 0.34 squamous · 0.70 cuboidal · 1.25 columnar
+    taper=0.72,             # apical pitch as a multiple of basal
+    nucleus=0.26,
+)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="brush-border">Brush border</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/epithelial_sheet/borders.png" alt="Eight brush borders" loading="lazy"><figcaption>Eight brush borders</figcaption></figure>
+</div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>sheet = bd.cells.Sheet(
+    cells=5,
+    microvilli=6,               # per cell
+    microvilli_len=0.40,        # x cell_w
+    microvilli_width=0.09,      # x cell_w
+)</code></pre></div>
+<p>Each villus belongs to its own cell&#x27;s layer, so it fuses with that cell and with nothing else — including the neighbour a millimetre away. They are aimed along their own cell&#x27;s axis rather than along the local radius: on a curved sheet the two differ, and following the radius fans them apart at the ends of a cell, which reads as fraying rather than as a border.</p>
+</section>
+<section class="block">
+<h2 id="no-two-cells-alike">No two cells alike</h2>
+<p>The nuclei wander, and so does each cell&#x27;s own apical height. A row of identical cells is a row of copies, and a perfectly level apical surface is the first thing the eye finds in the drawing.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>sheet = bd.cells.Sheet(
+    cells=6,
+    nucleus_jitter=0.05,    # x the cell height
+    height_jitter=0.04,     # x the cell height
+    seed=1,                 # ...and both are seeded, so it still redraws byte-identically
+)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="anchors">Anchors</h2>
+<div class="tablewrap"><table><thead><tr>
+<th>kind</th>
+<th>where</th>
+<th>count on a 6-cell row</th>
+</tr></thead><tbody>
+<tr><td><code>apical</code></td><td>the middle of each apical surface, pointing out</td><td>6</td></tr>
+<tr><td><code>basal</code></td><td>the middle of each basal surface, pointing down</td><td>6</td></tr>
+<tr><td><code>nucleus</code></td><td>one per nucleus</td><td>6</td></tr>
+<tr><td><code>junction</code></td><td>the apical end of each shared wall</td><td>5</td></tr>
+</tbody></table></div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>lumen_side = sheet.anchor(&quot;apical&quot;, cell=2)         # third cell, apical face
+tight      = sheet.anchor(&quot;junction&quot;, rank=0)       # the first boundary
+under      = sheet.anchor(&quot;basal&quot;, cell=0)          # where the membrane is</code></pre></div>
+<p>A closed ring has one junction <em>per cell</em> rather than one fewer, because the last cell has a neighbour on both sides.</p>
+</section>
+
+  <p class="source-note">Every figure above is output, not a stored asset
+     — <a href="https://github.com/deangeckt/biodraw/blob/main/examples/epithelial_sheet/build.py">the full script that draws them</a>.</p>
+
+  <nav class="pager"><a class="prev" href="cell_atlas.html"><span>Previous</span>Cell atlas</a><a class="next" href="bacteria.html"><span>Next</span>Bacteria</a></nav>
+</article>
+
+<aside class="rail">
+  <p class="rail-head">On this page</p>
+  <ul><li><a href="#the-blueprint">The blueprint</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#curvature">Curvature</a></li><li><a href="#cell-shapes">Cell shapes</a></li><li><a href="#brush-border">Brush border</a></li><li><a href="#no-two-cells-alike">No two cells alike</a></li><li><a href="#anchors">Anchors</a></li></ul>
+</aside>
+</main>
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox-close" type="button"
+          aria-label="Close">&times;</button>
+  <figure><img id="lightbox-img" alt=""><figcaption id="lightbox-cap">
+  </figcaption></figure>
+</div>
+<script>
+(function () {
+  var box = document.getElementById('lightbox');
+  var img = document.getElementById('lightbox-img');
+  var cap = document.getElementById('lightbox-cap');
+  function open(src, alt) {
+    img.src = src; img.alt = alt; cap.textContent = alt;
+    box.hidden = false; document.body.classList.add('no-scroll');
+  }
+  function close() {
+    box.hidden = true; img.removeAttribute('src');
+    document.body.classList.remove('no-scroll');
+  }
+  document.querySelectorAll('.zoomable').forEach(function (fig) {
+    fig.addEventListener('click', function () {
+      var i = fig.querySelector('img');
+      open(i.getAttribute('src'), i.getAttribute('alt'));
+    });
+  });
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !box.hidden) close();
+  });
+})();
+</script>
+<script>
+document.querySelectorAll('.copy').forEach(function (b) {
+  b.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var code = b.parentElement.querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(function () {
+      b.textContent = 'Copied';
+      b.classList.add('is-done');
+      setTimeout(function () {
+        b.textContent = 'Copy'; b.classList.remove('is-done');
+      }, 1400);
+    });
+  });
+});
+(function () {
+  var links = Array.prototype.slice.call(
+    document.querySelectorAll('.rail a'));
+  var heads = links.map(function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  function mark() {
+    var best = 0;
+    heads.forEach(function (h, i) {
+      if (h && h.getBoundingClientRect().top < 140) best = i;
+    });
+    links.forEach(function (a, i) {
+      a.classList.toggle('is-here', i === best);
+    });
+  }
+  window.addEventListener('scroll', mark, { passive: true });
+  mark();
+})();
+</script>
+<footer class="foot">
+  <div class="foot-inner">
+    <p><strong>biodraw</strong> — MIT. Runtime dependencies: numpy and
+       matplotlib, nothing else.</p>
+    <p>Every drawing here is regenerated from the <code>build.py</code>
+       committed beside it. Nothing on this site is a stored asset.</p>
+    <p><a href="https://github.com/deangeckt/biodraw">Source</a></p>
+  </div>
+</footer>
+</body>
+</html>

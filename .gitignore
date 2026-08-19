@@ -165,7 +165,10 @@ venv.bak/
 .ropeproject
 
 # mkdocs documentation
-/site
+#   NOT ignored here: `/site` is this project's own committed gallery,
+#   built by tools/build_site.py, not mkdocs output. The template rule
+#   below hid every page *and* the hand-written content modules.
+# /site
 
 # mypy
 .mypy_cache/

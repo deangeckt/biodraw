@@ -26,6 +26,10 @@ import runpy
 import subprocess
 import sys
 
+import matplotlib
+
+matplotlib.use("Agg")
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 EXAMPLES = ROOT / "examples"
 
@@ -69,7 +73,22 @@ def main():
         print(f"== {script.parent.name}")
         # run_path rather than a subprocess: one interpreter, so a broken
         # import surfaces here with a real traceback.
-        runpy.run_path(str(script), run_name="__main__")
+        #
+        # ...but one interpreter means one set of `plt.rcParams`, and every
+        # build.py sets its own at import time. Without this context manager
+        # they leak forward: whatever the previous example turned on stays on
+        # for the next one, so an example's output depends on **what sorted
+        # before it**. Adding `examples/bacteria/` — which turns the top and
+        # right spines off, where `basket_cell` only sets the font size —
+        # moved it ahead of `basket_cell` alphabetically and silently changed
+        # that example's blueprint. Nothing had ever inserted itself earlier
+        # in the order before, so the bug had never fired.
+        #
+        # `rc_context` restores the params on exit, so each script starts from
+        # the same state and an example is reproducible on its own as well as
+        # in a full run. That equivalence is what `--check` assumes.
+        with matplotlib.rc_context():
+            runpy.run_path(str(script), run_name="__main__")
 
     if not args.check:
         return 0

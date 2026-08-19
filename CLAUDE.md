@@ -38,6 +38,13 @@ the skills measurably better at anticipating the next comment. A skill that
 had to be told the same class of thing twice was not updated properly the
 first time.
 
+The evidence that step 3 is worth the trouble: of the ten bugs in
+[docs/STATE.md](docs/STATE.md), **three were found by writing a new check and
+running it once** — the stale axon documentation, the `.gitignore` that hid
+the gallery's source, and the unlinted directory behind it. That is the
+cheapest of the five ways a defect has been found here, and the only one that
+keeps working after the session that discovered it ends.
+
 The skills are the durable form of all this, and they are where a second
 developer should look first — see [skills/README.md](skills/README.md). Every
 check in `review-a-drawing` names the comment that produced it, so the
@@ -59,6 +66,46 @@ Rules that arrived this way so far, with the comment that produced them:
 | "we dont need synapses which are simply dots user can add themselves" | The library draws; the figure's claims are the author's. No placement engine, no claim colours |
 | "the top apical dendrite is too crowded" | A count spread over a length is a density |
 | "the axon is very wierd, just keep arrows / line like connections" | Prefer the schematic where the realistic one competes for attention |
+| "i want to prioritize the website over the github" | The gallery is the documentation; `README.md` is a front door that links to it, never a second copy |
+| "why do we need Rebuilding these drawings subsections?" | A public page shows only what `pip install` can do; the reader's next step is an agent and the skills |
+| "i prefer without the hover animation, its confusing" | Hover may affirm, never replace — if a picture is worth showing, show it |
+| "delete those axon images" | Deleting code means deleting its documentation too — images, prose and links |
+
+## Fight complexity
+
+Your job is to keep the system small, clear, focused, and useful — whether it
+is an application, library, tool, or notebook. **Not** to maximise capability.
+
+This repo has already paid for the rule three times over: the placement
+engine, the claim colours and `neuro.Axon` were all built, all worked, and
+were all removed, and each removal made the library clearer. See *Things built
+and then deliberately removed* in [docs/STATE.md](docs/STATE.md) — that list
+is the evidence, and it should keep growing.
+
+Before adding anything, ask:
+
+- What specific problem does this solve?
+- Is it important enough to justify permanent complexity?
+- Can we improve or simplify something that already exists instead?
+
+Default to:
+
+- **Delete before adding.**
+- **Improve before creating.**
+- **One obvious way** before multiple ways or settings.
+
+### Keep changes focused
+
+- Do not perform unrelated refactors or expand the scope of the task.
+- Do not create trivial tests to increase coverage. (The standing rule here is
+  already *test what must be true, pin what merely is*.)
+- Do not run unrelated tests.
+
+### Push back
+
+- Do not blindly implement requests if alternatives exist.
+- If something is unnecessary, say so, or recommend the smaller alternative.
+- You have permission to say no, or to ask for evidence.
 
 ## Ask, don't assume
 

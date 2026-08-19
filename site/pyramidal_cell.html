@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pyramidal cell — biodraw</title>
+<meta name="description" content="A triangular soma with spiny dendrites out of it — apical up, basals down — soma, dendrites and every spine forming one unbroken outline.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="index.html">biodraw</a>
+    <nav class="masthead-links">
+      <a href="https://github.com/deangeckt/biodraw">GitHub</a>
+      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+    </nav>
+  </div>
+</header>
+<main class="detail">
+<article>
+  <p class="crumb"><a href="index.html">All examples</a>
+     <span aria-hidden="true">·</span> Neurons</p>
+
+  <h1>Pyramidal cell</h1>
+  <p class="standfirst">A triangular soma with spiny dendrites out of it — apical up, basals down — soma, dendrites and every spine forming one unbroken outline.</p>
+  <p class="chips"><span class="chip">neuro.Pyramidal</span></p>
+
+  <figure class="hero plate zoomable">
+    <img src="../examples/pyramidal_cell/pyramidal.png"
+         alt="A pyramidal cell">
+    <figcaption>A pyramidal cell</figcaption>
+  </figure>
+
+  
+
+<section class="block">
+<h2 id="the-blueprint">The blueprint</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/pyramidal_cell/blueprint.png" alt="Blueprint of the pyramidal cell" loading="lazy"><figcaption>Blueprint of the pyramidal cell</figcaption></figure>
+</div>
+<p class="step"><strong>1 · The skeleton.</strong> The soma is three points; each dendrite is a <code>Branch</code> with its own curve; each spine is a traced <code>Profile</code> stamped at a base and angled toward the tip. Nothing here is special-cased for neurons — swap the profile and the same skeleton draws a hypha or a root hair.</p>
+<p class="step"><strong>2 · The neck, not a flat top.</strong> Cutting the apex flat leaves <em>two</em> corner stacks per shoulder — slanted edge → flat top, then flat top → tube wall — and a fillet gets clamped to nothing at both. Instead each slanted edge turns tangentially into the tube wall through an arc: the outline itself curves from slanted into vertical, and there is no corner left to round.</p>
+<p class="step"><strong>3 · Rooting a basal through its corner.</strong> The branch axis runs <em>through</em> the soma corner and starts back up inside the body, so the tube&#x27;s fill swallows the corner. Root it anywhere else and the vertex survives beside the branch with a sliver of a notch between them — and since the slanted edge and the branch run nearly parallel, that sliver is long and very visible. The flare is clamped a few degrees wider than the soma edge for the same reason: below that, the axis leaves through the edge instead of up into the body.</p>
+<p class="step"><strong>4 · Anchors.</strong> Every place something can attach, with the direction that leads away from the cell. Connectors, synapse markers and labels all consume these, so they work on any shape that exposes them.</p>
+</section>
+<section class="block">
+<h2 id="drawing-one">Drawing one</h2>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
+
+cell = bd.neuro.Pyramidal(
+    spines=8,               # spines along the apical
+    basal=2,                # basal branches off the soma&#x27;s bottom corners
+    basal_spines=5,         # ...and spines on each of those
+    spine_extend=0.04,      # extra neck, so heads stand clear of each other
+)
+
+fig, ax = bd.canvas(figsize=(3.0, 4.2))
+cell.draw(
+    ax=ax,
+    wall_lw=1.0,            # wall thickness, in points
+    gid=&quot;pyramidal&quot;,        # names the layers in the exported SVG
+)
+cell.fit(ax, pad=0.2)
+bd.save(fig, &quot;pyramidal.svg&quot;)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="spininess">Spininess</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/pyramidal_cell/spininess.png" alt="Six spine densities" loading="lazy"><figcaption>Six spine densities</figcaption></figure>
+</div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Pyramidal(spines=9, basal=2, basal_spines=4)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="body-plans">Body plans</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/pyramidal_cell/body_plans.png" alt="Eighteen body plans" loading="lazy"><figcaption>Eighteen body plans</figcaption></figure>
+</div>
+<p>How many basals, how wide they splay, and whether the apical forks — the whole shape space at once.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Pyramidal(
+    spines=7,
+    basal=2,                # 0, 1 or 2 legs
+    basal_angle_deg=40,     # how wide they splay
+    basal_spines=3,
+)</code></pre></div>
+<p>Past about 60° the legs lie along the soma&#x27;s bottom edge and flatten the triangle back into a trapeze — the thing the neck is already fighting.</p>
+</section>
+<section class="block">
+<h2 id="forking-the-apical">Forking the apical</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/pyramidal_cell/forks.png" alt="Nine forks" loading="lazy"><figcaption>Nine forks</figcaption></figure>
+</div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Pyramidal(
+    spines=0,               # bare trunk below the fork
+    apical_fork=0.45,       # fraction of the apical reach before it splits
+    fork_angle_deg=32,      # how wide the daughters splay
+    fork_spines=3,          # spines on each daughter
+    basal=2,
+    basal_spines=3,
+)</code></pre></div>
+<p><code>trunk_len</code> stays the cell&#x27;s full apical reach either way — the daughters carry what the trunk gives up — so turning the fork on does not silently grow the cell.</p>
+</section>
+<section class="block">
+<h2 id="making-your-own-sheets">Making your own sheets</h2>
+<p>Every grid above is one call, and it is also how you sweep a parameter you are tuning: build the sheet, look at it, pick the setting.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>fig, _ = bd.contact_sheet(
+    factory=bd.neuro.Pyramidal,
+    variants=[dict(spines=n, basal=2) for n in (0, 3, 6, 9, 12, 16)],
+    labels=&quot;auto&quot;,          # captions from whichever keys differ
+    cols=6,
+)
+bd.save_compact(fig, &quot;sweep.png&quot;)</code></pre></div>
+<p>Use <code>row_labels</code> / <code>col_labels</code> instead of <code>labels</code> once more than two knobs vary. A variant inside a shared sheet costs about 0.8 kB; the same variant as its own image costs around 50 kB, which is why these pages show dozens of cells and few portraits.</p>
+</section>
+<section class="block">
+<h2 id="anchors">Anchors</h2>
+<p>Anchors are how anything attaches to a cell. Each is a point, the outward direction there, and what kind of place it is:</p>
+<div class="tablewrap"><table><thead><tr>
+<th>kind</th>
+<th>where</th>
+<th>count on the cell above</th>
+</tr></thead><tbody>
+<tr><td><code>spine</code></td><td>each spine head, the widest point</td><td>18</td></tr>
+<tr><td><code>shaft</code></td><td>the bare proximal apical, both walls</td><td>4</td></tr>
+<tr><td><code>soma</code></td><td>down each slanted flank</td><td>4</td></tr>
+<tr><td><code>axon</code></td><td>the bottom of the soma, pointing down</td><td>1</td></tr>
+</tbody></table></div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>distal   = cell.anchor(&quot;spine&quot;, branch=&quot;apical&quot;, rank=-1)  # distal-most spine
+flank    = cell.anchor(&quot;soma&quot;, side=-1, t=0.40)            # left soma wall
+shaft    = cell.anchor(&quot;shaft&quot;, t=0.02)                    # the bare shaft
+leaving  = cell.anchor(&quot;axon&quot;)                             # where the axon goes
+
+dot_position = distal.offset(0.02)      # 0.02 clear of the spine head</code></pre></div>
+<p><code>nearest</code> picks the one facing a given source, so a connector lands on the side it is arriving from rather than reaching around the back: <code>cell.anchors(&quot;spine&quot;).nearest(point=(-8.0, 1.0))</code></p>
+</section>
+<section class="block">
+<h2 id="where-the-shaft-anchors-sit">Where the shaft anchors sit</h2>
+<p><code>shaft</code> anchors sit <em>below</em> the first spine on purpose: a shaft contact arriving beside a spine head reads as a spine contact, which is a different claim entirely.</p>
+<p>No SVG is committed for this cell. <code>bd.save(fig, &quot;cell.svg&quot;)</code> gives you the vector file whenever you want it, but this cell&#x27;s runs to 98 kB — more than every raster in the folder put together, because the hollow render carries two paths per part. The spine&#x27;s SVG is kept as the standing proof that vector export works.</p>
+</section>
+
+  <p class="source-note">Every figure above is output, not a stored asset
+     — <a href="https://github.com/deangeckt/biodraw/blob/main/examples/pyramidal_cell/build.py">the full script that draws them</a>.</p>
+
+  <nav class="pager"><a class="next" href="basket_cell.html"><span>Next</span>Basket cell</a></nav>
+</article>
+
+<aside class="rail">
+  <p class="rail-head">On this page</p>
+  <ul><li><a href="#the-blueprint">The blueprint</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#spininess">Spininess</a></li><li><a href="#body-plans">Body plans</a></li><li><a href="#forking-the-apical">Forking the apical</a></li><li><a href="#making-your-own-sheets">Making your own sheets</a></li><li><a href="#anchors">Anchors</a></li><li><a href="#where-the-shaft-anchors-sit">Where the shaft anchors sit</a></li></ul>
+</aside>
+</main>
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox-close" type="button"
+          aria-label="Close">&times;</button>
+  <figure><img id="lightbox-img" alt=""><figcaption id="lightbox-cap">
+  </figcaption></figure>
+</div>
+<script>
+(function () {
+  var box = document.getElementById('lightbox');
+  var img = document.getElementById('lightbox-img');
+  var cap = document.getElementById('lightbox-cap');
+  function open(src, alt) {
+    img.src = src; img.alt = alt; cap.textContent = alt;
+    box.hidden = false; document.body.classList.add('no-scroll');
+  }
+  function close() {
+    box.hidden = true; img.removeAttribute('src');
+    document.body.classList.remove('no-scroll');
+  }
+  document.querySelectorAll('.zoomable').forEach(function (fig) {
+    fig.addEventListener('click', function () {
+      var i = fig.querySelector('img');
+      open(i.getAttribute('src'), i.getAttribute('alt'));
+    });
+  });
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !box.hidden) close();
+  });
+})();
+</script>
+<script>
+document.querySelectorAll('.copy').forEach(function (b) {
+  b.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var code = b.parentElement.querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(function () {
+      b.textContent = 'Copied';
+      b.classList.add('is-done');
+      setTimeout(function () {
+        b.textContent = 'Copy'; b.classList.remove('is-done');
+      }, 1400);
+    });
+  });
+});
+(function () {
+  var links = Array.prototype.slice.call(
+    document.querySelectorAll('.rail a'));
+  var heads = links.map(function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  function mark() {
+    var best = 0;
+    heads.forEach(function (h, i) {
+      if (h && h.getBoundingClientRect().top < 140) best = i;
+    });
+    links.forEach(function (a, i) {
+      a.classList.toggle('is-here', i === best);
+    });
+  }
+  window.addEventListener('scroll', mark, { passive: true });
+  mark();
+})();
+</script>
+<footer class="foot">
+  <div class="foot-inner">
+    <p><strong>biodraw</strong> — MIT. Runtime dependencies: numpy and
+       matplotlib, nothing else.</p>
+    <p>Every drawing here is regenerated from the <code>build.py</code>
+       committed beside it. Nothing on this site is a stored asset.</p>
+    <p><a href="https://github.com/deangeckt/biodraw">Source</a></p>
+  </div>
+</footer>
+</body>
+</html>

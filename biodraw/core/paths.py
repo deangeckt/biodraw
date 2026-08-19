@@ -20,7 +20,7 @@ from .geom import rot, signed_area, unit
 
 __all__ = [
     "tube", "buried_base", "rall_widths",
-    "superellipse", "superellipse_radius", "bowed_ring",
+    "superellipse", "superellipse_radius", "superellipse_param", "bowed_ring",
     "rounded_polygon", "neck_polygon", "elbow",
     "arc_rad", "arc3_control", "cubic_connector", "bezier_split",
     "stroke_path", "connector_path", "fork_tree",
@@ -31,7 +31,8 @@ __all__ = [
 # Processes
 # ---------------------------------------------------------------------------
 
-def tube(centre, half_w, base_ext=0.0, n_cap=18, open_end=False):
+def tube(centre, half_w, base_ext=0.0, n_cap=18, open_end=False,
+         cap_base=False):
     """Polygon wrapping a polyline: a process drawn as a *tube* with two walls,
     rather than as a stroked line.
 
@@ -47,6 +48,15 @@ def tube(centre, half_w, base_ext=0.0, n_cap=18, open_end=False):
     open polyline (see `render.render_hollow`'s `open_parts`) and the tube ends
     as two walls that simply stop: the un-closed, runs-off-the-page end of a
     hand-drawn process.
+
+    `cap_base` rounds the near end too, which makes the tube a **capsule**
+    rather than a process: closed at both ends, growing out of nothing. That
+    is a whole cell rather than a part of one — a bacillus, a mitochondrion, a
+    vesicle. It is here rather than in a domain because the alternative was a
+    second primitive that differed from this one by a semicircle, and the flat
+    base only ever existed to be buried in a parent that a free-floating body
+    does not have. Incompatible with `open_end`, which says the opposite
+    thing, and with `base_ext`, which exists to bury the chord this removes.
     """
     c = np.asarray(centre, dtype=float)
     w = np.broadcast_to(np.asarray(half_w, dtype=float), (len(c),)).copy()
@@ -61,11 +71,26 @@ def tube(centre, half_w, base_ext=0.0, n_cap=18, open_end=False):
 
     left, right = c + n * w[:, None], c - n * w[:, None]
     if open_end:
+        if cap_base:
+            raise ValueError(
+                "open_end and cap_base say opposite things about the near "
+                "end: one leaves it running off the page, the other closes "
+                "it. Pick one.")
         return np.vstack([right[::-1], left])
     a0 = np.arctan2(n[-1, 1], n[-1, 0])
     ang = a0 - np.linspace(0, np.pi, n_cap)
     cap = c[-1] + w[-1] * np.column_stack([np.cos(ang), np.sin(ang)])
-    return np.vstack([left, cap[1:-1], right[::-1]])
+    if not cap_base:
+        return np.vstack([left, cap[1:-1], right[::-1]])
+
+    # The ring so far ends at `right[0]`, which is the base on the -n side.
+    # Sweeping the angle *down* by pi from there passes through -d[0] — out
+    # past the near end — and arrives at +n. Sweeping up would pass through
+    # +d[0] instead and fold the cap back inside the tube.
+    a1 = np.arctan2(-n[0, 1], -n[0, 0])
+    ang = a1 - np.linspace(0, np.pi, n_cap)
+    base = c[0] + w[0] * np.column_stack([np.cos(ang), np.sin(ang)])
+    return np.vstack([left, cap[1:-1], right[::-1], base[1:-1]])
 
 
 def buried_base(parent, origin, direction, half_w, n_depth=96, n_chord=24):
@@ -191,6 +216,31 @@ def superellipse_radius(direction, a, b, squareness):
     d = unit(direction)
     s = float(squareness)
     return (abs(d[0] / a) ** s + abs(d[1] / b) ** s) ** (-1.0 / s)
+
+
+def superellipse_param(direction, a, b, squareness):
+    """The `t` at which `superellipse` draws the wall point along `direction`.
+
+    The inverse of the map `superellipse` runs forward, and it exists because
+    the two angles are not the same one. `superellipse` sweeps a *parameter*
+    `t` and puts the wall at `(a|cos t|^e, b|sin t|^e)`; the polar angle of
+    that point equals `t` only when `a == b` and the exponent is 1.
+
+    Anything that has to re-evaluate a `t`-indexed term at a known direction
+    therefore has to come back through here first. The wobble is exactly that
+    term: `Blob.wall_radius` re-applied it at the polar angle, so on a
+    flattened cell every wall anchor and every protrusion root sat off the
+    drawn wall — measured at 0.011 local units on a body of radius 0.55, and
+    exactly 0 on every round one, which is the signature of this mistake.
+    """
+    d = unit(direction)
+    r = superellipse_radius(d, a, b, squareness)
+    x, y = r * d[0] / float(a), r * d[1] / float(b)
+    # e = 2/s is the forward exponent, so 1/e = s/2 undoes it. Both components
+    # are inverted on their own magnitude and given the sign back, which is
+    # what keeps this exact in all four quadrants.
+    p = float(squareness) / 2.0
+    return np.arctan2(np.sign(y) * abs(y) ** p, np.sign(x) * abs(x) ** p)
 
 
 def bowed_ring(verts, bows, n_per_edge=16):

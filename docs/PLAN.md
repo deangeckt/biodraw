@@ -58,7 +58,10 @@ here; anything that only wants downloading is not.
 
 ## Documentation rules
 
-These apply to every README, every example folder, and the main page.
+These apply to every page of the gallery, every example folder, and the
+main README. Rule 1 is now **enforced structurally**: a gallery section
+is `images` then `body` then `code`, and `tools/build_site.py` has no
+field that puts a code block above a picture.
 
 1. **Image first, code second — always.** A reader should see what a thing
    looks like before being shown how to make it. Never open a section with a
@@ -87,8 +90,25 @@ These apply to every README, every example folder, and the main page.
    the maths is visible and not just asserted.
 5. **Variants are the unit of documentation.** A reader learns more from
    eighteen small cells differing in one knob each than from one large cell
-   and a paragraph about what the knob does. Fill a README with icon grids,
-   not with a handful of portraits.
+   and a paragraph about what the knob does. Fill a page with icon grids, not
+   with a handful of portraits.
+6. **A public page shows only what `pip install` can do.** Every detail
+   page carried a *Rebuilding these drawings* section ending in
+   `python tools/build_gallery.py pyramidal` — a command that presumes a
+   clone of this repository, on a page written for someone who has installed
+   the library. Maintainer instructions belong in `CONTRIBUTING.md`.
+   `tools/build_site.py` now refuses to build a snippet naming `tools/`,
+   `build_gallery` or `git`. The positive form matters more than the
+   prohibition: the reader's next step is `pip install biodraw` and pointing
+   an agent at the skills, so that is what the page should say.
+7. **Hover may affirm, never replace.** The gallery's cards first cross-faded
+   each portrait into that example's variant sheet on hover. It read as the
+   card changing identity: two cards could not be compared, and what you
+   clicked was not what you had been looking at. Hover is allowed to say
+   *this one* — a border, a colour, a lift. The moment it substitutes
+   different content, the reader has lost the thing they were looking at in
+   order to see something the page could simply have shown. If a picture is
+   worth putting on the index, put it on the index.
 
 ## Drawing rules
 
@@ -216,7 +236,9 @@ So:
 ### 0 — Repo skeleton ✅
 
 `pyproject.toml`, MIT `LICENSE`, `README`, `CITATION.cff`, `CONTRIBUTING.md`,
-`AGENTS.md`, CI running lint + image tests + showcase rebuild.
+`AGENTS.md`. Lint, image tests and the gallery rebuild run locally — see
+*Verification* below. There is no CI: the rebuild check is same-machine by
+nature and could never pass on a hosted runner.
 
 ### 1 — Core geometry and rendering ✅
 
@@ -327,10 +349,16 @@ it up:
 is where user-hat feedback gets **converted into a numeric check** — step 3 of
 the loop in `CLAUDE.md`. Every check in it names the comment that produced it,
 which keeps it honest: a check that cannot point at a real failure it caught
-is a guess and should be cut. It currently carries eight, derived from the
+is a guess and should be cut. It currently carries eleven, derived from the
 waver-frequency bug, the mirror-image fork, the crotch spur, two
 inward-pointing-anchor bugs, the layer/occlusion rule, the epithelial gap, and
-the SVG determinism bug.
+the SVG determinism bug — plus two added in session 4: the *measure to an
+edge, and on a flattened shape* half of check 5, and check 5b, that an inner
+part is actually inside the part containing it. Both of those came from
+defects that a passing test had been walking past — and one more on the back
+of the `rcParams` leak, that **a single-example rebuild and a full rebuild
+must agree**, without which `--check` is testing the order the folders happen
+to sort in.
 
 The intended effect is that the same class of comment never has to be made
 twice — a rule written as prose gets read once, a rule written as a check gets
@@ -399,8 +427,48 @@ engine. Shipped as `examples/generic_cell/` and `examples/epithelial_sheet/`.
   not mean what it says.
 - `bd.save` was not byte-reproducible: matplotlib stamps a `<dc:date>` into
   every SVG and salts its clip-path ids from a per-process `uuid4`. The
-  determinism CI enforces on `examples/` would have failed on the one
-  committed SVG the moment it was committed. Pinned via `io.SVG_HASHSALT`.
+  determinism required of `examples/` would have failed on the one committed
+  SVG the moment it was rebuilt. Pinned via `io.SVG_HASHSALT`.
+
+### 7.6 — `micro`, and examples that are only examples ✅
+
+Two additions, deliberately of different kinds, because the question this
+milestone answers is *what does expanding the library actually cost*.
+
+**`examples/cell_atlas/` cost nothing.** Twelve nameable cells — erythrocyte,
+platelet, lymphocyte, macrophage, fibroblast, smooth muscle, adipocyte,
+oocyte, spermatozoon, amoeba, ciliated cell, plant cell — every one of them
+`cells.Blob` with different keywords and **no new library code at all**. It is
+the strongest available statement of *variants are the unit of documentation*,
+and it is the cheapest example in the repo. The page also names what the shape
+**cannot** say — a lobed nucleus, a cell wall as a second contour, a bud,
+contents confined to part of the cytoplasm — because a page that only shows
+successes is advertising rather than documentation.
+
+**`biodraw/micro/Bacterium` cost one semicircle.** `paths.tube(cap_base=True)`
+was the whole of what the third domain needed from the core, which is the
+return on the first two having paid for it. The shape's own design decision
+worth keeping: **the named forms are settings, not classes.** Coccus, bacillus,
+vibrio and spirillum each describe one axis — length, `curve_deg`, `twists` —
+so given those as numbers every named form is a value and the space between
+them is drawable. An enum would have made the four names the only reachable
+shapes. Flagellar arrangement is the same trick with `Blob`'s protrusion
+vocabulary reused verbatim, so the four textbook arrangements are two numbers.
+
+And arrangement is **composition**: a diplococcus is two cocci and `moved()`.
+There is no `arrangement=` keyword, for the same reason there is no placement
+engine.
+
+The real yield, though, was diagnostic. Four defects (11-14 in
+[STATE.md](STATE.md)) came out of running `review-a-drawing` against these two
+examples, and **three of them were in code that had already shipped and been
+reviewed**. The lesson is now a rule:
+
+> **A new example is a test of the old code.** It exercises existing shapes in
+> configurations nothing had asked for before — flattened, bent, twisted,
+> jittered — and those are precisely where a defect that is invisible on the
+> symmetric default lives. Two of the four were exactly 0 on a round or
+> straight shape.
 
 ### 8 — Roster
 
@@ -409,20 +477,125 @@ neuron-shaped), and `annotate.scalebar` / `annotate.label`.
 
 ### 9 — Examples and gallery
 
+An example is a folder of **output plus the script that made it**, and a
+content module that says how to read it:
+
 ```
-examples/01_spine/
+examples/dendritic_spine/
   build.py           the drawing, ~20 readable lines
-  README.md          sketch → maths → shape
-  sketch.jpg         the original hand drawing
   spine.svg          the deliverable
   spine.png          gallery preview
-  construction.png   generated by bd.explain
+  blueprint.png      the construction figure
+site/content/dendritic_spine.py
+                     title, category, prose, snippets — the page
 ```
 
-`tools/build_gallery.py` runs every `build.py`, regenerates all outputs, and
-assembles the gallery. CI fails on a non-empty `git diff examples/`, which
-doubles as the determinism test. The seed figure's four panels land here as the
-flagship.
+`tools/build_gallery.py` runs every `build.py` and regenerates all images;
+`--check` fails on a non-empty `git diff examples/`, which doubles as the
+determinism test. `tools/build_site.py` turns the content modules into
+`site/`. The two are deliberately separate: images are expensive and rebuilt
+rarely, pages are cheap and rebuilt every time prose changes.
+
+**The per-folder `README.md` is gone.** Seven of them were the reading surface
+until the gallery existed, and keeping both would have meant one body of prose
+in two places, drifting. The folders keep `build.py` and the images, which is
+what the determinism check needs and what a contributor edits.
+
+### 10 — Animals, microscopy and genetics
+
+Three categories Dean has asked for, recorded here before any is built. They
+are listed together and they are **not** the same kind of ask, which is the
+thing to settle before writing any code.
+
+**Dean is supplying reference figures for animals and microscopy**, and has
+already named one for genetics. Wait for them. The seed exercise in
+[STATE.md](STATE.md) is unambiguous that the first step is turning a picture
+into a parts list, and every attempt here to skip that step and route around
+a gap has cost more than it saved.
+
+#### Animals
+
+Model organisms as shapes: mouse, fly, zebrafish, worm, frog, macaque. High
+demand — nearly every methods figure in biology opens with one — and a good
+fit for the roster test in *What this is for*, because the thing people
+actually need to vary is **pose and orientation**, not identity. A mouse seen
+from above, from the side, and head-on is three drawings of one animal, and a
+stock library makes you download three files that will not match.
+
+The open design question, and it is the whole milestone:
+
+- **A body plan built from the core** (a tapered tube for a torso, `Branch`
+  limbs, a traced head profile) would vary properly, and would almost
+  certainly need something the core does not have — a jointed chain, which
+  `Branch.child` nearly is.
+- **A traced silhouette per animal per view** is what `skills/trace-a-shape`
+  already supports today, at zero library cost, and is honestly what most
+  figures want. It varies in scale and colour and nothing else.
+
+Recommendation: **start with traced silhouettes**, because they are free and
+they will show within a week whether anyone wants a pose knob. Building the
+jointed body plan first risks a general animal rig that draws worse mice than
+one traced outline would.
+
+#### Microscopy
+
+This one needs a decision on scope, and the library's own test is the one to
+apply: *anything that wants varying is a candidate here; anything that only
+wants downloading is not.* Two readings, and they fall on opposite sides of
+that line:
+
+- **Microscopy as equipment** — a microscope, a slide, a coverslip, a
+  centrifuge. This is what NIAID's BioArt already carries by the thousand, and
+  `docs/PLAN.md` opens by saying this library should never compete with it. A
+  microscope drawn here would be a worse version of a file you can download,
+  and it does not vary: nobody needs the same microscope at three objective
+  counts.
+- **Microscopy as what a field of view looks like** — a section outline, a
+  well or a coverslip boundary, a field at a stated magnification with cells
+  at a stated density, a scale bar that knows its own units, an inset box
+  cross-referenced to a zoomed panel. **All of this varies**, all of it is
+  arithmetic a person currently does by hand, and none of it exists in any
+  stock library because a stock asset cannot know your density or your
+  magnification.
+
+Recommendation: **the second reading**, and it is the strongest of the three
+categories on this page. It also absorbs two things already queued —
+`annotate.scalebar` from milestone 8, and the panel/inset machinery from
+milestone 4 — so it should be sequenced after those rather than beside them.
+
+**Ask Dean which reading he meant before building either.** If he meant the
+equipment, the right answer may be to say so and point at BioArt, which is
+what this library's own scope section already commits to.
+
+#### Genetics
+
+Asked for **in place of** a proteins category, on the strength of figure 1 of
+[doi.org/10.1016/j.tibtech.2023.03.007](https://doi.org/10.1016/j.tibtech.2023.03.007)
+— *"many examples that this repo/catalog can reproduce and expand"*. The
+figure is behind Elsevier's gate and has not been read, so what follows is
+the argument for the swap and not a parts list.
+
+The swap is right, and for the reason the scope section already gives.
+**A protein is a shape you download**: a ribbon diagram comes out of PDB and
+a cartoon receptor comes out of BioArt, and neither wants varying — nobody
+needs the same kinase at three domain counts. **Genetics is almost entirely
+things that vary**, and they vary along axes this library's core already
+speaks:
+
+- a **double helix** is a wave with a wavelength and a phase — the same
+  `Branch` term that draws a flagellum, doubled and cross-linked, and it wants
+  a length and a turn count rather than a fixed picture;
+- a **construct or plasmid map** is a run of boxes along a line or round a
+  ring, which is `Sheet`'s arc arithmetic with different contents, and it
+  varies in the one way a stock asset cannot: *your* insert, *your* order;
+- **exon/intron structure**, guide RNAs, primers, cut sites and repeats are
+  all counts and positions along a length — the density rule in *Drawing
+  rules* 3 applies to them unchanged.
+
+So genetics passes the roster test where proteins fails it, and the pieces
+are mostly already in the core. It is the one of the three that could
+plausibly start today — **but wait for the figure**, because what it actually
+shows should decide which of those three is built first.
 
 ## Verification
 
@@ -431,5 +604,5 @@ pip install -e ".[dev]"
 pytest --mpl                                  # geometry + pinned images
 pytest --mpl-generate-path=tests/baseline     # regenerate, if intended
 ruff check .
-python tools/build_showcase.py                # README images, from public API
+python tools/build_gallery.py --check         # examples rebuild identically
 ```

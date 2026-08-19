@@ -14,6 +14,7 @@ from biodraw.cells import Blob, Sheet
 from biodraw.core import paths, profile
 from biodraw.core.branch import Branch
 from biodraw.core.scatter import scatter_in
+from biodraw.micro import Bacterium
 from biodraw.neuro import Basket, Pyramidal
 
 
@@ -119,6 +120,31 @@ def collect():
     shapes["blob.nucleolus"] = b_closed[-1]
     shapes["blob.protrusion.first"] = b_open[0]
     shapes["blob.anchors"] = blob.anchors().points()
+
+    # -- microbes ----------------------------------------------------------
+    # A bent, twisted, loaded cell rather than a plain rod: a straight capsule
+    # exercises none of the arithmetic that is actually easy to get wrong, and
+    # the nucleoid on a curved axis is where this shape's one geometry bug was.
+    bug = Bacterium(length=1.5, curve_deg=30.0, twists=0.9, capsule=0.16,
+                    nucleoid=0.62, granules=3, flagella=5,
+                    flagella_arc_deg=360.0, pili=6, seed=3)
+    m_closed, m_open = bug.parts
+    shapes["bacterium.capsule"] = m_closed[0]
+    shapes["bacterium.wall"] = m_closed[1]
+    shapes["bacterium.nucleoid"] = m_closed[2]
+    shapes["bacterium.granule.first"] = m_closed[3]
+    shapes["bacterium.flagellum.first"] = m_open[0]
+    shapes["bacterium.anchors"] = bug.anchors().points()
+
+    # The four named forms, so a change to how the axis is built shows up as
+    # four separate failures rather than one — the coccus included, because a
+    # capsule of zero length is the degenerate case most likely to break.
+    for name, kw in (("coccus", dict(length=0.0, width=0.62)),
+                     ("bacillus", dict(length=1.4)),
+                     ("vibrio", dict(length=1.4, curve_deg=72.0)),
+                     ("spirillum", dict(length=2.2, twists=1.8,
+                                        twist_amp=0.62))):
+        shapes[f"bacterium.{name}"] = Bacterium(seed=3, **kw).parts[0][0]
 
     flat = Sheet(cells=5, microvilli=4, seed=0)
     shapes["sheet.membrane"] = flat.geometry["membrane"]

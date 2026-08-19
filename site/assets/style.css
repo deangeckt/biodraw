@@ -1,0 +1,584 @@
+/* biodraw — the gallery.
+
+   Editorial: a journal's figure supplement rather than a docs site. Serif for
+   anything that is read, sans for anything that is operated, mono for code.
+
+   One constraint drives more of this file than any aesthetic choice: the
+   committed PNGs are palette-mode with **white backgrounds and no alpha**
+   (see docs/PLAN.md, the image weight budget — quantising to 32 colours is
+   what makes a variant cost 0.8 kB). So every drawing sits on an explicit
+   light `.plate`, in dark mode too. Letting a drawing inherit a dark page
+   would put a white rectangle on it. */
+
+:root {
+  --paper:      #FBFAF7;
+  --paper-2:    #F3F1EB;
+  --ink:        #1E1C19;
+  --ink-soft:   #5B564E;
+  --ink-faint:  #8B8479;
+  --rule:       #DFDACE;
+  --rule-soft:  #EBE7DE;
+  --accent:     #A0392C;   /* the library's excitatory red, taken down */
+  --accent-2:   #2E5E6E;
+  --plate:      #FFFFFF;   /* never themed — see the note above */
+  --plate-edge: #E4DFD4;
+  --code-bg:    #F5F2EC;
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+           Georgia, "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+          sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+          "Liberation Mono", monospace;
+
+  --measure: 34rem;
+  --wide: 60rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:     #171613;
+    --paper-2:   #1F1D19;
+    --ink:       #EBE6DC;
+    --ink-soft:  #B0A99C;
+    --ink-faint: #857E71;
+    --rule:      #35322B;
+    --rule-soft: #26241F;
+    --accent:    #D9705F;
+    --accent-2:  #7FB6C7;
+    --plate:     #FAF9F6;
+    --plate-edge:#2E2B25;
+    --code-bg:   #201E1A;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.62;
+  text-rendering: optimizeLegibility;
+}
+
+body.no-scroll { overflow: hidden; }
+
+a { color: inherit; text-decoration-color: var(--rule); text-underline-offset: 2px; }
+a:hover { text-decoration-color: var(--accent); }
+
+img { max-width: 100%; height: auto; display: block; }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.855em;
+  background: var(--code-bg);
+  padding: 0.1em 0.34em;
+  border-radius: 3px;
+}
+
+/* ---------------------------------------------------------------- masthead */
+
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.masthead-inner {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.wordmark {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+.wordmark::before {
+  content: "";
+  display: inline-block;
+  width: 0.5rem; height: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: 0.08em;
+}
+.masthead-links {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  display: flex;
+  gap: 1.2rem;
+}
+.masthead-links a { color: var(--ink-soft); text-decoration: none; }
+.masthead-links a:hover { color: var(--accent); }
+
+/* ------------------------------------------------------------------- index */
+
+main {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+}
+
+.hero-copy { padding: 3.4rem 0 2.2rem; }
+.hero-copy h1 {
+  font-size: clamp(1.9rem, 4.6vw, 3rem);
+  line-height: 1.14;
+  font-weight: 500;
+  letter-spacing: -0.017em;
+  margin: 0 0 1rem;
+}
+.standfirst {
+  font-size: 1.09rem;
+  color: var(--ink-soft);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 1.1rem 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.filter {
+  font-family: var(--sans);
+  font-size: 0.79rem;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 100px;
+  padding: 0.32rem 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.filter:hover { border-color: var(--rule); color: var(--ink); }
+.filter.is-on {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--paper-2);
+}
+.count {
+  font-size: 0.72em;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.filter.is-on .count { color: var(--ink-soft); }
+
+#search {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 100px;
+  padding: 0.42rem 0.9rem;
+  min-width: 15rem;
+  flex: 0 1 18rem;
+}
+#search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.tally {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin: 1rem 0 1.8rem;
+}
+.tally strong { color: var(--ink-soft); font-weight: 600; }
+
+/* -------------------------------------------------------------------- grid */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  gap: 2.4rem 1.8rem;
+}
+
+.card { text-decoration: none; display: block; }
+.card[hidden] { display: none; }
+
+.plate {
+  background: var(--plate);
+  border: 1px solid var(--plate-edge);
+  border-radius: 2px;
+  margin: 0;
+  overflow: hidden;
+}
+
+.card-plate {
+  display: block;
+  position: relative;
+  aspect-ratio: 4 / 3;
+}
+.card-plate .shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.9rem;
+}
+
+/* Hover affirms what is under the cursor; it never swaps the picture. An
+   earlier version cross-faded the portrait into that example's variant sheet,
+   and it read as the card changing identity — you could not compare two
+   cards, and what you clicked was not what you had been looking at. See
+   docs/PLAN.md, documentation rule 6. */
+.card:hover .plate,
+.card:focus-visible .plate { border-color: var(--ink-faint); }
+
+.card-body { display: block; padding: 0.85rem 0.1rem 0; }
+.card-kicker {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.28rem;
+}
+.card-title {
+  display: block;
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.25rem;
+}
+.card:hover .card-title { color: var(--accent); }
+.card-tagline {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.6rem; }
+.chip {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.1rem 0.36rem;
+}
+
+.empty {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  padding: 3rem 0;
+  text-align: center;
+}
+.linky {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------- pitch */
+
+.pitch {
+  margin-top: 4.5rem;
+  padding-top: 2.4rem;
+  border-top: 1px solid var(--rule);
+  max-width: var(--measure);
+}
+.pitch h2 { font-size: 1.4rem; font-weight: 500; margin: 0 0 0.9rem; }
+.pitch p { color: var(--ink-soft); }
+.pullquote {
+  margin: 2.2rem 0;
+  padding: 0 0 0 1.4rem;
+  border-left: 2px solid var(--accent);
+}
+.pullquote p {
+  font-size: 1.32rem;
+  line-height: 1.36;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.pitch pre {
+  background: var(--code-bg);
+  border: 1px solid var(--rule-soft);
+  border-radius: 3px;
+  padding: 0.7rem 0.9rem;
+  overflow-x: auto;
+}
+.pitch pre code { background: none; padding: 0; }
+
+/* ------------------------------------------------------------------ detail */
+
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 12rem;
+  gap: 3rem;
+  align-items: start;
+  padding-top: 2.6rem;
+}
+.detail article { min-width: 0; max-width: 44rem; }
+
+.crumb {
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  margin: 0 0 1.4rem;
+}
+.crumb a { color: var(--ink-soft); text-decoration: none; }
+.crumb a:hover { color: var(--accent); }
+
+.detail h1 {
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.14;
+  margin: 0 0 0.7rem;
+}
+.detail .standfirst { font-size: 1.12rem; max-width: none; }
+
+.hero { margin: 1.8rem 0 2.4rem; }
+.hero img { margin: 0 auto; padding: 1.6rem; max-height: 30rem; object-fit: contain; }
+
+.block { margin: 3rem 0; }
+.block h2 {
+  font-size: 1.28rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 1rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 1.5rem;
+}
+.block p { margin: 0 0 1rem; }
+.step {
+  color: var(--ink-soft);
+  padding-left: 0.95rem;
+  border-left: 2px solid var(--rule);
+}
+.step strong { color: var(--ink); font-weight: 600; }
+
+.figs { display: grid; gap: 1rem; margin: 0 0 1.4rem; }
+.figs:not(.is-single) { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.figs figure img { padding: 1rem; margin: 0 auto; }
+.figs figcaption, .hero figcaption {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  padding: 0 0.7rem 0.6rem;
+  text-align: center;
+}
+.zoomable { cursor: zoom-in; }
+.zoomable:hover { border-color: var(--ink-faint); }
+
+.tablewrap { overflow-x: auto; margin: 0 0 1.4rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td {
+  text-align: left;
+  padding: 0.45rem 0.8rem 0.45rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+th {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 500;
+  border-bottom-color: var(--rule);
+}
+td { color: var(--ink-soft); }
+
+.codeblock { position: relative; margin: 0 0 1.4rem; }
+.codeblock pre {
+  background: var(--code-bg);
+  border: 1px solid var(--rule-soft);
+  border-radius: 3px;
+  padding: 0.95rem 1.1rem;
+  margin: 0;
+  overflow-x: auto;
+  font-size: 0.79rem;
+  line-height: 1.62;
+}
+.codeblock pre code { background: none; padding: 0; font-size: inherit; }
+.copy {
+  position: absolute;
+  top: 0.5rem; right: 0.5rem;
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.18rem 0.5rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.codeblock:hover .copy, .copy:focus-visible { opacity: 1; }
+.copy.is-done { opacity: 1; color: var(--accent); border-color: var(--accent); }
+
+.source-note {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  border-top: 1px solid var(--rule);
+  padding-top: 1.4rem;
+  margin-top: 2.5rem;
+}
+
+.skills { padding-left: 1.1rem; margin: 0 0 1rem; }
+.skills li { color: var(--ink-soft); margin-bottom: 0.5rem; }
+.skills code { font-size: 0.8em; }
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3.5rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--rule);
+}
+.pager a {
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  text-decoration: none;
+  color: var(--ink);
+  max-width: 46%;
+}
+.pager .next { text-align: right; margin-left: auto; }
+.pager a span {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.15rem;
+}
+.pager a:hover { color: var(--accent); }
+
+/* -------------------------------------------------------------------- rail */
+
+.rail {
+  position: sticky;
+  top: 1.8rem;
+  font-family: var(--sans);
+  font-size: 0.79rem;
+}
+.rail-head {
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 0.6rem;
+}
+.rail ul { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--rule); }
+.rail li { margin: 0; }
+.rail a {
+  display: block;
+  padding: 0.26rem 0 0.26rem 0.75rem;
+  margin-left: -1px;
+  border-left: 1px solid transparent;
+  color: var(--ink-faint);
+  text-decoration: none;
+  line-height: 1.4;
+}
+.rail a:hover { color: var(--ink); }
+.rail a.is-here { color: var(--accent); border-left-color: var(--accent); }
+
+/* ---------------------------------------------------------------- lightbox */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(12, 11, 9, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+  cursor: zoom-out;
+}
+.lightbox[hidden] { display: none; }
+.lightbox figure {
+  margin: 0;
+  max-width: 100%;
+  max-height: 100%;
+  background: var(--plate);
+  border-radius: 2px;
+  padding: 1.2rem;
+  overflow: auto;
+}
+.lightbox img { max-height: 80vh; width: auto; margin: 0 auto; }
+.lightbox figcaption {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  color: #5B564E;
+  text-align: center;
+  padding-top: 0.7rem;
+}
+.lightbox-close {
+  position: absolute;
+  top: 1rem; right: 1.3rem;
+  font-size: 2rem;
+  line-height: 1;
+  color: #EBE6DC;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------------- foot */
+
+.foot {
+  border-top: 1px solid var(--rule);
+  background: var(--paper-2);
+}
+.foot-inner {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 2.2rem 1.5rem 3rem;
+  font-family: var(--sans);
+  font-size: 0.79rem;
+  color: var(--ink-faint);
+}
+.foot p { margin: 0 0 0.45rem; max-width: var(--measure); }
+
+/* ------------------------------------------------------------------ narrow */
+
+@media (max-width: 860px) {
+  .detail { grid-template-columns: 1fr; gap: 0; }
+  .rail { display: none; }
+}
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  main { padding-inline: 1.1rem; }
+  .masthead-inner { padding-inline: 1.1rem; }
+  .controls { flex-direction: column; align-items: stretch; }
+  #search { flex: 1 1 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; }
+}

@@ -179,6 +179,61 @@ On a wobbled outline, also check the anchors sit **on** the wall:
 `superellipse_radius` returns the *un*-wobbled radius, so an anchor placed
 with it alone floats off the drawn wall.
 
+**Measure to the nearest edge, not the nearest vertex, and run it on a
+flattened shape.** This check already existed when `Blob` was found placing
+every wall anchor off its own wall, and it passed throughout, for two reasons
+worth copying into any check you write:
+
+- it measured `min(norm(ring - xy))` — the distance to the closest *vertex*.
+  A body carries 240 of them, so the sampling alone is ~0.012, and a
+  tolerance of 0.02 could not see an error of 0.011. Use the library's own
+  `core.scatter._distance_to`, which projects onto the segments;
+- it ran only at the default `aspect=0.88`. The error was exactly **0** on
+  every round body and grew with flattening, because `superellipse` applies
+  its wobble at the *parameter* angle while the anchor code re-applied it at
+  the *polar* angle — two numbers that agree only when `a == b`.
+
+```python
+from biodraw.core.scatter import _distance_to
+for aspect in (1.0, 0.72, 0.30):                 # round is the blind case
+    cell = Blob(aspect=aspect, wobble=0.06, organelles=0, nucleus=None)
+    gaps = _distance_to(cell.anchors("wall").points(), cell.geometry["wall"])
+    assert gaps.max() < 1e-3
+```
+
+The general rule, which is the transferable part: **a parameterisation is not
+an angle.** Anything re-evaluating a `t`-indexed term at a known direction has
+to invert the forward map first (`paths.superellipse_param`), and a check that
+only ever runs on the symmetric case cannot tell you that it did not.
+
+### 5b · An inner part is inside the part that contains it
+
+> Found twice in one session, on two different shapes.
+
+Nothing raises when a nucleus stands through a cell wall. `scatter_in` guards
+the things it places and nothing guards the rest, so a nucleus, a nucleoid or
+a capsule is checked here or not at all.
+
+```python
+from matplotlib.path import Path
+body = Path(np.asarray(outer), closed=True)
+assert body.contains_points(np.asarray(inner)).all()
+```
+
+**Fails if** any point escapes. The two that shipped:
+
+1. `Blob(aspect=0.30)` — the body is 0.165 local units half-tall and the
+   default nucleus is 0.187 in radius. A flatter cell holds less, and its
+   contents have to come down with it.
+2. `Bacterium(nucleoid=...)` on a **curved** body — the nucleoid was built by
+   scaling the centreline toward its own centroid, which walks off the arc the
+   body was drawn on. 26 points outside the wall on a cell bent 30°, and 0 on
+   a rod. Trim along the axis instead of scaling about a point.
+
+Both were invisible on the symmetric default, which is the same lesson as
+check 5: **run the containment test on the bent, flattened and twisted cases,
+because the straight one is where this class of bug hides.**
+
 ### 6 · Parts that must occlude are in separate layers
 
 `render_hollow` unions everything in one call. A nucleus unioned with its cell
@@ -215,17 +270,67 @@ Any jitter takes a `seed`; never call `np.random` without a seeded generator.
 `bd.save` already pins the two things matplotlib randomises in SVG (a
 `<dc:date>` and a per-process clip-path salt).
 
-Note that `build_gallery.py --check` cannot tell "untracked" from "modified",
-so in a repo where `examples/` was never committed it exits 1 regardless. Use
-the hash comparison above until it is committed.
+`build_gallery.py --check` reports anything uncommitted under `examples/`,
+which includes changes you meant to make. Read the list before believing it.
+
+**And account for every line of it.** If a file you did not touch is listed,
+that is a finding, not noise. `examples/basket_cell/blueprint.png` came up
+modified after a session that never went near `neuro.Basket`, and the cause
+was real: `build_gallery.py` runs every example through `runpy` in one
+interpreter, so the `plt.rcParams` each `build.py` sets at import time leaked
+into the next one, and adding an example whose folder sorted **earlier**
+changed the output of a later one.
+
+The test that isolates it, when a file you did not touch has moved:
+
+```bash
+git checkout -- examples/<that one>/ && python tools/build_gallery.py <that one>
+git status --porcelain -- examples/<that one>/      # clean?
+```
+
+**A single-example rebuild and a full rebuild must agree.** If building one
+example alone reproduces the committed image and building everything does
+not, the examples are not independent and `--check` is testing the order they
+happen to sit in. (Fixed here with `matplotlib.rc_context()` per script — but
+the class of bug is *shared process state*, so a new example importing
+anything with global settings deserves the same suspicion.)
+
+It is also a **same-machine** test: matplotlib's rasters move with the
+libpng/AGG build and its SVG text advances with the freetype version, so the
+identical code on another OS produces different bytes for every file. Never
+wire it to a runner that is not the machine the images were built on.
 
 ### 9 · The counts in the prose are the counts in the drawing
 
-Anything a README asserts — how many anchors, what fits, what raises — run it.
+Anything the gallery page asserts — how many anchors, what fits, what raises —
+run it. The prose lives in `site/content/<slug>.py`.
 
 ```python
 print({k: len(cell.anchors(k)) for k in ("spine", "shaft", "soma", "axon")})
 ```
+
+### 10 · Nothing still refers to what you removed
+
+From Dean, twice in one session: *"delete those axon images"* — about images
+that were already gone, because the prose referring to them was not.
+
+`neuro.Axon` was removed in session 2. Its class went, its tests went, its
+images went. What stayed was `examples/wiring/README.md`, still titled "Axon
+and wiring", still walking through `bouton_len`, still linking five images
+that no longer existed — plus two other READMEs pointing at
+`../axon_and_wiring/`, a folder that never existed under that name. Nothing
+was watching the prose, and it sat there for a whole session.
+
+**Removing a shape is not done until nothing refers to it.** After deleting or
+renaming anything, grep for it by name:
+
+```bash
+git grep -n -i "axon"                    # the thing you removed
+python tools/build_site.py               # fails on any image that is not on disk
+```
+
+The site builder's image-existence check is the standing guard for the image
+half. The name half is still grep, so run it.
 
 ---
 

@@ -12,7 +12,8 @@ on purpose: it is what stops a branch of these reading as stamped clip art.
 
 Provenance: hand-drawn on paper, photographed, vectorised, then normalised into
 the canonical frame (base chord midpoint at the origin, tip at x=1). See
-`examples/01_spine/` for the sketch and the derivation, and `biodraw.trace` for
+`examples/dendritic_spine/` for the sketch and the derivation, and
+`biodraw.trace` for
 doing the same with your own drawing.
 """
 

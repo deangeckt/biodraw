@@ -52,8 +52,9 @@ testpaths = ["tests"]
 # Image-comparison tests are opt-in: bare `pytest` runs the fast geometry
 # checks and still *builds* every figure (so an exception fails the test),
 # while `pytest --mpl` additionally compares each one against
-# `tests/baseline/`. CI runs the latter. Each test names its own baseline
-# directory in its marker, so there is nothing to configure here.
+# `tests/baseline/`. Run the latter before touching a primitive. Each test
+# names its own baseline directory in its marker, so there is nothing to
+# configure here.
 
 [tool.ruff]
 line-length = 79
@@ -65,3 +66,10 @@ select = ["E", "F", "W", "I", "UP", "B"]
 # `a`, `b`, `hw`, `t`, `u`, `v` are the names the docstrings use, and
 # spelling them out would make the formulae harder to check, not easier.
 ignore = ["E741"]
+
+[tool.ruff.lint.per-file-ignores]
+# Gallery content is documentation held as data: prose strings, and snippets
+# reproduced verbatim for a reader to copy. Wrapping those to 79 would reflow
+# the very code the page is teaching, and the trailing comments that explain
+# each keyword are the widest part of it. Every other rule still applies.
+"site/content/*.py" = ["E501"]

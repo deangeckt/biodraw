@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Basket cell — biodraw</title>
+<meta name="description" content="A round soma with smooth dendrites leaving in every direction — the counterpart to the pyramidal cell, drawn to be told apart from it at a glance.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="index.html">biodraw</a>
+    <nav class="masthead-links">
+      <a href="https://github.com/deangeckt/biodraw">GitHub</a>
+      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+    </nav>
+  </div>
+</header>
+<main class="detail">
+<article>
+  <p class="crumb"><a href="index.html">All examples</a>
+     <span aria-hidden="true">·</span> Neurons</p>
+
+  <h1>Basket cell</h1>
+  <p class="standfirst">A round soma with smooth dendrites leaving in every direction — the counterpart to the pyramidal cell, drawn to be told apart from it at a glance.</p>
+  <p class="chips"><span class="chip">neuro.Basket</span></p>
+
+  <figure class="hero plate zoomable">
+    <img src="../examples/basket_cell/basket.png"
+         alt="A basket cell">
+    <figcaption>A basket cell</figcaption>
+  </figure>
+
+  
+
+<section class="block">
+<h2 id="told-apart-without-colour">Told apart without colour</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/basket_cell/told_apart.png" alt="Pyramidal and basket, in colour and in mono" loading="lazy"><figcaption>Pyramidal and basket, in colour and in mono</figcaption></figure>
+</div>
+<p>Three cues do the work, and <strong>all three are structural</strong>: a <strong>round</strong> soma instead of a triangle; dendrites in every direction, rather than one up and two down; and <strong>smooth</strong> dendrites — a basket cell is aspiny, and drawing it that way is what a reader sees first.</p>
+<p>That matters because a hue difference does not survive greyscale printing, and the whole job of an inhibitory cell in a circuit panel is to be obviously not the excitatory one. The right-hand pair above is the <code>mono</code> palette.</p>
+</section>
+<section class="block">
+<h2 id="the-blueprint">The blueprint</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/basket_cell/blueprint.png" alt="Blueprint of the basket cell" loading="lazy"><figcaption>Blueprint of the basket cell</figcaption></figure>
+</div>
+<p class="step"><strong>1 · Even slots, then knocked off them.</strong> Dendrites are placed on an even sweep round the soma and then displaced, by at most half a step so the order round the soma survives. Each is rooted <em>inside</em> the wall, so its flat base is swallowed by the soma&#x27;s fill and the two fuse rather than butt.</p>
+<p class="step"><strong>2 · A repeated part must not repeat exactly.</strong> At <code>jitter=0</code> with equal lengths the cell is a snowflake — the eye reads regularity as a diagram.</p>
+<p class="step"><strong>3 · Anchors.</strong> Round the soma, along every dendrite shaft, and at every tip.</p>
+</section>
+<section class="block">
+<h2 id="drawing-one">Drawing one</h2>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
+
+cell = bd.neuro.Basket(
+    dendrites=7,            # how many leave the soma
+    forks=0.55,             # fraction along each at which it splits, None for straight
+    length_ratio=0.68,      # shortest dendrite as a fraction of the longest
+    jitter=0.22,            # how far each wanders off its even slot
+    seed=2,                 # fixes both — same seed, same cell, forever
+)
+
+fig, ax = bd.canvas(figsize=(3.6, 3.6))
+cell.draw(ax=ax, wall_lw=1.0, gid=&quot;basket&quot;)
+cell.fit(ax, pad=0.14)
+bd.save(fig, &quot;basket.svg&quot;)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="body-plans">Body plans</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/basket_cell/body_plans.png" alt="Twelve body plans" loading="lazy"><figcaption>Twelve body plans</figcaption></figure>
+</div>
+<p>How many dendrites, and over how much of the soma they leave.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Basket(
+    dendrites=5,
+    arc_deg=200,            # 360 is multipolar; narrower gives a bitufted look
+    start_deg=-10,          # where the sweep begins, counter-clockwise from +x
+)</code></pre></div>
+<p>A narrower arc gives a bitufted or bipolar-looking cell without needing another class.</p>
+</section>
+<section class="block">
+<h2 id="branching">Branching</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/basket_cell/branching.png" alt="Nine branch settings" loading="lazy"><figcaption>Nine branch settings</figcaption></figure>
+</div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Basket(
+    dendrites=6,
+    forks=0.55,             # where along the dendrite it splits
+    fork_angle_deg=34,      # the total crotch angle
+    fork_ratio=0.76,        # the lesser daughter, as a fraction of the greater
+)</code></pre></div>
+<p>The daughters are sized by Rall — their cross-sections sum to the parent&#x27;s — so both come out thinner than what they leave. That is not decoration: a daughter as wide as its parent cannot have its base buried at <em>any</em> depth, and the joint shows a spur. See <code>paths.buried_base</code>.</p>
+</section>
+<section class="block">
+<h2 id="regularity">Regularity</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/basket_cell/regularity.png" alt="Nine regularity settings" loading="lazy"><figcaption>Nine regularity settings</figcaption></figure>
+</div>
+<p>Top-left is the failure case: identical dendrites at identical spacing.</p>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>cell = bd.neuro.Basket(
+    dendrites=8,
+    jitter=0.22,            # 0 puts them on exact centres
+    length_ratio=0.68,      # 1.0 makes them all the same length
+)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="seeds">Seeds</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/basket_cell/seeds.png" alt="Eight seeds" loading="lazy"><figcaption>Eight seeds</figcaption></figure>
+</div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>row = [bd.neuro.Basket(dendrites=7, forks=0.55, seed=s) for s in range(8)]</code></pre></div>
+</section>
+<section class="block">
+<h2 id="anchors">Anchors</h2>
+<div class="tablewrap"><table><thead><tr>
+<th>kind</th>
+<th>where</th>
+<th>count on the cell above</th>
+</tr></thead><tbody>
+<tr><td><code>soma</code></td><td>eight points round the wall</td><td>8</td></tr>
+<tr><td><code>shaft</code></td><td>both walls of every branch, at three points along it</td><td>126</td></tr>
+<tr><td><code>tip</code></td><td>the end of each branch</td><td>21</td></tr>
+</tbody></table></div>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>top   = cell.anchor(&quot;soma&quot;, deg=90.0)
+tip   = cell.anchor(&quot;tip&quot;, branch=&quot;dend0&quot;)
+near  = cell.anchors(&quot;soma&quot;).nearest(point=(-6.0, 0.0))   # the side it faces</code></pre></div>
+<p>See <a href="wiring.html">Wiring</a> for what to do with them.</p>
+</section>
+
+  <p class="source-note">Every figure above is output, not a stored asset
+     — <a href="https://github.com/deangeckt/biodraw/blob/main/examples/basket_cell/build.py">the full script that draws them</a>.</p>
+
+  <nav class="pager"><a class="prev" href="pyramidal_cell.html"><span>Previous</span>Pyramidal cell</a><a class="next" href="dendritic_spine.html"><span>Next</span>Dendritic spine</a></nav>
+</article>
+
+<aside class="rail">
+  <p class="rail-head">On this page</p>
+  <ul><li><a href="#told-apart-without-colour">Told apart without colour</a></li><li><a href="#the-blueprint">The blueprint</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#body-plans">Body plans</a></li><li><a href="#branching">Branching</a></li><li><a href="#regularity">Regularity</a></li><li><a href="#seeds">Seeds</a></li><li><a href="#anchors">Anchors</a></li></ul>
+</aside>
+</main>
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox-close" type="button"
+          aria-label="Close">&times;</button>
+  <figure><img id="lightbox-img" alt=""><figcaption id="lightbox-cap">
+  </figcaption></figure>
+</div>
+<script>
+(function () {
+  var box = document.getElementById('lightbox');
+  var img = document.getElementById('lightbox-img');
+  var cap = document.getElementById('lightbox-cap');
+  function open(src, alt) {
+    img.src = src; img.alt = alt; cap.textContent = alt;
+    box.hidden = false; document.body.classList.add('no-scroll');
+  }
+  function close() {
+    box.hidden = true; img.removeAttribute('src');
+    document.body.classList.remove('no-scroll');
+  }
+  document.querySelectorAll('.zoomable').forEach(function (fig) {
+    fig.addEventListener('click', function () {
+      var i = fig.querySelector('img');
+      open(i.getAttribute('src'), i.getAttribute('alt'));
+    });
+  });
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !box.hidden) close();
+  });
+})();
+</script>
+<script>
+document.querySelectorAll('.copy').forEach(function (b) {
+  b.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var code = b.parentElement.querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(function () {
+      b.textContent = 'Copied';
+      b.classList.add('is-done');
+      setTimeout(function () {
+        b.textContent = 'Copy'; b.classList.remove('is-done');
+      }, 1400);
+    });
+  });
+});
+(function () {
+  var links = Array.prototype.slice.call(
+    document.querySelectorAll('.rail a'));
+  var heads = links.map(function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  function mark() {
+    var best = 0;
+    heads.forEach(function (h, i) {
+      if (h && h.getBoundingClientRect().top < 140) best = i;
+    });
+    links.forEach(function (a, i) {
+      a.classList.toggle('is-here', i === best);
+    });
+  }
+  window.addEventListener('scroll', mark, { passive: true });
+  mark();
+})();
+</script>
+<footer class="foot">
+  <div class="foot-inner">
+    <p><strong>biodraw</strong> — MIT. Runtime dependencies: numpy and
+       matplotlib, nothing else.</p>
+    <p>Every drawing here is regenerated from the <code>build.py</code>
+       committed beside it. Nothing on this site is a stored asset.</p>
+    <p><a href="https://github.com/deangeckt/biodraw">Source</a></p>
+  </div>
+</footer>
+</body>
+</html>

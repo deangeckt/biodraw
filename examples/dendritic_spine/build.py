@@ -1,6 +1,6 @@
 """The dendritic spine: from a hand drawing to a placeable shape.
 
-Builds every image in this folder's README:
+Builds every image this folder's gallery page shows:
 
     python examples/dendritic_spine/build.py
 
@@ -227,7 +227,7 @@ BUILDS = (blueprint, one_spine, stretch_series, on_a_branch, density,
 def main():
     for build in BUILDS:
         fig, name = build()
-        # Compact raster for anything in a README — see
+        # Compact raster for anything the gallery shows — see
         # `biodraw.io.save_compact`, and the weight budget in docs/PLAN.md.
         bd.save_compact(fig, HERE / name)
         plt.close(fig)
