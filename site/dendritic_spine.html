@@ -12,15 +12,16 @@
   <div class="masthead-inner">
     <a class="wordmark" href="index.html">biodraw</a>
     <nav class="masthead-links">
-      <a href="https://github.com/deangeckt/biodraw">GitHub</a>
+      <a href="styles.html">Drawing styles</a>
       <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+      <a class="gh" href="https://github.com/deangeckt/biodraw" aria-label="biodraw on GitHub"
+         title="biodraw on GitHub"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
     </nav>
   </div>
 </header>
 <main class="detail">
 <article>
-  <p class="crumb"><a href="index.html">All examples</a>
-     <span aria-hidden="true">·</span> Dendrites &amp; spines</p>
+  <p class="crumb"><a href="index.html">All examples</a>  <span aria-hidden="true">·</span> Neuroscience</p>
 
   <h1>Dendritic spine</h1>
   <p class="standfirst">The shape biodraw grew out of, and the clearest example of why it traces rather than synthesises.</p>
@@ -32,8 +33,27 @@
     <figcaption>A dendritic spine</figcaption>
   </figure>
 
-  <p class="standfirst">Every attempt to build this profile out of ellipses read as a cone, a bead on a stick, or a leaf. Easier to draw by hand and trace — and once traced, it is maths you can place anywhere.</p>
+  <p class="standfirst">Traced off a hand drawing, because every attempt to build this profile out of ellipses read as a cone or a bead on a stick.</p>
 
+<section class="block">
+<h2 id="one-outline-the-shapes-people-name">One outline, the shapes people name</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/dendritic_spine/forms.png" alt="Thin, stubby, mushroom and long-necked — three numbers apart, not four traced shapes." loading="lazy"><figcaption>Thin, stubby, mushroom and long-necked — three numbers apart, not four traced shapes.</figcaption></figure>
+</div>
+</section>
+<section class="block">
+<h2 id="head-and-neck">Head and neck</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/dendritic_spine/head_neck.png" alt="`head` and `neck` scale one width each. Length stays with `size` and `extend`." loading="lazy"><figcaption>`head` and `neck` scale one width each. Length stays with `size` and `extend`.</figcaption></figure>
+</div>
+</section>
+<section class="block">
+<h2 id="on-a-branch">On a branch</h2>
+<div class="figs">
+<figure class="plate zoomable"><img src="../examples/dendritic_spine/branch.png" alt="Tube and every spine fuse into one unbroken outline — no seam where they meet." loading="lazy"><figcaption>Tube and every spine fuse into one unbroken outline — no seam where they meet.</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/dendritic_spine/density.png" alt="Three spine densities. A count spread over a length is a density." loading="lazy"><figcaption>Three spine densities. A count spread over a length is a density.</figcaption></figure>
+</div>
+</section>
 <section class="block">
 <h2 id="how-it-is-built">How it is built</h2>
 <div class="figs is-single">
@@ -65,6 +85,8 @@ branch.decorate(
     n=8,                    # how many
     size=0.21,              # each spine&#x27;s length
     extend=0.04,            # ...plus this much extra neck
+    head=1.22,              # head width, x the traced one — a mushroom spine
+    neck=0.55,              # ...on a neck thinned to just over half
     first_t=0.30,           # leave the proximal shaft bare for shaft contacts
     last_t=0.86,            # ...and stop short of the tip
 )
@@ -74,48 +96,31 @@ wall, open_tip = branch.parts(
     base_ext=0.05,          # bury the base inside whatever it grows from
 )
 
+ink = bd.style.palette.get()[&quot;primary&quot;]
+
 fig, ax = bd.canvas(figsize=(2.8, 4.4))
 render.render_hollow(
     ax=ax,
     parts=wall,             # closed outlines — the spines
     open_parts=open_tip,    # the tube, whose far end stops rather than caps
-    fill=&quot;#FFD9D9&quot;,         # the interior wash
-    edge=&quot;#FF0000&quot;,         # the wall
+    fill=None,              # None washes the interior with the wall colour
+    edge=ink,               # the wall
     wall_lw=1.0,            # wall thickness, in points
     gid=&quot;dendrite&quot;,         # names the layer in the exported SVG
 )
 bd.fit(ax, wall + open_tip, pad=0.12)
 bd.save(fig, &quot;dendrite.svg&quot;)</code></pre></div>
 </section>
-<section class="block">
-<h2 id="turning-the-knobs">Turning the knobs</h2>
-<div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/dendritic_spine/stretch.png" alt="Three neck extensions. `extend` changes how far a spine stands off its branch without resizing it." loading="lazy"><figcaption>Three neck extensions. `extend` changes how far a spine stands off its branch without resizing it.</figcaption></figure>
-</div>
-</section>
-<section class="block">
-<h2 id="on-a-branch">On a branch</h2>
-<div class="figs">
-<figure class="plate zoomable"><img src="../examples/dendritic_spine/branch.png" alt="A spiny dendrite. Tube and every spine fuse into one unbroken outline — no seam where they meet." loading="lazy"><figcaption>A spiny dendrite. Tube and every spine fuse into one unbroken outline — no seam where they meet.</figcaption></figure>
-<figure class="plate zoomable"><img src="../examples/dendritic_spine/density.png" alt="Three spine densities. A count spread over a length is a density." loading="lazy"><figcaption>Three spine densities. A count spread over a length is a density.</figcaption></figure>
-</div>
-</section>
-<section class="block">
-<h2 id="colour">Colour</h2>
-<div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/dendritic_spine/palettes.png" alt="Three palettes. `mono` is the check that the drawing still reads with its colours taken away." loading="lazy"><figcaption>Three palettes. `mono` is the check that the drawing still reads with its colours taken away.</figcaption></figure>
-</div>
-</section>
 
-  <p class="source-note">Every figure above is output, not a stored asset
-     — <a href="https://github.com/deangeckt/biodraw/blob/main/examples/dendritic_spine/build.py">the full script that draws them</a>.</p>
+  <p class="source-note">Every figure above is output, not a stored asset —
+     drawn by <a href="https://github.com/deangeckt/biodraw/blob/main/examples/dendritic_spine/build.py"><code>dendritic_spine/build.py</code></a>, in Python, on a matplotlib axes.</p>
 
-  <nav class="pager"><a class="prev" href="basket_cell.html"><span>Previous</span>Basket cell</a><a class="next" href="wiring.html"><span>Next</span>Wiring</a></nav>
+  <nav class="pager"><a class="prev" href="radial_cell.html"><span>Previous</span>Radial body plan</a><a class="next" href="circuits.html"><span>Next</span>Circuits &amp; wiring</a></nav>
 </article>
 
 <aside class="rail">
   <p class="rail-head">On this page</p>
-  <ul><li><a href="#how-it-is-built">How it is built</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#turning-the-knobs">Turning the knobs</a></li><li><a href="#on-a-branch">On a branch</a></li><li><a href="#colour">Colour</a></li></ul>
+  <ul><li><a href="#one-outline-the-shapes-people-name">One outline, the shapes people name</a></li><li><a href="#head-and-neck">Head and neck</a></li><li><a href="#on-a-branch">On a branch</a></li><li><a href="#how-it-is-built">How it is built</a></li><li><a href="#drawing-one">Drawing one</a></li></ul>
 </aside>
 </main>
 <div class="lightbox" id="lightbox" hidden>

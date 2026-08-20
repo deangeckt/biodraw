@@ -10,7 +10,6 @@ PAGE = dict(
     title="Cell atlas",
     category="Cells & tissues",
     order=1,
-    build_pattern="atlas",
     tagline="Twelve cells a reader can name, from one class and no new code. "
             "The unit of documentation is a variant, and this is what that "
             "buys.",

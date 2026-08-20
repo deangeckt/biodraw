@@ -1,10 +1,22 @@
-"""Content for the dendritic spine page."""
+"""Content for the dendritic spine page.
+
+Reordered after: *"in spine page — still there is too much [prose] which
+appear almost at the start of the page, figures are higher prio then text."*
+The page used to open with the blueprint and its four panel notes, so the
+first screen was a diagram *about* the shape plus sixty words. It now opens
+with the shapes themselves and the blueprint sits near the end, where a
+reader who wants the derivation will go looking for it.
+
+The old *Colour* section is gone as well — palettes are a property of every
+drawing rather than of this one, and they are all on the standalone styles
+page now. What took its place is what was actually missing: the spine's own
+variation, head and neck.
+"""
 
 PAGE = dict(
     title="Dendritic spine",
-    category="Dendrites & spines",
-    order=0,
-    build_pattern="spine",
+    category="Neuroscience",
+    order=7,
     tagline="The shape biodraw grew out of, and the clearest example of why "
             "it traces rather than synthesises.",
     hero="spine.png",
@@ -17,18 +29,46 @@ PAGE = dict(
               "traced",
               "neck",
               "head",
+              "mushroom",
+              "thin",
+              "stubby",
               "extend",
               "density",
               "synapse",
     ],
 
     intro=[
-        "Every attempt to build this profile out of ellipses read as a cone, "
-        "a bead on a stick, or a leaf. Easier to draw by hand and trace — and "
-        "once traced, it is maths you can place anywhere.",
+        "Traced off a hand drawing, because every attempt to build this "
+        "profile out of ellipses read as a cone or a bead on a stick.",
     ],
 
     sections=[
+        dict(
+            title="One outline, the shapes people name",
+            images=[dict(src="forms.png",
+                         alt="Thin, stubby, mushroom and long-necked — three "
+                             "numbers apart, not four traced shapes.")],
+        ),
+
+        dict(
+            title="Head and neck",
+            images=[dict(src="head_neck.png",
+                         alt="`head` and `neck` scale one width each. Length "
+                             "stays with `size` and `extend`.")],
+        ),
+
+        dict(
+            title="On a branch",
+            images=[
+                dict(src="branch.png",
+                     alt="Tube and every spine fuse into one unbroken "
+                         "outline — no seam where they meet."),
+                dict(src="density.png",
+                     alt="Three spine densities. A count spread over a length "
+                         "is a density."),
+            ],
+        ),
+
         dict(
             title="How it is built",
             images=[dict(
@@ -67,6 +107,8 @@ branch.decorate(
     n=8,                    # how many
     size=0.21,              # each spine's length
     extend=0.04,            # ...plus this much extra neck
+    head=1.22,              # head width, x the traced one — a mushroom spine
+    neck=0.55,              # ...on a neck thinned to just over half
     first_t=0.30,           # leave the proximal shaft bare for shaft contacts
     last_t=0.86,            # ...and stop short of the tip
 )
@@ -76,47 +118,21 @@ wall, open_tip = branch.parts(
     base_ext=0.05,          # bury the base inside whatever it grows from
 )
 
+ink = bd.style.palette.get()["primary"]
+
 fig, ax = bd.canvas(figsize=(2.8, 4.4))
 render.render_hollow(
     ax=ax,
     parts=wall,             # closed outlines — the spines
     open_parts=open_tip,    # the tube, whose far end stops rather than caps
-    fill="#FFD9D9",         # the interior wash
-    edge="#FF0000",         # the wall
+    fill=None,              # None washes the interior with the wall colour
+    edge=ink,               # the wall
     wall_lw=1.0,            # wall thickness, in points
     gid="dendrite",         # names the layer in the exported SVG
 )
 bd.fit(ax, wall + open_tip, pad=0.12)
 bd.save(fig, "dendrite.svg")
 """,
-        ),
-
-        dict(
-            title="Turning the knobs",
-            images=[dict(src="stretch.png",
-                         alt="Three neck extensions. `extend` changes how far "
-                             "a spine stands off its branch without resizing "
-                             "it.")],
-        ),
-
-        dict(
-            title="On a branch",
-            images=[
-                dict(src="branch.png",
-                     alt="A spiny dendrite. Tube and every spine fuse into "
-                         "one unbroken outline — no seam where they meet."),
-                dict(src="density.png",
-                     alt="Three spine densities. A count spread over a length "
-                         "is a density."),
-            ],
-        ),
-
-        dict(
-            title="Colour",
-            images=[dict(src="palettes.png",
-                         alt="Three palettes. `mono` is the check that the "
-                             "drawing still reads with its colours taken "
-                             "away.")],
         ),
     ],
 )

@@ -146,7 +146,8 @@ class Branch:
     # -- decorations ------------------------------------------------------
 
     def decorate(self, profile, n, size, angle_deg=72, first_t=0.30,
-                 last_t=0.98, first_side=-1, extend=0.0, alternate=True):
+                 last_t=0.98, first_side=-1, extend=0.0, alternate=True,
+                 head=1.0, neck=1.0):
         """Stamp `n` copies of `profile` along the branch, alternating sides.
 
         Each sits at `angle_deg` off the local tangent, rotated *toward the
@@ -160,7 +161,9 @@ class Branch:
         anything aimed at the shaft below `first_t`.
 
         `extend` lengthens each decoration's stretch span (its neck, for a
-        spine) without resizing its head — see `Profile.place`.
+        spine) without resizing its head — see `Profile.place`. `head` and
+        `neck` scale the two widths, which is what separates a mushroom spine
+        from a thin one.
 
         Returns the list of decoration dicts and also stores it on
         `.decorations`. Each is
@@ -187,10 +190,14 @@ class Branch:
                 # out rigidly, so it lands on this one-for-one.
                 "head": base + d * prof.head_offset(size, extend),
                 "outline": prof.place(base, d, size, mirror=(side > 0),
-                                      extend=extend),
+                                      extend=extend, head=head, neck=neck),
                 "profile": prof,
                 "size": size,
                 "extend": float(extend),
+                # Not "head": that key is already the aim *point*. These are
+                # the two width multipliers `Profile.place` was given.
+                "head_scale": float(head),
+                "neck_scale": float(neck),
             })
         self.decorations = out
         return out

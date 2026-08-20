@@ -140,6 +140,38 @@ argument for the numbers in rule 7.
    order to see something the page could simply have shown. If a picture is
    worth putting on the index, put it on the index.
 
+9. **A card is a drawing; a property of every drawing is not a card.** The
+   drawing *styles* page — hollow against skeleton, washed against solid, in
+   each palette — shipped as one more card in the grid, and the verdict was
+   *"neuron style is great! ... but i dont think it should be in a card,
+   rather, somewhere else, which is more of a 'global' or parallel to the
+   main page cards."* A card invites comparison with its neighbours, and
+   comparing "styles" with "bacteria" is a category error: every other card
+   *has* styles.
+
+   So a content module may set `standalone=True`. The page is still built and
+   still budgeted; it leaves the grid and appears instead in the masthead of
+   every page and as a full-width band beside the grid — both generated from
+   the same `PAGE` dict, so there is no second copy to drift out of step. The
+   general form: **ask whether the thing is one of the items or a property of
+   all of them**, and let the layout say which.
+
+10. **A name a reader would search for gets its own card.** Bipolar, granule,
+    Purkinje and astrocyte cells shared one card called *Neuron types*, and
+    nobody looking for a Purkinje cell searches for "neuron types". Each is a
+    card now, and what stayed behind is the argument none of them could carry
+    alone — that they are one body plan at five settings — on a *Radial body
+    plan* card that doubles as the entry point for a cell the library does
+    not name.
+
+    The cost is real (four folders, twelve images) and the rule is not "one
+    card per class". It is: if a reader arrives with a **name**, the catalog
+    should contain that name. The corollary ran the other way the same day —
+    *wiring* and *circuit motifs* were two cards for one subject, and a
+    reader wanting "how do I draw a projection from A to B" could not tell
+    which held it, so they are one card over two example folders. A page and
+    a build folder are no longer required to be the same thing.
+
 ## Drawing rules
 
 What separates a drawing from a diagram of a drawing. Each of these arrived as
@@ -248,6 +280,16 @@ So:
   works; re-proving it per folder costs ~100 kB each for nothing.
 - **Budget: about 100 kB per example folder.** At that rate a hundred examples
   is 10 MB, which is a repository people can clone.
+- **The frame is the drawing's shape, not the figure's.** *"the 'on a branch'
+  eight image is almost only white space image."* Measured: its ink filled
+  62% of the file's width. Two causes, both invisible until something counted
+  them — `bbox_inches="tight"` trims to the **axes**, which are equal-aspect,
+  so a tall drawing in a square figure keeps its side margins; and
+  `pad_inches` defaults to a *fixed* 0.1 inch, which is 1% of a wide sheet
+  and 19% of a portrait 0.86 inches across. `save_compact` pads 0.02 now, and
+  every `build_gallery` run reports any image whose ink leaves a quarter of
+  an axis empty. That took the catalog's worst frame from 52% to 75% and its
+  median to 93%, and made several files smaller on the way.
 - Past two varying knobs, use `row_labels` / `col_labels` rather than a
   caption under every cell — repeating three keys eighteen times is the same
   text written eighteen times, and it crowds out the drawings.
@@ -304,12 +346,18 @@ What survives is the part that is genuinely about *drawing*: a connector has
 to end in something, and whether that mark is an arrowhead or a bar is how the
 figure says excitation or inhibition. That lives in `connectors.endcap`.
 
-### 3 — `neuro`: Pyramidal, Basket, Axon, Synapse ✅ (Synapse recast)
+### 3 — `neuro`: Pyramidal, Basket, Synapse ✅ (Synapse recast, Axon removed)
 
 The seed's cells as objects on the core, with every current keyword surviving.
 Baselines from milestone 1 must still pass.
 
-`Pyramidal`, `Basket` and `Axon` shipped. **`Synapse` deliberately did not
+`Pyramidal` and `Basket` shipped. **`Axon` shipped and was then deleted** —
+at the size an axon appears in a circuit panel a realistic one read as a fat
+beaded worm competing with the cells it connected, and a projection is a line
+with a mark on the end (`core.connectors`, and *Drawing rules* 4). See
+[STATE.md](STATE.md), *Things built and then deliberately removed*.
+
+**`Synapse` deliberately did not
 become a class**, and the placement engine that would have fed it was removed
 (see milestone 2). A synapse drawn as a dot is not a shape — it is a mark at
 an anchor, and `Anchor.offset` already gives the stand-off. Anyone who wants
@@ -500,10 +548,18 @@ reviewed**. The lesson is now a rule:
 > symmetric default lives. Two of the four were exactly 0 on a round or
 > straight shape.
 
-### 8 — Roster
+### 8 — Roster (cells ✅, `annotate` open)
 
-`neuro.Bipolar`, `neuro.Astrocyte`, `cells.Blob` (the proof the core is not
-neuron-shaped), and `annotate.scalebar` / `annotate.label`.
+`cells.Blob` — the proof the core is not neuron-shaped — shipped in 7.5, and
+session 6 took the neuron roster past this list: `RadialCell` is the body plan
+behind `Basket`, `Bipolar`, `Granule`, `Purkinje` and `Astrocyte`, which are
+settings of it rather than five modules. Session 7 gave each named cell its
+own gallery card (documentation rule 10).
+
+**What is left of this milestone is `annotate`:** `scalebar` and `label`.
+Both are small, both are needed by every figure that leaves the repository,
+and `scalebar` is a prerequisite for the microscopy reading in milestone 10 —
+a bar that knows its own units is the whole point of that category.
 
 ### 9 — Examples and gallery
 
@@ -543,7 +599,7 @@ already named one for genetics. Wait for them. The seed exercise in
 into a parts list, and every attempt here to skip that step and route around
 a gap has cost more than it saved.
 
-#### Animals
+#### Animals — **shipped** (session 7)
 
 Model organisms as shapes: mouse, fly, zebrafish, worm, frog, macaque. High
 demand — nearly every methods figure in biology opens with one — and a good
@@ -562,10 +618,36 @@ The open design question, and it is the whole milestone:
   already supports today, at zero library cost, and is honestly what most
   figures want. It varies in scale and colour and nothing else.
 
-Recommendation: **start with traced silhouettes**, because they are free and
+Recommendation: **start with silhouettes**, because they are nearly free and
 they will show within a week whether anyone wants a pose knob. Building the
 jointed body plan first risks a general animal rig that draws worse mice than
-one traced outline would.
+one outline would.
+
+**Built (session 7):** `biodraw.animals` — `Mouse`, `Fly`, `Zebrafish`,
+`Worm` — with `examples/animals/` and an Animals category. Silhouettes, as
+recommended: no jointed rig, no pose knob, nothing traced. Each animal is a
+few superellipse bodies, `Branch` tubes for tails and legs and one union,
+and each carries the one knob it is actually about — the mouse's tail
+against its body, the fly's wings, the fish's stripe count, the worm's curl.
+
+`facing` is on the shared base, and it is the answer to the paragraph above:
+a mouse facing left and a mouse facing right are one object at `facing=±1`,
+and they match each other exactly, which two downloaded files never do. It
+is a **mirror**, not a rotation — a rotated animal is an animal on its back.
+
+Two things fell out of building it that were not obvious in advance:
+
+- **`Layer` gained `wall_lw`.** A zebrafish's stripe is a *marking*, and
+  stroked at the body's own wall weight it stops being a stripe and becomes
+  a pipe laid across the fish. A layer can now say `wall_lw=0` (no wall) or
+  `'0.8x'` (a multiple of what `draw` was asked for);
+- **anchors have to be taken over what is drawn, not over the geometry.**
+  The fly's wings are a layer rather than part of `_forms()`, so wall
+  anchors computed from the geometry sat *under the wing* — where a label
+  must never go. Caught by the test, not by looking.
+
+Still open, and cheap when wanted: more organisms (frog, macaque, chick,
+*Arabidopsis*), and the pose question, which nobody has needed yet.
 
 #### Microscopy
 
@@ -588,44 +670,177 @@ that line:
   stock library because a stock asset cannot know your density or your
   magnification.
 
-Recommendation: **the second reading**, and it is the strongest of the three
-categories on this page. It also absorbs two things already queued —
-`annotate.scalebar` from milestone 8, and the panel/inset machinery from
-milestone 4 — so it should be sequenced after those rather than beside them.
+**Decided (session 7): the first reading — the instrument.** Asked, and the
+answer was *"microscopy i meant drawing of a microscope illustration"*. So
+this page's recommendation was wrong about what was wanted, and the scope
+argument above stands as an argument rather than as a veto: a methods figure
+that opens with a microscope is a real and common thing, and BioArt carrying
+one does not put it on the axes beside your data.
 
-**Ask Dean which reading he meant before building either.** If he meant the
-equipment, the right answer may be to say so and point at BioArt, which is
-what this library's own scope section already commits to.
+What makes it pass this library's own test is that a *drawn* microscope has
+counts in it, and that is where the parameters are:
 
-#### Genetics
+| part | varies by |
+|---|---|
+| objectives on the nosepiece | **n** — this is the one everybody redraws |
+| eyepiece | monocular or binocular |
+| body | upright or **inverted**, which is a different instrument entirely |
+| stage, condenser, illuminator | present or not |
+| camera / display arm | present or not |
+
+Built as an outline, in the schematic house style above, that is one shape
+with five knobs rather than a downloaded picture of somebody else's
+microscope. **The field-of-view reading is not dropped** — a section outline,
+a field at a stated density, an inset box — but it is a *second* thing and it
+still waits on `annotate.scalebar` and the panel machinery.
+
+#### How the reference figures are used — for all three
+
+*"for animals, microscopy, genetics and so on — you can google and grab text
+book images, take the basic ones and add them to the catalog. use very simple
+drawings, not complex realistic images, sometimes an outline is even enough."*
+
+Two rules come out of that, and they apply to every category on this page:
+
+1. **A reference is a parts list and a set of proportions.** Look at it, write
+   down what the parts are and how big each is relative to the others, then
+   build the shape parametrically from the core. Nothing is traced off a
+   downloaded figure and no downloaded figure is committed — which is the
+   same rule this repo already reached from the other direction ("a reference
+   figure is a source of capabilities, not a thing to reproduce"), and it is
+   also the only version that gives a shape knobs.
+2. **Draw the schematic, not the portrait.** A mouse is a silhouette; a
+   coverslip is a rounded square; an organelle is an outline. The library's
+   own drawing rule 4 already says *prefer the schematic where the realistic
+   one competes for attention* — this extends it from axons to whole
+   organisms. If an outline reads at figure size, the detail was costing
+   bytes and attention for nothing.
+
+#### Genetics — **shipped** (session 7)
+
+`biodraw.genetics` and `core.Track`, with `examples/inducible_construct/` and
+a Genetics category on the gallery. What went in, against the inventory
+below: the construct track (`Repeat`, `Promoter`, `CDS`, `Terminator`) and the
+protein layer's lobed body with domain tags. What did not, deliberately: the
+crescent, the lumpy body, the RNA hairpin, the light cone, the transcript
+arrow and its strike-through — none of them was needed to draw the first
+panel, and a vocabulary built ahead of a drawing is a guess.
+
+Two things the build proved, both worth keeping:
+
+- **the track is not a genetics primitive.** It lays parts along an axis,
+  each consuming its own width, and knows nothing about biology — a domain
+  map, an ideogram and a timeline are the same object with other glyphs. It
+  lives in `core`;
+- **no text is drawn by the library.** Every glyph carries a `label` and the
+  track exposes `label` (hugging each glyph) and `tick` (on a shared
+  baseline) anchors; the figure writes its own text. `annotate.label`
+  (milestone 8) will render against those anchors.
+
+The inventory it was built from:
 
 Asked for **in place of** a proteins category, on the strength of figure 1 of
 [doi.org/10.1016/j.tibtech.2023.03.007](https://doi.org/10.1016/j.tibtech.2023.03.007)
-— *"many examples that this repo/catalog can reproduce and expand"*. The
-figure is behind Elsevier's gate and has not been read, so what follows is
-the argument for the swap and not a parts list.
+(Trends in Biotechnology, chemically and light inducible expression systems).
+The figure was behind Elsevier's gate through two sessions; Dean supplied a
+screenshot and its caption in session 6, so the parts list below comes off
+**that figure** rather than off a guess.
 
-The swap is right, and for the reason the scope section already gives.
-**A protein is a shape you download**: a ribbon diagram comes out of PDB and
-a cartoon receptor comes out of BioArt, and neither wants varying — nobody
-needs the same kinase at three domain counts. **Genetics is almost entirely
-things that vary**, and they vary along axes this library's core already
-speaks:
+Worth recording that the guess was partly wrong. This page previously argued
+genetics on double helices, plasmid maps and exon/intron structure. The figure
+contains none of those. It is **linear constructs and protein complexes**,
+which is a different parts list reached by the same reasoning — more evidence
+for the rule that the inventory comes off the figure, not off the field.
 
-- a **double helix** is a wave with a wavelength and a phase — the same
-  `Branch` term that draws a flagellum, doubled and cross-linked, and it wants
-  a length and a turn count rather than a fixed picture;
-- a **construct or plasmid map** is a run of boxes along a line or round a
-  ring, which is `Sheet`'s arc arithmetic with different contents, and it
-  varies in the one way a stock asset cannot: *your* insert, *your* order;
-- **exon/intron structure**, guide RNAs, primers, cut sites and repeats are
-  all counts and positions along a length — the density rule in *Drawing
-  rules* 3 applies to them unchanged.
+**What is in it, as parts:**
 
-So genetics passes the roster test where proteins fails it, and the pieces
-are mostly already in the core. It is the one of the three that could
-plausibly start today — **but wait for the figure**, because what it actually
-shows should decide which of those three is built first.
+*A construct track — glyphs laid left to right along a backbone line.* This is
+the SBOL Visual vocabulary, and it is the half of the figure this library
+should own:
+
+| glyph | in the figure | varies by |
+|---|---|---|
+| repeat box | `CBS operator` (4 bars), `4xUAS`, `(etr)8`, `(C120)5`, gRNA binding site | **n repeats** |
+| promoter | `Minimal promoter`, `P35Smin`, `35S`, `U6` — an arrow-pentagon | label, fill |
+| CDS | `GOI`, `dCas9-VP64`, `Guide RNA` — a rounded rectangle | label, width, fill |
+| terminator | the ⊥ closing each track | — |
+| transcription arrow | the black bent arrow; struck through with a red ✗ for OFF | on/off |
+| backbone | the line the whole run sits on | length |
+
+*A protein layer — bodies with tags stuck to them:*
+
+| glyph | in the figure | varies by |
+|---|---|---|
+| lobed body | `CUP2`, drawn open then closed around the ion | **n lobes** |
+| crescent | `pVHL`, a C with a notch a partner sits in | notch width |
+| oval / cloud | `HIF1α`, `dCas9` | — |
+| lumpy body | `PhyB`, `PIF6`, `E` — irregular organic outline | **seed**, lumpiness |
+| domain tag | `Gal4-TAD`, `Gal4-DBD`, `VP16`, `SRDX`, `LOV`, `HTH` | label, **n tags** |
+| ligand | `Cu2+`, `O2` — a small filled circle | — |
+| RNA | the gRNA hairpin squiggle | **n hairpins** |
+
+*Scene furniture:* a labelled reaction arrow (`connect` already does this), a
+light source emitting a coloured cone, bold `ON` / `OFF`, and grey bubble
+headers over each half.
+
+**The one real core addition: a track.** "Lay parts along an axis, each
+consuming its own width, in the order given" is not something the core can do
+— `Sheet` distributes identical cells, which is not the same thing. A track is
+worth building properly because it is not a genetics primitive at all: a
+protein domain map, a chromosome ideogram, a timeline and a gene model are the
+same object with different glyphs.
+
+**Why this passes the roster test**, where a proteins category failed it: every
+row marked *varies by* above is a count or a length that a person currently
+draws by hand and a stock asset cannot know — **your** repeat number, **your**
+insert order, **your** domain list. The light source is the one item on the
+list that arguably wants downloading rather than drawing; if it is built, it
+is because the cone's colour and angle vary, not because the torch does.
+
+**Suggested first example** — built, and it is the page's hero: one panel of
+the chemical-inducible system, a repeat box, a promoter, a CDS, a terminator,
+and a two-lobed body carrying one domain tag. It exercised the track, the
+lobed body and the tag in one drawing, and writing its tests found two
+defects in a day-old module: a promoter drawing 0.0175 outside its own span
+(so the track would lay a neighbour into it) and a cleft search whose ray
+stopped inside the body, reporting the same depth at every opening.
+
+#### The neuron summary figure — a style, not a domain
+
+Figure 7 of [nature.com/articles/s41593-025-02004-2](https://www.nature.com/articles/s41593-025-02004-2),
+also supplied as a screenshot in session 6, after two failed fetches. Dean's
+ask was *"very very simple neuronal-like summary figures"*, to be **similar to
+rather than a copy of**.
+
+It needs almost no new shapes. It named three gaps, and **two of them are
+closed** — which is the point of writing the inventory down rather than
+building the figure:
+
+1. **Flat solid cells** ✅ — `fill=edge` was always possible and nothing
+   demonstrated it. It is the `solid` entry on the standalone *Drawing
+   styles* page now, beside `outline`, `ghost` and the two skeletons.
+2. **A crossbar tuft** — still open, and the only one of the three that is a
+   drawing gap rather than a documentation one. Each apical forks and each
+   daughter ends in short transverse dashes rather than spines: a stylised
+   tuft that says "this arborises" without drawing an arbor. A new decoration
+   kind (`Branch.decorate` with a bar profile), and the same move as *Drawing
+   rules*: prefer the schematic where the realistic one competes for
+   attention.
+3. **Orthogonal connector routing** ✅ — `connect_bus` drops to a shared rail
+   and turns up into each target at right angles, on the *Circuits & wiring*
+   page. A square corner reads as routing, which is exactly what a shared
+   source is claiming.
+
+Two smaller observations from it, both already supported: **line weight
+carries meaning** (thick for the strong projection, hairline for the weak one,
+same colour), and **colour is identity only** (cell class), which is what the
+palette already commits to.
+
+**`examples/summary_figure/` was built and removed in the same session**, and
+should not be rebuilt: it reproduced the reference figure closely, when the
+ask had been to expand the catalog with new *styles*. A reference figure is a
+source of capabilities, not a thing to clone — the capabilities above went
+into the catalog and the figure did not.
 
 ## Verification
 

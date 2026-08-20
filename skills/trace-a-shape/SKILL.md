@@ -89,6 +89,12 @@ other way round. Getting it backwards places every decoration head-down.
 growing with it. Scaling a profile whole makes a densely decorated branch
 whose heads touch. For a spine the span is the neck.
 
+It does double duty, so set it honestly: `place(head=, neck=)` scales the two
+widths, and the blend between them runs from the **end of `stretch`** to
+`head_t`. Those two numbers are what let one traced outline cover thin,
+stubby and mushroom spines — a `stretch` that stops halfway up the flare will
+put the neck's width where the head's should be.
+
 ### 5 · Check it against the drawing, numerically
 
 You cannot see the result. Compare what you can compute:

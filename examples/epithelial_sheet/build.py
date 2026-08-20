@@ -17,9 +17,12 @@ import biodraw as bd  # noqa: E402
 HERE = pathlib.Path(__file__).resolve().parent
 PAL = bd.style.palette.get()
 INK = PAL["ink"]
-NUC = PAL["inhibitory"]
-JOIN = PAL["excitatory"]
+NUC = PAL["secondary"]
+JOIN = PAL["primary"]
 # Annotation colour for the construction figure, local on purpose.
+# Annotation colours for the construction figures. Local on purpose:
+# these label a *diagram about* the drawing, not the drawing, so they
+# are not the library's identity palette's business.
 APICAL_C = "#059669"
 GREY = "#9AA0A6"
 

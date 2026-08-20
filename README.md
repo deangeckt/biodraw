@@ -1,10 +1,12 @@
 # biodraw
 
 **Bio-inspired vector drawings for papers, posters and slides.**
-Hand-drawn shapes, turned into maths, placeable anywhere.
+A **Python** library: hand-drawn shapes, turned into maths, drawn onto a
+matplotlib axes so they sit beside real data. Runtime dependencies are numpy
+and matplotlib, and nothing else.
 
 <p align="center">
-  <img src="examples/dendritic_spine/branch.png" alt="A spiny dendrite" height="290">
+  <img src="examples/dendritic_spine/branch.png" alt="Three dendrites: thin, traced and mushroom spines" height="290">
   <img src="examples/dendritic_spine/density.png" alt="Three spine densities" height="290">
 </p>
 
@@ -15,8 +17,7 @@ Hand-drawn shapes, turned into maths, placeable anywhere.
 You almost never want *the* picture — you want a variation on it. The same
 cell at three spine densities, this epithelium curved into a duct, that neuron
 with one more basal because the panel beside it has two. Here a variant is a
-parameter and a rebuild is one command, and the drawing lands on a matplotlib
-axes so it sits beside real data.
+parameter and a rebuild is one command.
 
 ## → [Browse the gallery](https://deangeckt.github.io/biodraw/site/)
 
@@ -28,6 +29,8 @@ documentation** — this file is only the front door.
 ```bash
 pip install biodraw
 ```
+
+Every drawing in the gallery is output from a script like this one:
 
 ```python
 import biodraw as bd

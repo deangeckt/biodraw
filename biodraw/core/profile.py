@@ -108,8 +108,33 @@ class Profile:
         """
         return float(size) * self.head_t + float(extend)
 
+    def _width_scale(self, x, head, neck):
+        """Per-point multiplier on the half-width: `neck` over the neck,
+        `head` over the head, blended between.
+
+        A traced profile is one shape, and the thing people vary about a
+        spine is not its length — it is how fat the head is against how thin
+        the neck is. Thin, stubby and mushroom spines are the same outline at
+        three settings of these two, in the same way the radial cells are one
+        body plan at five settings.
+
+        The blend runs from the end of the `stretch` span (the neck, for a
+        spine) to `head_t` (the widest point), smoothstepped so neither end
+        of the transition shows as a crease in the wall. Only the *width*
+        moves: length stays with `size` and `extend`, so `head_offset` — what
+        a connector aims at — is unchanged by either of these.
+        """
+        if head == 1.0 and neck == 1.0:
+            return 1.0
+        x0 = self.stretch[1] if self.stretch is not None else 0.0
+        x1 = self.head_t
+        if x1 <= x0:                      # no room to blend: a hard step
+            return np.where(x <= x0, neck, head)
+        t = np.clip((x - x0) / (x1 - x0), 0.0, 1.0)
+        return neck + (head - neck) * t * t * (3.0 - 2.0 * t)
+
     def place(self, base, direction, size, mirror=False, sink=0.06,
-              extend=0.0):
+              extend=0.0, head=1.0, neck=1.0):
         """This profile, rotated onto `direction`, scaled by `size`, and rooted
         at `base`.
 
@@ -126,6 +151,9 @@ class Profile:
         `extend` lengthens the `stretch` span only, in the same units as
         `size`.
 
+        `head` and `neck` scale the width of each — see `_width_scale`. The
+        defaults are the traced shape.
+
         Returns the closed outline in the host's units.
         """
         u = unit(direction)
@@ -134,6 +162,9 @@ class Profile:
         if mirror:
             q[:, 1] *= -1.0
         size = float(size)
+        # Widths come off the *traced* x, before the stretch moves it: the
+        # neck is the neck however long it has been made.
+        q[:, 1] *= self._width_scale(q[:, 0], float(head), float(neck))
         if extend:
             q[:, 0] = self._stretched_x(q[:, 0], float(extend) / size)
         q[:, 0] -= float(sink)

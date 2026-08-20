@@ -3,15 +3,15 @@
 A running handoff. Read this, then [CLAUDE.md](../CLAUDE.md) for how the repo
 is developed and [PLAN.md](PLAN.md) for where it is going.
 
-Last updated: session 5 (2026-08-19). Pushed to
+Last updated: session 7 (2026-08-19). Pushed to
 [github.com/deangeckt/biodraw](https://github.com/deangeckt/biodraw) and
 **live at [deangeckt.github.io/biodraw](https://deangeckt.github.io/biodraw/)**.
 
 ## Built and verified
 
-**242 tests pass, `ruff check .` clean, all 48 example files across nine
-folders regenerate byte-identically (checked twice over), and the nine-page
-gallery rebuilds from its content modules.** Run them with `py -3.12` on this
+**356 tests pass, `ruff check .` clean, all 79 example images across
+seventeen folders regenerate byte-identically, and the sixteen-page gallery
+rebuilds from its content modules.** Run them with `py -3.12` on this
 machine — `python` is a Windows Store stub here.
 
 | | |
@@ -20,15 +20,150 @@ machine — `python` is a Windows Store stub here.
 | `biodraw/neuro/` | `Pyramidal` (soma, forked apical, basals, spines) · `Basket` (round soma, aspiny dendrites, forks) |
 | `skills/` | `draw-a-figure`, `review-a-drawing`, `trace-a-shape` |
 | `biodraw/cells/` | `Blob` — wall, nucleus, nucleolus, scattered organelles, protrusions · `Sheet` — epithelial row, brush border, basement membrane, curvature to a closed ring |
+| `biodraw/animals/` | `Mouse`, `Fly`, `Zebrafish`, `Worm` — silhouettes on a shared `Animal` base that carries `size` and `facing` |
+| `biodraw/genetics/` | `Repeat`, `Promoter`, `CDS`, `Terminator` — SBOL construct glyphs on a `core.Track` — plus `Protein`, a lobed body with domain tags and a `cleft` anchor |
 | `biodraw/micro/` | `Bacterium` — a capsule body whose named forms are *settings* (length, `curve_deg`, `twists`), plus capsule, nucleoid, granules, flagella and pili |
 | `biodraw/layout/` | `contact_sheet` |
 | `biodraw/style/` | three palettes |
 | `biodraw/io.py` | `canvas`, `fit`, `save` (vector, SVG hygiene, byte-reproducible), `save_compact` (rasters) + three quality profiles |
-| `examples/` | `dendritic_spine`, `pyramidal_cell`, `generic_cell`, `cell_atlas`, `epithelial_sheet`, `basket_cell`, `bacteria`, `wiring`, `circuit_motifs` — `build.py` + images, ~2.2 MB at `review` quality |
-| `site/` | the gallery: index with category filter and search, nine detail pages across five categories, built from `site/content/*.py` by `tools/build_site.py`. Root `index.html` + `.nojekyll` so GitHub Pages serves it from the repository root — **live**, and held to the catalog budget by `check_catalog` |
-| `tests/` | 60 numeric shape pins + 2 image baselines |
+| `examples/` | `dendritic_spine`, `pyramidal_cell`, `basket_cell`, `bipolar`, `granule`, `purkinje`, `astrocyte`, `radial_cell`, `styles`, `wiring`, `circuit_motifs`, `generic_cell`, `cell_atlas`, `epithelial_sheet`, `bacteria` — `build.py` + images, ~2.8 MB at `review` quality |
+| `site/` | the gallery: index with category filter and search, **13 cards across three categories plus one standalone page** (drawing styles, in the masthead and a band beside the grid), built from `site/content/*.py` by `tools/build_site.py`. Root `index.html` + `.nojekyll` so GitHub Pages serves it from the repository root — **live**, and held to the catalog budget by `check_catalog` |
+| `tests/` | 94 numeric shape pins + 2 image baselines |
 
 ## Decisions taken
+
+**Session 7, last.** `biodraw.animals` — mouse, fly, zebrafish, worm — with
+`examples/animals/` and a fifth gallery category. The direction that shaped
+it: *"use very simple drawings, not complex realistic images, sometimes an
+outline is even enough"*, and *"grab text book images, take the basic ones"*
+— which is now a rule in PLAN: **a reference is a parts list and a set of
+proportions**, read and then written as numbers, never traced and never
+committed. A traced picture has no knobs, which is the entire argument for
+this library over a stock one.
+
+`facing` is the knob the category exists for, and it lives on the base class.
+Two smaller things came out of the build, both worth keeping:
+
+- `Layer` gained **`wall_lw`** (a number, or `'0.8x'` as a multiple). A
+  zebrafish stripe stroked at the body's wall weight reads as a pipe laid on
+  the fish rather than as a marking in it;
+- an animal's `wall` anchors are taken over **what is drawn**, layers
+  included. Computed from `_forms()` alone they sat under the fly's own
+  wing — the one place a label must not go. The test found that, not the eye.
+
+**Session 7, before that.** Milestone 10's genetics half shipped: `core.Track`
+and `biodraw.genetics`, with `examples/inducible_construct/` and a fourth
+gallery category. The design decision worth keeping is where the line fell —
+**the track is in `core`**, because "lay parts along an axis, each consuming
+its own width" is a domain map, an ideogram, a gene model and a timeline as
+much as it is a construct, and `Sheet` cannot do it (there the pitch is the
+input and the cells are interchangeable). `genetics` supplies only glyphs.
+
+**No text is drawn by the library**, which is the same call as the synapse
+dot and the claim colours: every glyph carries a `label`, the track exposes
+`label` anchors that hug each glyph and `tick` anchors on a shared baseline,
+and the figure writes its own text. The asymmetry is not cosmetic — the first
+draft put the promoter's name inside the coding sequence beside it, because a
+promoter's underside *is* the backbone.
+
+Also decided this session, and recorded in PLAN: **microscopy means the field
+of view**, not the equipment — a section outline, a field at a stated
+magnification and density, a scale bar that knows its units, an inset box —
+and it stays queued behind `annotate.scalebar` and the panel machinery.
+**Animals are unblocked**, with the direction being simple silhouettes built
+from the core rather than traced or downloaded art.
+
+**Session 7, earlier.** Six user-hat comments, and the four that changed the
+shape of the catalog rather than one page of it:
+
+- **each named cell type is its own card** — `bipolar`, `granule`,
+  `purkinje` and `astrocyte` are example folders and gallery pages now.
+  Nobody looking for a Purkinje cell searches for "neuron types". The family
+  argument stayed behind on a *Radial body plan* card, which is also the
+  entry point for a cell the library does not name;
+- **wiring and circuit motifs are one card**, over two example folders. That
+  needed the site builder to stop assuming a page *is* a folder: an image may
+  now be written `wiring/bus.png`, and a page may list the `examples` it
+  draws from;
+- **the styles page left the grid.** A card is a drawing; a property of every
+  drawing belongs in the chrome. `PAGE["standalone"] = True` builds the page,
+  puts it in the masthead of every page and renders a full-width band beside
+  the grid — all three from the one dict;
+- **the spine grew the knobs it was missing.** `Profile.place(head=, neck=)`
+  scales the head and the neck widths of any traced profile, blended across
+  the shape and leaving every length alone, so `head_offset` — what a
+  connector aims at — is untouched. Thin, stubby, mushroom and long-necked
+  spines are that pair plus `size` and `extend`, not four traced outlines.
+
+`Purkinje`'s default moved from two primaries over 34 degrees to three over
+55, and its two pins with it: at portrait size the old one read as a
+two-pronged fork whose trunks crossed their own daughters into a lattice.
+Nothing else in the suite moved.
+
+Also, from the same session and worth keeping: `save_compact` pads 0.02 inch
+instead of matplotlib's fixed 0.1, and `build_gallery` reports loose frames
+on every run. See the image weight budget in PLAN.md.
+
+**Session 6, last.** `render_skeleton` and `Shape.draw(style='skeleton')`
+— a second drawing *language*, not a re-ink. The first styles page
+offered six "styles" that were one style at different linewidths and colours,
+and Dean said so. A hollow cell claims a process has a width and a wall; a
+skeleton claims it exists and connects two places, which is what a circuit or
+connectome figure asserts and the only one of the two that survives at small
+sizes, where two walls a fraction of a point apart merge into a smudge.
+`Shape._skeleton()` returns `None` by default and `draw` refuses rather than
+guesses — a blob is an area, not a set of processes.
+
+**Session 6, later still.** `neuro` gained four cell types — `Bipolar`,
+`Granule`, `Purkinje`, `Astrocyte` — and none of them is a new module. The
+implementation behind `Basket` moved to `RadialCell` (a soma with processes
+leaving it, generalised with recursive `depth`), and all five are that shape
+at different settings, the same call `micro.Bacterium` makes for its named
+forms. `Basket`'s 60 existing pins were **unchanged by the refactor**, which is
+what made it safe to do. Direction from the maintainer: **breadth over depth** —
+circuits are done, and a new shape is worth more to a catalog than a better
+arrangement of the shapes already in it.
+
+Worth recording as a limit rather than a bug: **the branch recursion does not
+avoid itself.** Branch count is `dendrites * (2^(depth+1) - 1)`, so density
+climbs much faster than it reads — three processes at depth 4 is **93**
+branches sweeping one arc, and they cross until the union fuses the fan into a
+lattice. Past about depth 3 the extra generation adds crossings, not detail.
+(This paragraph said "forty-five" until session 7, when someone multiplied it
+out. 45 is the same cell one generation *down*.)
+The named forms are tuned under that ceiling and `examples/radial_cell/`
+shows it happening.
+
+**Session 6, later.** The default palette is **red / green / blue** —
+excitatory red and inhibitory green, the convention most neuroscience readers
+already carry, so a figure spends none of their attention teaching it. That
+pair is the classic colour-blind hazard and the palette docstring says so:
+structure carries the distinction first (a triangle is not a round soma), and
+`palettes['colorblind']` is one argument away.
+
+`examples/summary_figure/` was **built and then removed the same session**. It
+reproduced a journal figure closely, and the ask had been to expand the
+catalog with new *styles* of neuron — a reference figure is a source of
+capabilities, not a thing to clone. What survived is the capability:
+`connect_bus` moved to the `wiring` page where connectors belong, and
+`examples/styles/` took its place — the same two cells under six house
+styles and four detail levels, which is a catalog entry rather than one
+figure. **Circuits are done for now**; the maintainer's direction is breadth,
+so new shapes come before better arrangements of existing ones.
+
+**Session 6.** The palette's default is no longer the seed paper's red/blue —
+Dean's point that *"these specific blue and red are from my paper, you dont
+have to commit to those"* is the general case of a default inherited from one
+figure being a placeholder. It is now blue / lavender / sage, chosen off a
+rendered comparison of five candidates rather than argued in hex. Its slots
+are renamed `primary` / `secondary` / `tertiary`: the old
+`excitatory` / `inhibitory` read well in `biodraw.neuro` and nowhere else, and
+`examples/epithelial_sheet` was already colouring a **nucleus** with
+`palette["inhibitory"]` for want of a third slot. Gallery categories are now
+**three, mirroring the domain packages** — Neuroscience, Cells & tissues,
+Microbes — where five had put nine pages behind five filters, three of which
+were the same package.
+
 
 MIT · objects + anchors for people, introspection + checks for agents · core
 is domain-neutral, `neuro`, `cells` and `micro` are the domains · matplotlib with SVG
@@ -65,8 +200,40 @@ the failure mode of a drawing library is doing the author's thinking for them.
 
 ## Bugs found, and how
 
-Fifteen now, and the pattern is worth noting: **none were found by the test
-suite as it stood.** Three were found by computing a number on suspicion, two
+Twenty-one now, and the pattern is worth noting: **none were found by the
+test suite as it stood.** Session 7 added five. Three were prose and pictures
+that had quietly stopped matching the code; the other two were in a module a
+day old, and both were found by *writing its tests*, which is the cheapest
+this list has ever recorded:
+
+19. **A promoter drew 0.0175 outside its own span.** The stem is a walled
+    centreline and the centreline ran up `x0` itself, so the wall landed left
+    of the glyph's own span — and a track lays the next glyph by width alone.
+    Invisible at the default gap of 0.09; an overlap at a smaller one. Found
+    by `test_every_glyph_stays_inside_its_own_span`.
+20. **The protein's cleft search stopped inside the body.** The ray walked
+    `2.2 x reach`, which is shorter than a lobe, so it never left the body
+    and every opening reported the same depth — the one number the open/closed
+    pair of drawings is *about*. Found by
+    `test_opening_the_body_moves_the_cleft_in_toward_the_hinge`.
+
+And the three from earlier in the session:
+
+16. **The motifs key said "blue, bar — inhibition".** The drawing had used
+    `palette['secondary']` since the palette went red/green two sessions
+    earlier, so the key on the live site named a colour that was not in the
+    figure. Found while merging the wiring and motifs pages, by reading the
+    build script the page was describing.
+17. **The branch-count arithmetic was wrong in two docstrings and one
+    handoff note** — "three primaries at depth 4 is forty-five branches" is
+    the same cell one generation down, and "two at depth 3 is fourteen" is
+    30. Found by multiplying it out. The example sheets now print
+    `len(cell._branches())`, so the number on the page comes from the cell.
+18. **Loose frames.** `examples/dendritic_spine/branch.png` filled 62% of its
+    own width, and the three emptiest images in the catalog were all on the
+    page a reader had just complained about. Found by writing check 13 and
+    running it once — which also caught a *new* one (`bipolar.png`, 61%) an
+    hour later, in a folder created that same session. Three were found by computing a number on suspicion, two
 by Dean looking at a drawing, one by a test written while adding a new shape,
 two by a guard raising during an example build, and the other six by writing a
 *new* check and running it once — which is the cheapest of the five and the
@@ -228,41 +395,54 @@ example rather than at new code:
 ## Open, in priority order
 
 0. **Three categories Dean has asked for: animals, microscopy and genetics.**
-   Written up as milestone 10 in [PLAN.md](PLAN.md); none is started.
-   **Dean is supplying reference figures for animals and microscopy**, so do
-   not start guessing at those — take the inventory from his examples first,
-   which is what `skills/trace-a-shape` requires anyway. Animals wants a
-   decision between traced silhouettes (free today, vary only in scale) and a
-   jointed body plan (varies in pose, needs a core addition) — the
-   recommendation is silhouettes first. **Microscopy is blocked on what it
-   means**: equipment (a microscope, a slide) is the case this library's own
-   scope section says to download from BioArt rather than draw, while a field
-   of view — section outlines, magnification, density, scale bars, inset boxes
-   — varies and is exactly what no stock library can offer. Ask before
-   building.
+   Written up as milestone 10 in [PLAN.md](PLAN.md). **Genetics is now
+   unblocked** — see 0b. Animals wants a decision between traced silhouettes
+   (free today, vary only in scale) and a jointed body plan (varies in pose,
+   needs a core addition) — the recommendation is silhouettes first.
+   **Microscopy is blocked on what it means**: equipment (a microscope, a
+   slide) is the case this library's own scope section says to download from
+   BioArt rather than draw, while a field of view — section outlines,
+   magnification, density, scale bars, inset boxes — varies and is exactly
+   what no stock library can offer. Ask before building.
 
-0b. **Two reference figures Dean has pointed at are unread — both paywalled.**
-   Nothing has been derived from either, and nothing should be until he sends
-   a screenshot. **Do not spend another attempt on these.** Both were re-tried
-   in session 5, after Dean asked a second time, and both failed exactly as
-   before:
+0b. **Both reference figures have arrived — the block is lifted.** Dean
+   supplied screenshots in session 6, after two sessions of failed fetches
+   (Nature's `idp.nature.com` gate and Elsevier's `linkinghub` interstitial).
+   **Do not attempt to fetch either again.** The screenshots were pasted into
+   the conversation and are not in the repository — they are figures from
+   published papers and should not be committed — so **the inventories in
+   [PLAN.md](PLAN.md) milestone 10 are the record**. Work from those. If
+   something is genuinely missing from them, ask Dean to re-send the image
+   rather than guessing or re-fetching:
 
-   - **Figure 7, `nature.com/articles/s41593-025-02004-2`** — "very very
-     simple neuronal-like summary figures", to be *similar to* rather than a
-     copy of. 303s to `idp.nature.com/authorize`. No PMC copy; a search for
-     the DOI returns other articles.
-   - **Figure 1, `doi.org/10.1016/j.tibtech.2023.03.007`** (Trends in
-     Biotechnology) — Dean's case for a **genetics** category over a proteins
-     one: "many examples that this repo/catalog can reproduce and expand".
-     302s to an Elsevier `linkinghub` interstitial that serves only
-     "Redirecting".
+   - **Genetics** — figure 1, `doi.org/10.1016/j.tibtech.2023.03.007`,
+     chemically and light inducible expression systems. Parts list is a
+     **construct track** (repeat box with *n* bars, promoter pentagon, CDS
+     box, terminator, transcription bent-arrow that can be struck out) plus a
+     **protein layer** (lobed body, crescent, lumpy body, domain tags,
+     ligand dot, RNA hairpin). One real core addition: **a track** — lay parts
+     along an axis, each consuming its own width — which is not a genetics
+     primitive at all and would also draw a domain map, an ideogram or a
+     timeline. Suggested first example: `examples/inducible_construct/`.
 
-   Dean chose *"you send screenshots"* over starting from a generic genetics
-   inventory, which is the right call and the one `skills/trace-a-shape`
-   requires: the whole point of naming a figure is that the inventory comes
-   off **that** figure. Genetics is blocked until the images arrive, and
-   guessing at a plausible shape list would produce a category nobody asked
-   for.
+     Note for the record: this page previously argued genetics on **double
+     helices, plasmid maps and exon/intron structure**, and the figure
+     contains none of them. The reasoning was right and the parts list was
+     wrong, which is the sharpest evidence yet for taking the inventory off
+     the figure rather than off the field.
+
+   - **The neuron summary figure** — figure 7,
+     `nature.com/articles/s41593-025-02004-2`. This is a **style, not a
+     domain**, and it needs almost no new shapes. Three gaps, in order of
+     size: **orthogonal connector routing** (its arrows are a shared bus that
+     drops, runs along one horizontal and turns up into targets at right
+     angles — `core.connectors` draws curved cubics only, and a bus is what
+     most summary figures actually use); a **crossbar tuft** (each forked
+     apical ends in short transverse dashes instead of spines, i.e. a bar
+     profile through `Branch.decorate`); and **flat solid cells**
+     (`fill=edge`), which the library does today and no example demonstrates.
+     Suggested example: `examples/summary_figure/` — the first catalog entry
+     that is a whole figure rather than a shape or a motif.
 
 1. **Milestone 4 — layout, style presets, export.** Not built, but **the two
    design decisions it was stuck on are taken** (session 5, with Dean), so it

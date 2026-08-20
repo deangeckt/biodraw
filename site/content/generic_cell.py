@@ -4,7 +4,6 @@ PAGE = dict(
     title="Generic cell",
     category="Cells & tissues",
     order=0,
-    build_pattern="generic",
     tagline="A body, a nucleus, and whatever is loose in the cytoplasm. The "
             "first shape in this library that is not one unbroken outline.",
     hero="cell.png",

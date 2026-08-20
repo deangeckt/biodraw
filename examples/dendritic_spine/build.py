@@ -25,7 +25,10 @@ from biodraw.core.branch import Branch  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 PAL = bd.style.palette.get()
-INK = PAL["excitatory"]
+INK = PAL["primary"]
+# Annotation colours for the construction figures. Local on purpose:
+# these label a *diagram about* the drawing, not the drawing, so they
+# are not the library's identity palette's business.
 NECK = "#7C3AED"
 HEAD = "#059669"
 GREY = "#9AA0A6"
@@ -38,6 +41,21 @@ plt.rcParams.update({
     "xtick.major.width": 0.8,
     "ytick.major.width": 0.8,
 })
+
+
+def _framed(parts, height=4.0, pad=0.12):
+    """A canvas shaped like the drawing that is going on it.
+
+    `save_compact` trims to the *axes*, and the axes are equal-aspect, so a
+    tall narrow drawing in a square figure keeps its white margins into the
+    committed PNG. Measured on the old `branch.png`: the ink used 62% of the
+    width. Shaping the figure like the data takes it over 90%, and the file
+    gets smaller as well. See the frame report in `tools/build_gallery.py`.
+    """
+    xy = np.concatenate([np.asarray(part) for part in parts])
+    w = float(np.ptp(xy[:, 0])) + 2 * pad
+    h = float(np.ptp(xy[:, 1])) + 2 * pad
+    return bd.canvas(figsize=(height * w / h, height))
 
 
 def _hollow(ax, parts, color=INK, wall=1.4, gid=None, open_parts=()):
@@ -163,26 +181,97 @@ def one_spine():
     return fig, "spine.png"
 
 
-def stretch_series():
-    """One profile, one size, three neck extensions."""
-    fig, ax = bd.canvas(figsize=(4.4, 2.6))
+# The named spine shapes, as settings of the one traced outline. These are
+# the shapes every paper on spines names, and they are three numbers apart:
+# how wide the head is, how thin the neck is, and how far it stands off.
+# Nothing here is a second profile — see `Profile._width_scale`.
+FORMS = (
+    ("traced", dict(size=0.34)),
+    ("thin", dict(size=0.34, head=0.72, neck=0.62, extend=0.16)),
+    ("stubby", dict(size=0.22, head=0.92, neck=1.30)),
+    # 1.45 read as a trumpet rather than a mushroom: the knob widens the
+    # head without lengthening it, so past ~1.25 the flare flattens out.
+    ("mushroom", dict(size=0.34, head=1.22, neck=0.55)),
+    ("long-necked", dict(size=0.30, head=0.95, neck=0.70, extend=0.34)),
+)
+
+
+def forms():
+    """The named spine shapes, and the traced one they all come from."""
     sp = profile.get("spine")
-    parts = [sp.place((i * 0.42, 0.0), (0.0, 1.0), size=0.3, extend=e)
-             for i, e in enumerate((0.0, 0.10, 0.25))]
+    step = 0.40
+    parts = [sp.place((i * step, 0.0), (0.0, 1.0), **kw)
+             for i, (_, kw) in enumerate(FORMS)]
+    fig, ax = _framed(parts, height=2.6, pad=0.22)
     _hollow(ax, parts, wall=1.6, gid="spine")
+    for i, (name, _) in enumerate(FORMS):
+        ax.text(i * step, -0.10, name, ha="center", va="top", fontsize=8.5,
+                color=GREY)
     bd.fit(ax, parts, pad=0.08)
-    return fig, "stretch.png"
+    ax.set_ylim(-0.20, ax.get_ylim()[1])
+    return fig, "forms.png"
+
+
+def head_and_neck():
+    """The two width knobs, swept against each other.
+
+    A grid rather than two rows: what a reader is choosing between is a
+    *combination* — a fat head on a thin neck is a mushroom spine, the same
+    head on a fat neck is barely a spine at all — and a pair of one-knob rows
+    cannot show that.
+    """
+    sp = profile.get("spine")
+    heads = (0.70, 1.00, 1.30)
+    necks = (0.60, 1.00, 1.40)
+    dx, dy = 0.42, 0.54
+    parts = []
+    for r, neck in enumerate(necks):
+        for _c, head in enumerate(heads):
+            parts.append(sp.place((_c * dx, -r * dy), (0.0, 1.0), size=0.34,
+                                  head=head, neck=neck))
+    fig, ax = _framed(parts, height=3.4, pad=0.34)
+    _hollow(ax, parts, wall=1.3, gid="grid")
+    for c, head in enumerate(heads):
+        ax.text(c * dx, 0.44, f"head {head:g}", ha="center", fontsize=8.5,
+                color=GREY)
+    for r, neck in enumerate(necks):
+        ax.text(-0.28, -r * dy + 0.14, f"neck {neck:g}", ha="right",
+                fontsize=8.5, color=GREY)
+    bd.fit(ax, parts, pad=0.12)
+    ax.set_xlim(-0.52, ax.get_xlim()[1])
+    ax.set_ylim(ax.get_ylim()[0], 0.56)
+    return fig, "head_neck.png"
 
 
 def on_a_branch():
-    """Stamped along a curved branch, alternating, fused into one wall."""
-    fig, ax = bd.canvas(figsize=(2.8, 4.4))
-    br = Branch((0.0, 0.0), (0.0, 1.0), length=1.8, bend=0.10)
-    br.decorate("spine", n=8, size=0.21, extend=0.04, first_t=0.30,
-                last_t=0.86)
-    closed, open_ = br.parts(width=0.11, taper=0.72, base_ext=0.05)
-    _hollow(ax, closed, wall=1.0, gid="branch", open_parts=open_)
-    bd.fit(ax, closed + open_, pad=0.12)
+    """The same dendrite carrying three of the spine shapes.
+
+    Was one dendrite in a frame two-thirds paper — *"the 'on a branch' eight
+    image is almost only white space"*. Three of them, at the shapes above,
+    is the same width of page carrying three times the drawing, and it says
+    what a single one could not: the head and neck knobs survive being
+    stamped along a branch, and the wall still fuses into one contour.
+    """
+    kinds = (("thin", dict(head=0.72, neck=0.62, extend=0.12)),
+             ("traced", dict(extend=0.04)),
+             ("mushroom", dict(head=1.22, neck=0.55, extend=0.04)))
+    per, groups = 0.95, []
+    for i, (_, kw) in enumerate(kinds):
+        br = Branch((i * per, 0.0), (0.0, 1.0), length=1.8, bend=0.10)
+        br.decorate("spine", n=8, size=0.21, first_t=0.30, last_t=0.86, **kw)
+        groups.append(br.parts(width=0.11, taper=0.72, base_ext=0.05))
+    everything = [part for closed, open_ in groups for part in closed + open_]
+
+    fig, ax = _framed(everything, height=4.0, pad=0.20)
+    # One `render_hollow` per branch: unioning all three would fuse any two
+    # that touched into one impossible dendrite.
+    for (closed, open_), (name, _) in zip(groups, kinds, strict=True):
+        _hollow(ax, closed, wall=1.0, gid=name, open_parts=open_)
+    for i, (name, _) in enumerate(kinds):
+        ax.text(i * per, -0.16, name, ha="center", va="top", fontsize=8.5,
+                color=GREY)
+    bd.fit(ax, everything, pad=0.10)
+    ax.set_ylim(-0.40, ax.get_ylim()[1])
     return fig, "branch.png"
 
 
@@ -202,26 +291,10 @@ def density():
     return fig, "density.png"
 
 
-def palettes():
-    """The same branch in each bundled palette."""
-    names = bd.style.palette.available()
-    fig, axes = plt.subplots(1, len(names), figsize=(2.0 * len(names), 3.4),
-                             dpi=150)
-    for ax, name in zip(axes, names, strict=True):
-        bd.canvas(ax=ax)
-        br = Branch((0.0, 0.0), (0.0, 1.0), length=1.6, bend=0.08)
-        br.decorate("spine", n=6, size=0.2, extend=0.04)
-        closed, open_ = br.parts(width=0.11, taper=0.72, base_ext=0.05)
-        _hollow(ax, closed, color=bd.style.palette.get(name)["excitatory"],
-                wall=1.0, gid=name, open_parts=open_)
-        bd.fit(ax, closed + open_, pad=0.15)
-        ax.set_title(name, fontsize=9)
-    fig.tight_layout()
-    return fig, "palettes.png"
-
-
-BUILDS = (blueprint, one_spine, stretch_series, on_a_branch, density,
-          palettes)
+# Palettes used to be here too, on a page about one shape. They are a
+# property of every drawing rather than of this one, so they live on the
+# standalone styles page now — one place, all of them.
+BUILDS = (blueprint, one_spine, forms, head_and_neck, on_a_branch, density)
 
 
 def main():

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inducible construct — biodraw</title>
+<meta name="description" content="A construct is glyphs laid along a line, each taking its own width — and the protein that switches it on.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="index.html">biodraw</a>
+    <nav class="masthead-links">
+      <a href="styles.html">Drawing styles</a>
+      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+      <a class="gh" href="https://github.com/deangeckt/biodraw" aria-label="biodraw on GitHub"
+         title="biodraw on GitHub"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+    </nav>
+  </div>
+</header>
+<main class="detail">
+<article>
+  <p class="crumb"><a href="index.html">All examples</a>  <span aria-hidden="true">·</span> Genetics</p>
+
+  <h1>Inducible construct</h1>
+  <p class="standfirst">A construct is glyphs laid along a line, each taking its own width — and the protein that switches it on.</p>
+  <p class="chips"><span class="chip">Track</span><span class="chip">genetics.Repeat</span><span class="chip">genetics.Promoter</span><span class="chip">genetics.CDS</span><span class="chip">genetics.Terminator</span><span class="chip">genetics.Protein</span></p>
+
+  <figure class="hero plate zoomable">
+    <img src="../examples/inducible_construct/construct.png"
+         alt="A copper-inducible expression construct with CUP2 bound to its operator">
+    <figcaption>A copper-inducible expression construct with CUP2 bound to its operator</figcaption>
+  </figure>
+
+  <p class="standfirst">Every knob on this page is a count or a length somebody currently draws by hand: your repeat number, your insert, your domain list.</p>
+
+<section class="block">
+<h2 id="the-vocabulary">The vocabulary</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/inducible_construct/vocabulary.png" alt="Four glyphs, forward and reverse. `strand=-1` mirrors one about its own span." loading="lazy"><figcaption>Four glyphs, forward and reverse. `strand=-1` mirrors one about its own span.</figcaption></figure>
+</div>
+</section>
+<section class="block">
+<h2 id="how-many-repeats">How many repeats</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/inducible_construct/repeats.png" alt="`4xUAS`, `(etr)8` and `(C120)5` are one glyph at three settings of `n`." loading="lazy"><figcaption>`4xUAS`, `(etr)8` and `(C120)5` are one glyph at three settings of `n`.</figcaption></figure>
+</div>
+</section>
+<section class="block">
+<h2 id="the-protein-it-encodes">The protein it encodes</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/inducible_construct/proteins.png" alt="Lobes, how far open, and how many domains. The ligand is a dot at the `cleft` anchor." loading="lazy"><figcaption>Lobes, how far open, and how many domains. The ligand is a dot at the `cleft` anchor.</figcaption></figure>
+</div>
+</section>
+<section class="block">
+<h2 id="what-a-track-does">What a track does</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/inducible_construct/blueprint.png" alt="The layout, and the drawing it produces" loading="lazy"><figcaption>The layout, and the drawing it produces</figcaption></figure>
+</div>
+<ol class="panel-notes">
+<li><strong>A glyph brings its own width</strong>; the track only advances a cursor and leaves <code>gap</code> between neighbours.</li>
+<li><strong>The anchors are the labels&#x27; business.</strong> No text is drawn by the library — a name is the author&#x27;s claim.</li>
+</ol>
+</section>
+<section class="block">
+<h2 id="drawing-one">Drawing one</h2>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
+from biodraw.genetics import CDS, Promoter, Protein, Repeat, Terminator
+
+track = bd.Track([
+    Repeat(n=4, label=&quot;CBS operator&quot;),   # n is the biology: 4xUAS, (etr)8
+    Promoter(label=&quot;minimal promoter&quot;),  # strand=-1 turns it round
+    CDS(width=0.92, label=&quot;GOI&quot;),        # the point says which way it reads
+    Terminator(),
+], gap=0.09)                             # page between neighbours
+
+cup2 = Protein(
+    lobes=2,                # 1 is an oval, 2 a clamshell, 3+ a complex
+    open_deg=30.0,          # how far the lobes hinge apart
+    tags=(42.0,),           # a domain tag leaves the body at this angle
+    at=(0.17, 0.52),        # over the operator — that is your claim
+    scale=0.62,
+)
+for shape in (track, cup2):
+    shape.draw(ax=ax, wall_lw=1.0)
+
+# The ligand is a dot at an anchor, and the labels are your own text.
+ax.plot(*cup2.anchor(&quot;cleft&quot;).xy, &quot;o&quot;, ms=5.5)
+for a in track.anchors(&quot;tick&quot;):
+    ax.text(*a.offset(0.06), a.meta[&quot;label&quot;], ha=&quot;center&quot;, va=&quot;top&quot;)</code></pre></div>
+</section>
+
+  <p class="source-note">Every figure above is output, not a stored asset —
+     drawn by <a href="https://github.com/deangeckt/biodraw/blob/main/examples/inducible_construct/build.py"><code>inducible_construct/build.py</code></a>, in Python, on a matplotlib axes.</p>
+
+  <nav class="pager"><a class="prev" href="bacteria.html"><span>Previous</span>Bacteria</a><a class="next" href="animals.html"><span>Next</span>Model organisms</a></nav>
+</article>
+
+<aside class="rail">
+  <p class="rail-head">On this page</p>
+  <ul><li><a href="#the-vocabulary">The vocabulary</a></li><li><a href="#how-many-repeats">How many repeats</a></li><li><a href="#the-protein-it-encodes">The protein it encodes</a></li><li><a href="#what-a-track-does">What a track does</a></li><li><a href="#drawing-one">Drawing one</a></li></ul>
+</aside>
+</main>
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox-close" type="button"
+          aria-label="Close">&times;</button>
+  <figure><img id="lightbox-img" alt=""><figcaption id="lightbox-cap">
+  </figcaption></figure>
+</div>
+<script>
+(function () {
+  var box = document.getElementById('lightbox');
+  var img = document.getElementById('lightbox-img');
+  var cap = document.getElementById('lightbox-cap');
+  function open(src, alt) {
+    img.src = src; img.alt = alt; cap.textContent = alt;
+    box.hidden = false; document.body.classList.add('no-scroll');
+  }
+  function close() {
+    box.hidden = true; img.removeAttribute('src');
+    document.body.classList.remove('no-scroll');
+  }
+  document.querySelectorAll('.zoomable').forEach(function (fig) {
+    fig.addEventListener('click', function () {
+      var i = fig.querySelector('img');
+      open(i.getAttribute('src'), i.getAttribute('alt'));
+    });
+  });
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !box.hidden) close();
+  });
+})();
+</script>
+<script>
+document.querySelectorAll('.copy').forEach(function (b) {
+  b.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var code = b.parentElement.querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(function () {
+      b.textContent = 'Copied';
+      b.classList.add('is-done');
+      setTimeout(function () {
+        b.textContent = 'Copy'; b.classList.remove('is-done');
+      }, 1400);
+    });
+  });
+});
+(function () {
+  var links = Array.prototype.slice.call(
+    document.querySelectorAll('.rail a'));
+  var heads = links.map(function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  function mark() {
+    var best = 0;
+    heads.forEach(function (h, i) {
+      if (h && h.getBoundingClientRect().top < 140) best = i;
+    });
+    links.forEach(function (a, i) {
+      a.classList.toggle('is-here', i === best);
+    });
+  }
+  window.addEventListener('scroll', mark, { passive: true });
+  mark();
+})();
+</script>
+<footer class="foot">
+  <div class="foot-inner">
+    <p><strong>biodraw</strong> — MIT. Runtime dependencies: numpy and
+       matplotlib, nothing else.</p>
+    <p>Every drawing here is regenerated from the <code>build.py</code>
+       committed beside it. Nothing on this site is a stored asset.</p>
+    <p><a href="https://github.com/deangeckt/biodraw">Source</a></p>
+  </div>
+</footer>
+</body>
+</html>

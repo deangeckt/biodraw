@@ -10,12 +10,22 @@ dependencies on anything a caller could change.
 
 import numpy as np
 
+from biodraw.animals import Fly, Mouse, Worm, Zebrafish
 from biodraw.cells import Blob, Sheet
 from biodraw.core import paths, profile
 from biodraw.core.branch import Branch
 from biodraw.core.scatter import scatter_in
+from biodraw.core.track import Track
+from biodraw.genetics import CDS, Promoter, Protein, Repeat, Terminator
 from biodraw.micro import Bacterium
-from biodraw.neuro import Basket, Pyramidal
+from biodraw.neuro import (
+    Astrocyte,
+    Basket,
+    Bipolar,
+    Granule,
+    Purkinje,
+    Pyramidal,
+)
 
 
 def _straight(n=60, length=2.0):
@@ -45,6 +55,9 @@ def collect():
         "profile.spine.mirrored": sp.place((0, 0), (0, 1), size=0.3,
                                            mirror=True),
         "profile.spine.rotated": sp.place((1, 2), (0.6, 0.8), size=0.3),
+        # A mushroom spine: fat head on a thin neck, same traced outline.
+        "profile.spine.mushroom": sp.place((0, 0), (0, 1), size=0.3,
+                                           head=1.35, neck=0.62),
 
         # -- tubes ---------------------------------------------------------
         "tube.capped": paths.tube(line, hw, base_ext=0.1),
@@ -121,6 +134,45 @@ def collect():
     shapes["blob.protrusion.first"] = b_open[0]
     shapes["blob.anchors"] = blob.anchors().points()
 
+    # -- animals -----------------------------------------------------------
+    # One assembled silhouette per body plan, plus the two that carry a
+    # layer the union does not see (the fly's wing, the fish's stripe).
+    mouse = Mouse()
+    m_closed, m_open = mouse.parts
+    shapes["mouse.body"] = m_closed[0]
+    shapes["mouse.tail"] = m_open[0]
+    shapes["mouse.anchors"] = mouse.anchors().points()
+    shapes["mouse.mirrored.body"] = Mouse(facing=-1).parts[0][0]
+
+    fly = Fly()
+    shapes["fly.thorax"] = fly.parts[0][1]
+    shapes["fly.wing"] = fly.layers[1].closed[0]
+
+    fish = Zebrafish()
+    shapes["fish.body"] = fish.parts[0][0]
+    shapes["fish.caudal"] = fish.parts[0][1]
+    shapes["fish.stripe.first"] = fish.layers[1].closed[0]
+
+    shapes["worm.body"] = Worm().parts[0][0]
+
+    # -- genetics ----------------------------------------------------------
+    # The whole track, not the glyphs on their own: what is easy to get wrong
+    # here is the *layout*, so the pin has to cover a glyph that has been laid
+    # rather than one drawn at the origin.
+    track = Track([Repeat(n=4), Promoter(), CDS(width=0.92), Terminator()])
+    t_closed, _t_open = track.parts
+    shapes["track.repeat.first"] = t_closed[0]
+    shapes["track.promoter.stem"] = t_closed[4]
+    shapes["track.cds"] = t_closed[6]
+    shapes["track.backbone"] = t_closed[-1]
+    shapes["track.anchors"] = track.anchors().points()
+
+    prot = Protein(lobes=2, open_deg=30.0, tags=(42.0, 138.0), seed=3)
+    p_closed, _p_open = prot.parts
+    shapes["protein.lobe.first"] = p_closed[0]
+    shapes["protein.tag.first"] = p_closed[2]
+    shapes["protein.anchors"] = prot.anchors().points()
+
     # -- microbes ----------------------------------------------------------
     # A bent, twisted, loaded cell rather than a plain rod: a straight capsule
     # exercises none of the arithmetic that is actually easy to get wrong, and
@@ -175,5 +227,16 @@ def collect():
     shapes["pyramidal.forked.trunk"] = f_closed[0]
     shapes["pyramidal.forked.daughter.l"] = f_open[0]
     shapes["pyramidal.forked.daughter.r"] = f_open[1]
+
+    # -- the radial cell's named forms -------------------------------------
+    # One shape at five settings, so a change to the shared body plan shows up
+    # on whichever form it breaks rather than on none of them.
+    for name, cell in (("basket", Basket()), ("bipolar", Bipolar()),
+                       ("granule", Granule()), ("purkinje", Purkinje()),
+                       ("astrocyte", Astrocyte())):
+        closed, open_ = cell.parts
+        shapes[f"radial.{name}.soma"] = closed[-1]
+        shapes[f"radial.{name}.first"] = (open_ or closed)[0]
+        shapes[f"radial.{name}.anchors"] = cell.anchors().points()
 
     return shapes

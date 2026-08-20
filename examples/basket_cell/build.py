@@ -16,8 +16,8 @@ import biodraw as bd  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 PAL = bd.style.palette.get()
-INK = PAL["inhibitory"]
-EXC = PAL["excitatory"]
+INK = PAL["secondary"]
+EXC = PAL["primary"]
 # Annotation colours for the construction figures. Local on purpose:
 # these label a *diagram about* the drawing, not the drawing, so they
 # are not the library's identity palette's business.
@@ -49,9 +49,9 @@ def told_apart():
         p = bd.style.palette.get(pal)
         for row, (cls, kw, key) in enumerate([
                 (bd.neuro.Pyramidal, dict(spines=8, basal=2, basal_spines=4),
-                 "excitatory"),
+                 "primary"),
                 (bd.neuro.Basket, dict(dendrites=7, forks=0.55, seed=2),
-                 "inhibitory")]):
+                 "secondary")]):
             ax = axes[col * 2 + row]
             bd.canvas(ax=ax)
             shape = cls(**kw)

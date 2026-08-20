@@ -26,6 +26,9 @@ INK = PAL["ink"]
 GREY = PAL["neutral"]
 # Annotation colours for the construction figure. Local on purpose: these
 # label a diagram *about* the drawing, not the drawing.
+# Annotation colours for the construction figures. Local on purpose:
+# these label a *diagram about* the drawing, not the drawing, so they
+# are not the library's identity palette's business.
 MARK_A, MARK_B, MARK_C = "#7C3AED", "#059669", "#D97706"
 
 plt.rcParams.update({

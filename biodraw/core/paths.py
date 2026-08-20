@@ -21,7 +21,9 @@ from .geom import rot, signed_area, unit
 __all__ = [
     "tube", "buried_base", "rall_widths",
     "superellipse", "superellipse_radius", "superellipse_param", "bowed_ring",
-    "rounded_polygon", "neck_polygon", "elbow",
+    "rounded_polygon",
+    "rounded_ring", "neck_polygon", "elbow", "round_polyline",
+    "orthogonal_route",
     "arc_rad", "arc3_control", "cubic_connector", "bezier_split",
     "stroke_path", "connector_path", "fork_tree",
 ]
@@ -623,3 +625,91 @@ def fork_tree(a, bs, drop, rads, smooth, fork, spread):
         q1 = f + d * (float(smooth) * float(np.linalg.norm(b - f)))
         branches.append(stroke_path((f, q1, b + (2.0 / 3.0) * (c - b), b)))
     return stroke_path(stem_cubic, start=(a if drop else None)), branches
+
+def round_polyline(pts, radius, n_arc=8):
+    """An open polyline with every interior corner cut to a circular fillet.
+
+    `rounded_polygon` does this for a closed ring; a routed connector is open,
+    and its ends must stay exactly where they were put — one of them is a
+    shape's anchor and the other is where an arrowhead lands.
+
+    The radius is clamped per corner to half of the shorter adjacent segment,
+    so a short leg between two turns cannot produce a fillet that overshoots
+    its own neighbours and folds the route back on itself.
+
+    `radius=0` returns the polyline unchanged, which is the right default for
+    a bus: a schematic that turns a hard right angle reads as *routing*, and
+    that is exactly the claim a shared rail is making. Round it only when the
+    line is meant to read as a process.
+    """
+    q = np.asarray(pts, dtype=float)
+    if radius <= 0 or len(q) < 3:
+        return q
+    out = [q[0]]
+    for i in range(1, len(q) - 1):
+        prev, here, nxt = q[i - 1], q[i], q[i + 1]
+        v_in, v_out = here - prev, nxt - here
+        l_in, l_out = np.linalg.norm(v_in), np.linalg.norm(v_out)
+        if l_in < 1e-12 or l_out < 1e-12:
+            continue
+        r = min(float(radius), l_in / 2, l_out / 2)
+        a = here - v_in / l_in * r
+        b = here + v_out / l_out * r
+        # Quadratic Bezier through the corner, sampled — the fillet only has
+        # to look round, and sampling keeps the result a plain polyline that
+        # anything downstream can measure.
+        t = np.linspace(0.0, 1.0, int(n_arc))[:, None]
+        out.append(a)
+        out.append((1 - t) ** 2 * a + 2 * (1 - t) * t * here + t ** 2 * b)
+        out.append(b)
+    out.append(q[-1])
+    return np.vstack([o if o.ndim == 2 else o[None] for o in out])
+
+
+def rounded_ring(verts, radius, n_arc=10):
+    """`rounded_polygon`'s fillets as plain vertices, closed.
+
+    The Path form is what matplotlib wants to *draw*; anything that has to be
+    transformed, measured or fused — a glyph on a `Track`, a shape's own
+    `_parts` — needs vertices. Rather than a second fillet implementation,
+    this walks the ring as an open polyline with the seam moved to the
+    **midpoint of the closing edge**, so every original corner is an interior
+    one that `round_polyline` will round, and the seam itself falls where no
+    fillet reaches.
+    """
+    q = np.asarray(verts, dtype=float)
+    seam = 0.5 * (q[-1] + q[0])
+    return round_polyline(np.vstack([seam, q, seam]), radius, n_arc)
+
+
+def orthogonal_route(a, b, rail, axis="h"):
+    """A right-angle route from `a` to `b` by way of a shared `rail`.
+
+    `axis='h'` puts the rail at `y = rail`: the route leaves `a` vertically,
+    runs along the rail, and rises into `b` vertically. `'v'` is the same about
+    the other axis.
+
+    This is the shape a **bus** makes, and it is what most summary and circuit
+    figures actually draw. A fan of curves from one source to four targets says
+    "four separate things happened"; four risers off one horizontal says "these
+    all share a source", which is usually the claim. It is also far easier to
+    read at a glance, because the eye follows a straight line and has to trace
+    a curve.
+
+    Degenerate legs are dropped, so a target already on the rail gives a plain
+    two-point line rather than a zero-length kink.
+    """
+    a, b = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
+    rail = float(rail)
+    if axis == "h":
+        pts = [a, [a[0], rail], [b[0], rail], b]
+    elif axis == "v":
+        pts = [a, [rail, a[1]], [rail, b[1]], b]
+    else:
+        raise ValueError(f"axis must be 'h' or 'v', not {axis!r}")
+    out = [np.asarray(pts[0], dtype=float)]
+    for q in pts[1:]:
+        q = np.asarray(q, dtype=float)
+        if np.linalg.norm(q - out[-1]) > 1e-12:
+            out.append(q)
+    return np.vstack(out)

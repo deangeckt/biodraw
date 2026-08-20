@@ -12,98 +12,159 @@
   <div class="masthead-inner">
     <a class="wordmark" href="index.html">biodraw</a>
     <nav class="masthead-links">
-      <a href="https://github.com/deangeckt/biodraw">GitHub</a>
+      <a href="styles.html">Drawing styles</a>
       <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+      <a class="gh" href="https://github.com/deangeckt/biodraw" aria-label="biodraw on GitHub"
+         title="biodraw on GitHub"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
     </nav>
   </div>
 </header>
 <main>
 <section class="hero-copy">
   <h1>Bio-inspired vector drawings<br>for papers, posters and slides</h1>
-  <p class="standfirst">Hand-drawn shapes, turned into maths, placeable
-     anywhere. Every drawing below is a few parameters and a seed — not a file
+  <p class="standfirst">A <strong>Python</strong> library. Hand-drawn shapes,
+     turned into maths, drawn onto a matplotlib axes so they sit beside real
+     data. Every drawing below is a few parameters and a seed — not a file
      someone saved.</p>
+  <p class="hero-install"><code>pip install biodraw</code>
+     <a href="https://github.com/deangeckt/biodraw"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span>Source on GitHub</span></a></p>
 </section>
 
 <section class="controls">
-  <div class="filters"><button class="filter is-on" data-category="">All<span class="count">9</span></button><button class="filter" data-category="Neurons">Neurons<span class="count">2</span></button><button class="filter" data-category="Dendrites &amp; spines">Dendrites &amp; spines<span class="count">1</span></button><button class="filter" data-category="Circuits">Circuits<span class="count">2</span></button><button class="filter" data-category="Cells &amp; tissues">Cells &amp; tissues<span class="count">3</span></button><button class="filter" data-category="Microbes">Microbes<span class="count">1</span></button></div>
+  <div class="filters"><button class="filter is-on" data-category="">All<span class="count">15</span></button><button class="filter" data-category="Neuroscience">Neuroscience<span class="count">9</span></button><button class="filter" data-category="Cells &amp; tissues">Cells &amp; tissues<span class="count">3</span></button><button class="filter" data-category="Microbes">Microbes<span class="count">1</span></button><button class="filter" data-category="Genetics">Genetics<span class="count">1</span></button><button class="filter" data-category="Animals">Animals<span class="count">1</span></button></div>
   <input id="search" type="search" placeholder="Search shapes, tissue, knobs…"
          autocomplete="off" aria-label="Search examples">
 </section>
 
-<p class="tally"><strong>9</strong> examples ·
-   <strong>48</strong> figures · every one a parameter away from the
+<p class="tally"><strong>15</strong> examples ·
+   <strong>79</strong> figures · every one a parameter away from the
    next</p>
 
 <section class="grid" id="grid">
   <a class="card" href="pyramidal_cell.html"
-     data-category="Neurons"
-     data-search="pyramidal cell a triangular soma with spiny dendrites out of it — apical up, basals down — soma, dendrites and every spine forming one unbroken outline. neuro.pyramidal pyramidal neuron excitatory soma apical basal cortex spiny fork dendrite neurons">
+     data-category="Neuroscience"
+     data-search="pyramidal cell a triangular soma with spiny dendrites out of it — apical up, basals down — soma, dendrites and every spine forming one unbroken outline. neuro.pyramidal pyramidal neuron primary soma apical basal cortex spiny fork dendrite neuroscience">
     <span class="plate card-plate">
       <img class="shot" src="../examples/pyramidal_cell/pyramidal.png"
            alt="A pyramidal cell" loading="lazy">
     </span>
     <span class="card-body">
-      <span class="card-kicker">Neurons</span>
+      <span class="card-kicker">Neuroscience</span>
       <span class="card-title">Pyramidal cell</span>
       <span class="card-tagline">A triangular soma with spiny dendrites out of it — apical up, basals down — soma, dendrites and every spine forming one unbroken outline.</span>
       <span class="chips"><span class="chip">neuro.Pyramidal</span></span>
     </span>
   </a>
   <a class="card" href="basket_cell.html"
-     data-category="Neurons"
-     data-search="basket cell a round soma with smooth dendrites leaving in every direction — the counterpart to the pyramidal cell, drawn to be told apart from it at a glance. neuro.basket basket interneuron inhibitory aspiny multipolar bitufted bipolar dendrite neuron neurons">
+     data-category="Neuroscience"
+     data-search="basket cell a round soma with smooth dendrites leaving in every direction — the counterpart to the pyramidal cell, drawn to be told apart from it at a glance. neuro.basket basket interneuron secondary aspiny multipolar bitufted bipolar dendrite neuron neuroscience">
     <span class="plate card-plate">
       <img class="shot" src="../examples/basket_cell/basket.png"
            alt="A basket cell" loading="lazy">
     </span>
     <span class="card-body">
-      <span class="card-kicker">Neurons</span>
+      <span class="card-kicker">Neuroscience</span>
       <span class="card-title">Basket cell</span>
       <span class="card-tagline">A round soma with smooth dendrites leaving in every direction — the counterpart to the pyramidal cell, drawn to be told apart from it at a glance.</span>
       <span class="chips"><span class="chip">neuro.Basket</span></span>
     </span>
   </a>
+  <a class="card" href="bipolar.html"
+     data-category="Neuroscience"
+     data-search="bipolar cell two opposed processes on a stretched soma — the one silhouette nothing else in the library shares. neuro.bipolar bipolar bitufted retina sensory polarised neuron dendrite soma arc neuroscience">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/bipolar/bipolar.png"
+           alt="A bipolar cell" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Neuroscience</span>
+      <span class="card-title">Bipolar cell</span>
+      <span class="card-tagline">Two opposed processes on a stretched soma — the one silhouette nothing else in the library shares.</span>
+      <span class="chips"><span class="chip">neuro.Bipolar</span></span>
+    </span>
+  </a>
+  <a class="card" href="granule.html"
+     data-category="Neuroscience"
+     data-search="granule cell mostly soma, with four short dendrites that end in claws — the cell whose proportions are its identity. neuro.granule granule cerebellum dentate claw small proportion neuron dendrite neuroscience">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/granule/granule.png"
+           alt="A granule cell" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Neuroscience</span>
+      <span class="card-title">Granule cell</span>
+      <span class="card-tagline">Mostly soma, with four short dendrites that end in claws — the cell whose proportions are its identity.</span>
+      <span class="chips"><span class="chip">neuro.Granule</span></span>
+    </span>
+  </a>
+  <a class="card" href="purkinje.html"
+     data-category="Neuroscience"
+     data-search="purkinje cell a flat, densely branched fan over one soma — an arc and a branching depth, and nothing else. neuro.purkinje purkinje cerebellum fan planar arbor wedge branching depth neuron dendrite neuroscience">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/purkinje/purkinje.png"
+           alt="A Purkinje cell" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Neuroscience</span>
+      <span class="card-title">Purkinje cell</span>
+      <span class="card-tagline">A flat, densely branched fan over one soma — an arc and a branching depth, and nothing else.</span>
+      <span class="chips"><span class="chip">neuro.Purkinje</span></span>
+    </span>
+  </a>
+  <a class="card" href="astrocyte.html"
+     data-category="Neuroscience"
+     data-search="astrocyte a bush of fine processes in every direction — where a purkinje cell is a fan, this is a cloud. neuro.astrocyte astrocyte glia glial bush star stellate process taper brain neuroscience">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/astrocyte/astrocyte.png"
+           alt="An astrocyte" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Neuroscience</span>
+      <span class="card-title">Astrocyte</span>
+      <span class="card-tagline">A bush of fine processes in every direction — where a Purkinje cell is a fan, this is a cloud.</span>
+      <span class="chips"><span class="chip">neuro.Astrocyte</span></span>
+    </span>
+  </a>
+  <a class="card" href="radial_cell.html"
+     data-category="Neuroscience"
+     data-search="radial body plan a soma with processes leaving it. five named cells are this shape at five settings — and so is the one you need next. neuro.radialcell radial body plan cell type custom stellate multipolar arc branching depth arbor dendrite neuroscience">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/radial_cell/types.png"
+           alt="Six cell types side by side, each named by its silhouette" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Neuroscience</span>
+      <span class="card-title">Radial body plan</span>
+      <span class="card-tagline">A soma with processes leaving it. Five named cells are this shape at five settings — and so is the one you need next.</span>
+      <span class="chips"><span class="chip">neuro.RadialCell</span></span>
+    </span>
+  </a>
   <a class="card" href="dendritic_spine.html"
-     data-category="Dendrites &amp; spines"
-     data-search="dendritic spine the shape biodraw grew out of, and the clearest example of why it traces rather than synthesises. profile.get(&#x27;spine&#x27;) branch spine dendrite profile traced neck head extend density synapse dendrites &amp; spines">
+     data-category="Neuroscience"
+     data-search="dendritic spine the shape biodraw grew out of, and the clearest example of why it traces rather than synthesises. profile.get(&#x27;spine&#x27;) branch spine dendrite profile traced neck head mushroom thin stubby extend density synapse neuroscience">
     <span class="plate card-plate">
       <img class="shot" src="../examples/dendritic_spine/spine.png"
            alt="A dendritic spine" loading="lazy">
     </span>
     <span class="card-body">
-      <span class="card-kicker">Dendrites &amp; spines</span>
+      <span class="card-kicker">Neuroscience</span>
       <span class="card-title">Dendritic spine</span>
       <span class="card-tagline">The shape biodraw grew out of, and the clearest example of why it traces rather than synthesises.</span>
       <span class="chips"><span class="chip">profile.get(&#x27;spine&#x27;)</span><span class="chip">Branch</span></span>
     </span>
   </a>
-  <a class="card" href="wiring.html"
-     data-category="Circuits"
-     data-search="wiring everything needed to connect one cell to another: connectors, and the endcaps that say what a connection is. connect connect_tree connectors.endcap connector endcap arrow bar synapse contact axon projection arbor circuit circuits">
-    <span class="plate card-plate">
-      <img class="shot" src="../examples/wiring/circuit.png"
-           alt="A wired circuit panel" loading="lazy">
-    </span>
-    <span class="card-body">
-      <span class="card-kicker">Circuits</span>
-      <span class="card-title">Wiring</span>
-      <span class="card-tagline">Everything needed to connect one cell to another: connectors, and the endcaps that say what a connection is.</span>
-      <span class="chips"><span class="chip">connect</span><span class="chip">connect_tree</span><span class="chip">connectors.endcap</span></span>
-    </span>
-  </a>
-  <a class="card" href="circuit_motifs.html"
-     data-category="Circuits"
-     data-search="circuit motifs cells wired to each other — which is what everything else in this library was building toward. neuro.pyramidal neuro.basket connect_tree circuit motif column cortical layer excitation inhibition palette colorblind mono circuits">
+  <a class="card" href="circuits.html"
+     data-category="Neuroscience"
+     data-search="circuits &amp; wiring cells wired to each other: the connectors, the endcaps that say what a connection is, and the motifs they build. connect connect_tree connectors.endcap neuro.pyramidal neuro.basket circuit motif column cortical layer excitation inhibition connector endcap arrow bar synapse contact axon projection arbor palette colorblind mono neuroscience">
     <span class="plate card-plate">
       <img class="shot" src="../examples/circuit_motifs/column.png"
            alt="A cortical column" loading="lazy">
     </span>
     <span class="card-body">
-      <span class="card-kicker">Circuits</span>
-      <span class="card-title">Circuit motifs</span>
-      <span class="card-tagline">Cells wired to each other — which is what everything else in this library was building toward.</span>
-      <span class="chips"><span class="chip">neuro.Pyramidal</span><span class="chip">neuro.Basket</span><span class="chip">connect_tree</span></span>
+      <span class="card-kicker">Neuroscience</span>
+      <span class="card-title">Circuits &amp; wiring</span>
+      <span class="card-tagline">Cells wired to each other: the connectors, the endcaps that say what a connection is, and the motifs they build.</span>
+      <span class="chips"><span class="chip">connect</span><span class="chip">connect_tree</span><span class="chip">connectors.endcap</span><span class="chip">neuro.Pyramidal</span><span class="chip">neuro.Basket</span></span>
     </span>
   </a>
   <a class="card" href="generic_cell.html"
@@ -162,7 +223,51 @@
       <span class="chips"><span class="chip">micro.Bacterium</span><span class="chip">paths.tube</span></span>
     </span>
   </a>
+  <a class="card" href="inducible_construct.html"
+     data-category="Genetics"
+     data-search="inducible construct a construct is glyphs laid along a line, each taking its own width — and the protein that switches it on. track genetics.repeat genetics.promoter genetics.cds genetics.terminator genetics.protein genetics construct plasmid sbol promoter operator cds gene terminator repeat inducible expression protein domain track ideogram domain map genetics">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/inducible_construct/construct.png"
+           alt="A copper-inducible expression construct with CUP2 bound to its operator" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Genetics</span>
+      <span class="card-title">Inducible construct</span>
+      <span class="card-tagline">A construct is glyphs laid along a line, each taking its own width — and the protein that switches it on.</span>
+      <span class="chips"><span class="chip">Track</span><span class="chip">genetics.Repeat</span><span class="chip">genetics.Promoter</span><span class="chip">genetics.CDS</span><span class="chip">genetics.Terminator</span><span class="chip">genetics.Protein</span></span>
+    </span>
+  </a>
+  <a class="card" href="animals.html"
+     data-category="Animals"
+     data-search="model organisms mouse, fly, zebrafish and worm as silhouettes — and facing whichever way your panel needs. animals.mouse animals.fly animals.zebrafish animals.worm animal model organism mouse rodent fly drosophila insect zebrafish fish worm c. elegans nematode silhouette outline methods figure animals">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/animals/animals.png"
+           alt="A mouse, a fly, a zebrafish and a worm in outline" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Animals</span>
+      <span class="card-title">Model organisms</span>
+      <span class="card-tagline">Mouse, fly, zebrafish and worm as silhouettes — and facing whichever way your panel needs.</span>
+      <span class="chips"><span class="chip">animals.Mouse</span><span class="chip">animals.Fly</span><span class="chip">animals.Zebrafish</span><span class="chip">animals.Worm</span></span>
+    </span>
+  </a>
 </section>
+
+<section class="band">
+  <a class="band-inner" href="styles.html">
+    <span class="band-copy">
+      <span class="card-kicker">Every drawing in the catalog</span>
+      <span class="band-title">Drawing styles</span>
+      <span class="card-tagline">Two drawing languages — walled tubes and stroked centrelines — and the settings inside each.</span>
+      <span class="band-go">See them all &rarr;</span>
+    </span>
+    <span class="plate band-plate">
+      <img src="../examples/styles/styles.png"
+           alt="One cell under seven house styles" loading="lazy">
+    </span>
+  </a>
+</section>
+
 
 <p class="empty" id="empty" hidden>Nothing matches that.
    <button class="linky" id="reset">Show everything</button></p>

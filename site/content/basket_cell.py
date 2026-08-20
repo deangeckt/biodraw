@@ -2,9 +2,8 @@
 
 PAGE = dict(
     title="Basket cell",
-    category="Neurons",
+    category="Neuroscience",
     order=1,
-    build_pattern="basket",
     tagline="A round soma with smooth dendrites leaving in every direction — "
             "the counterpart to the pyramidal cell, drawn to be told apart "
             "from it at a glance.",
@@ -14,7 +13,7 @@ PAGE = dict(
     keywords=[
               "basket",
               "interneuron",
-              "inhibitory",
+              "secondary",
               "aspiny",
               "multipolar",
               "bitufted",

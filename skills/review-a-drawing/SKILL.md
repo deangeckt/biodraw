@@ -370,6 +370,88 @@ out.**
 
 ---
 
+### 12 · No drawing colour is a hex literal
+
+**The comment that produced it:** *"these specific blue and red are from my
+paper, you dont have to commit to those, but rather choose nicer colours for
+the website."*
+
+Retuning the palette moved every shape that asks for its colour properly, and
+missed three `ax.fill(..., color="#FFE3E3")` calls in a blueprint — a pale
+tint of the *old* red, still sitting behind cells now drawn in blue. A
+hardcoded colour does not fail; it silently keeps the palette you have just
+replaced, which is the worst way for this to go wrong because the build stays
+green.
+
+Two colours are legitimately literal, and the distinction is the whole check:
+
+- **Drawing colours** — anything inking a shape, its wall or its interior —
+  must come from `bd.style.palette.get()` or be derived from something that
+  did (`render.resolve_fill(None, None, ink)` for a wash).
+- **Annotation colours** — the arrows, spans and markers on a *blueprint*, and
+  the greys of axis furniture — are a diagram *about* the drawing, not the
+  drawing, and may be literal. Declare them once at module scope with a
+  comment saying so, rather than inline at the point of use.
+
+```bash
+# every hex literal in the example and site sources
+grep -rn '"#[0-9A-Fa-f]\{6\}"' --include=*.py examples site
+```
+
+---
+
+### 13 · The frame is the drawing's shape, not the figure's
+
+**The comment that produced it:** *"the 'on a branch' eight image is almost
+only white space image."*
+
+It was, and it was measurable: the ink filled **62% of that file's width**.
+Nothing was watching, so the three emptiest images in the entire catalog were
+all sitting on the one page a reader had just complained about.
+
+Two causes, and neither is visible in the code that draws the figure:
+
+1. `save_compact` trims with `bbox_inches="tight"`, which trims to the
+   **axes** — not to the ink. The axes are equal-aspect, so a drawing three
+   times as tall as it is wide inside a square figure keeps its side margins
+   all the way into the committed PNG.
+2. `pad_inches` defaults to a **fixed** 0.1 inch. On a wide sheet that is 1%
+   of the width; on a portrait 0.86 inches across it is 19% of the file.
+
+```bash
+python tools/build_gallery.py <example>     # every run reports loose frames
+```
+
+**Fails if** the ink's bounding box uses less than `FRAME_MIN` (72%) of
+either axis. **Fix** by shaping the figure like the data — see `_framed` in
+`examples/dendritic_spine/build.py`, four lines that take the figsize from
+the parts about to be drawn — or by tightening the limits a phantom box set.
+Do **not** fix it by cropping in an editor: the image has to regenerate.
+
+It reports rather than fails the build, because a portrait of a round cell
+cannot fill a rectangle and the practical floor is around 0.75. The point is
+that a 0.62 can no longer pass unnoticed. After the fix: worst frame in the
+catalog 75%, median 93%.
+
+The transferable part is the same one as check 11: **a defect a reader can
+see in one glance and you cannot see at all is exactly the kind that needs a
+number.** Anything about how a drawing *sits on the page* — margins, framing,
+alignment across panels, the size of one panel against its neighbour — is
+invisible to you and obvious to them.
+
+Every hit must be either a named annotation constant at module scope, or
+gone. If a shape's ink is a literal, replace it; if a wash is a literal,
+derive it — `resolve_fill` exists precisely so a hand-drawn fill can ask for
+the same interior `render_hollow` would have produced.
+
+**Also check the palette's own slots are role-named.** They are `primary`,
+`secondary`, `tertiary` — not `excitatory` / `inhibitory`. The old names read
+well in `biodraw.neuro` and nowhere else, and the evidence was already in the
+tree: `examples/epithelial_sheet` coloured a **nucleus** with
+`palette["inhibitory"]` because there was no other slot to reach for. A shared
+palette carrying one field's vocabulary is the same mistake as the claim
+colours, one level up.
+
 ## Reporting
 
 Say what you measured and what you did not. "Tests pass" and "it looks right"

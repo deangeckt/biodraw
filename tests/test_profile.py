@@ -72,6 +72,44 @@ def test_extend_lengthens_the_neck_without_inflating_the_head():
     assert np.isclose(np.ptp(b[:, 1]), np.ptp(a[:, 1]))     # unchanged width
 
 
+def test_head_and_neck_scale_their_own_half_of_the_shape():
+    """Thin, stubby and mushroom spines are this pair, not three profiles.
+
+    Each multiplier must move *its* end and leave the other one where it was,
+    or the two knobs are one knob with a fancy name.
+    """
+    sp = profile.get("spine")
+
+    def widths(**kw):
+        out = sp.place((0, 0), (1, 0), size=1.0, sink=0.0, **kw)
+        x, y = out[:, 0], np.abs(out[:, 1])
+        return y[x < 0.30].max(), y[(x > 0.75) & (x < 0.90)].max()
+
+    neck, head = widths()
+    fat_neck, unchanged_head = widths(head=2.0)
+    assert np.isclose(unchanged_head, 2.0 * head)
+    assert np.isclose(fat_neck, neck)                  # the neck stayed put
+
+    thin_neck, still_head = widths(neck=0.5)
+    assert np.isclose(thin_neck, 0.5 * neck)
+    assert np.isclose(still_head, head)
+
+
+def test_head_and_neck_change_no_length():
+    """Width only — so `head_offset`, what a connector aims at, still holds."""
+    sp = profile.get("spine")
+    a = sp.place((0, 0), (1, 0), size=0.21)
+    b = sp.place((0, 0), (1, 0), size=0.21, head=1.6, neck=0.5)
+    assert np.isclose(np.ptp(a[:, 0]), np.ptp(b[:, 0]))
+
+
+def test_the_defaults_are_the_traced_shape():
+    sp = profile.get("spine")
+    np.testing.assert_array_equal(sp.place((0, 0), (1, 0), size=0.3),
+                                  sp.place((0, 0), (1, 0), size=0.3,
+                                           head=1.0, neck=1.0))
+
+
 def test_head_offset_tracks_extension_one_for_one():
     sp = profile.get("spine")
     assert np.isclose(sp.head_offset(0.21, 0.04) - sp.head_offset(0.21, 0.0),

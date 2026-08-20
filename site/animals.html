@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model organisms — biodraw</title>
+<meta name="description" content="Mouse, fly, zebrafish and worm as silhouettes — and facing whichever way your panel needs.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="index.html">biodraw</a>
+    <nav class="masthead-links">
+      <a href="styles.html">Drawing styles</a>
+      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
+      <a class="gh" href="https://github.com/deangeckt/biodraw" aria-label="biodraw on GitHub"
+         title="biodraw on GitHub"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+    </nav>
+  </div>
+</header>
+<main class="detail">
+<article>
+  <p class="crumb"><a href="index.html">All examples</a>  <span aria-hidden="true">·</span> Animals</p>
+
+  <h1>Model organisms</h1>
+  <p class="standfirst">Mouse, fly, zebrafish and worm as silhouettes — and facing whichever way your panel needs.</p>
+  <p class="chips"><span class="chip">animals.Mouse</span><span class="chip">animals.Fly</span><span class="chip">animals.Zebrafish</span><span class="chip">animals.Worm</span></p>
+
+  <figure class="hero plate zoomable">
+    <img src="../examples/animals/animals.png"
+         alt="A mouse, a fly, a zebrafish and a worm in outline">
+    <figcaption>A mouse, a fly, a zebrafish and a worm in outline</figcaption>
+  </figure>
+
+  <p class="standfirst">An outline is enough. At the size a methods figure prints one of these, detail is bytes and attention spent on nothing a reader sees.</p>
+
+<section class="block">
+<h2 id="facing-either-way">Facing either way</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/animals/facing.png" alt="Mirrored, not rotated — a rotated animal is an animal on its back." loading="lazy"><figcaption>Mirrored, not rotated — a rotated animal is an animal on its back.</figcaption></figure>
+</div>
+</section>
+<section class="block">
+<h2 id="one-knob-each">One knob each</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/animals/knobs.png" alt="Tail against body, wings on or off, stripe count, how curled the worm is." loading="lazy"><figcaption>Tail against body, wings on or off, stripe count, how curled the worm is.</figcaption></figure>
+</div>
+</section>
+<section class="block">
+<h2 id="drawn-size-and-true-size">Drawn size, and true size</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/animals/to_scale.png" alt="A mouse is 80 mm and a worm 1 mm. True scale suits one figure and wrecks most." loading="lazy"><figcaption>A mouse is 80 mm and a worm 1 mm. True scale suits one figure and wrecks most.</figcaption></figure>
+</div>
+</section>
+<section class="block">
+<h2 id="how-one-is-built">How one is built</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/animals/blueprint.png" alt="A mouse, taken apart and put back together" loading="lazy"><figcaption>A mouse, taken apart and put back together</figcaption></figure>
+</div>
+<ol class="panel-notes">
+<li><strong>Seven outlines</strong> — four bodies, two legs and a tapered tube for the tail.</li>
+<li><strong>One union.</strong> Nothing else makes them a mouse rather than a pile of shapes.</li>
+<li><strong>Anchors</strong>, so a label or a connector can find the nose without measuring anything.</li>
+</ol>
+</section>
+<section class="block">
+<h2 id="drawing-one">Drawing one</h2>
+<div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
+
+mouse = bd.animals.Mouse(
+    tail=0.78,          # tail length against a body of 1 — a stub is a vole
+    ear=1.0,
+    facing=-1,          # mirrored, so it faces into your panel
+    at=(0.0, 0.0),
+)
+mouse.draw(ax=ax, wall_lw=1.1)
+mouse.fit(ax, pad=0.12)
+
+fish = bd.animals.Zebrafish(stripes=4)   # 0 for a mutant, 6 for a dense one
+fly = bd.animals.Fly(wings=False)        # a wingless mutant, in one word
+worm = bd.animals.Worm(curl=0.22, waves=2.2)
+
+# Every animal exposes anchors: `wall` all round, plus its own named ones.
+ax.annotate(&quot;wild type&quot;, xy=mouse.anchor(&quot;nose&quot;).xy,
+            xytext=mouse.anchor(&quot;nose&quot;).offset(0.35))</code></pre></div>
+</section>
+
+  <p class="source-note">Every figure above is output, not a stored asset —
+     drawn by <a href="https://github.com/deangeckt/biodraw/blob/main/examples/animals/build.py"><code>animals/build.py</code></a>, in Python, on a matplotlib axes.</p>
+
+  <nav class="pager"><a class="prev" href="inducible_construct.html"><span>Previous</span>Inducible construct</a></nav>
+</article>
+
+<aside class="rail">
+  <p class="rail-head">On this page</p>
+  <ul><li><a href="#facing-either-way">Facing either way</a></li><li><a href="#one-knob-each">One knob each</a></li><li><a href="#drawn-size-and-true-size">Drawn size, and true size</a></li><li><a href="#how-one-is-built">How one is built</a></li><li><a href="#drawing-one">Drawing one</a></li></ul>
+</aside>
+</main>
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox-close" type="button"
+          aria-label="Close">&times;</button>
+  <figure><img id="lightbox-img" alt=""><figcaption id="lightbox-cap">
+  </figcaption></figure>
+</div>
+<script>
+(function () {
+  var box = document.getElementById('lightbox');
+  var img = document.getElementById('lightbox-img');
+  var cap = document.getElementById('lightbox-cap');
+  function open(src, alt) {
+    img.src = src; img.alt = alt; cap.textContent = alt;
+    box.hidden = false; document.body.classList.add('no-scroll');
+  }
+  function close() {
+    box.hidden = true; img.removeAttribute('src');
+    document.body.classList.remove('no-scroll');
+  }
+  document.querySelectorAll('.zoomable').forEach(function (fig) {
+    fig.addEventListener('click', function () {
+      var i = fig.querySelector('img');
+      open(i.getAttribute('src'), i.getAttribute('alt'));
+    });
+  });
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !box.hidden) close();
+  });
+})();
+</script>
+<script>
+document.querySelectorAll('.copy').forEach(function (b) {
+  b.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var code = b.parentElement.querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(function () {
+      b.textContent = 'Copied';
+      b.classList.add('is-done');
+      setTimeout(function () {
+        b.textContent = 'Copy'; b.classList.remove('is-done');
+      }, 1400);
+    });
+  });
+});
+(function () {
+  var links = Array.prototype.slice.call(
+    document.querySelectorAll('.rail a'));
+  var heads = links.map(function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  function mark() {
+    var best = 0;
+    heads.forEach(function (h, i) {
+      if (h && h.getBoundingClientRect().top < 140) best = i;
+    });
+    links.forEach(function (a, i) {
+      a.classList.toggle('is-here', i === best);
+    });
+  }
+  window.addEventListener('scroll', mark, { passive: true });
+  mark();
+})();
+</script>
+<footer class="foot">
+  <div class="foot-inner">
+    <p><strong>biodraw</strong> — MIT. Runtime dependencies: numpy and
+       matplotlib, nothing else.</p>
+    <p>Every drawing here is regenerated from the <code>build.py</code>
+       committed beside it. Nothing on this site is a stored asset.</p>
+    <p><a href="https://github.com/deangeckt/biodraw">Source</a></p>
+  </div>
+</footer>
+</body>
+</html>

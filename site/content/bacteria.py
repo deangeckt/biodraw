@@ -4,7 +4,6 @@ PAGE = dict(
     title="Bacteria",
     category="Microbes",
     order=0,
-    build_pattern="bacteria",
     tagline="A capsule body and what is hung off it. The named forms — "
             "coccus, bacillus, vibrio, spirillum — are settings of three "
             "knobs, so the space between them is drawable too.",

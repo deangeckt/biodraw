@@ -120,6 +120,16 @@ code {
 }
 .masthead-links a { color: var(--ink-soft); text-decoration: none; }
 .masthead-links a:hover { color: var(--accent); }
+/* The GitHub mark. `.masthead-inner` aligns on the baseline, which an inline
+   SVG has none of, so this one link opts out. */
+.masthead-links .gh {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  color: var(--ink-faint);
+}
+.masthead-links .gh svg { display: block; }
+.masthead-links .gh:hover { color: var(--accent); }
 
 /* ------------------------------------------------------------------- index */
 
@@ -143,6 +153,38 @@ main {
   max-width: var(--measure);
   margin: 0;
 }
+
+/* The install line under the standfirst. It is here rather than only at the
+   foot of the page because the index never said, above the fold, what this
+   is: *"the main page in the website [is] missing the fact that this catalog
+   is driven by python, and a link to github aswell"*. */
+.hero-install {
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.1rem;
+  margin: 1.3rem 0 0;
+}
+.hero-install code {
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  background: var(--code-bg);
+  border: 1px solid var(--rule-soft);
+  border-radius: 3px;
+  padding: 0.28rem 0.6rem;
+}
+.hero-install a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+.hero-install a:hover { color: var(--accent); }
+.hero-install svg { display: block; }
 
 .controls {
   display: flex;
@@ -276,6 +318,53 @@ main {
   border: 1px solid var(--rule);
   border-radius: 3px;
   padding: 0.1rem 0.36rem;
+}
+
+/* -------------------------------------------------------------------- band */
+
+/* A standalone page: one that is about *every* card rather than being one of
+   them. Deliberately not card-shaped — full width, its own rule above it,
+   the drawing on the right — because a style sitting in the grid reads as
+   the fourteenth example rather than as a property of the other thirteen.
+   See `band()` in tools/build_site.py. */
+.band {
+  margin: 3.4rem 0 0;
+  border-top: 1px solid var(--rule);
+  padding-top: 2.2rem;
+}
+.band-inner {
+  display: grid;
+  /* The drawing gets the larger share: a styles strip is seven cells wide,
+     and at the card ratio each one came out 65 px. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr);
+  gap: 1.4rem 2.4rem;
+  align-items: center;
+  text-decoration: none;
+}
+.band-copy { display: block; }
+.band-title {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.4rem;
+}
+.band-inner:hover .band-title { color: var(--accent); }
+.band-copy .card-tagline { font-size: 0.98rem; }
+.band-go {
+  display: inline-block;
+  margin-top: 0.95rem;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+.band-plate { display: block; padding: 1rem; }
+.band-plate img { display: block; width: 100%; height: auto; }
+.band-inner:hover .band-plate { border-color: var(--ink-faint); }
+
+@media (max-width: 660px) {
+  .band-inner { grid-template-columns: 1fr; }
 }
 
 .empty {

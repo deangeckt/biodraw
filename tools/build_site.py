@@ -64,15 +64,22 @@ SITE = ROOT / "site"
 CONTENT = SITE / "content"
 EXAMPLES = ROOT / "examples"
 
-# Order on the index. A category is a domain a reader would search in, not a
-# module name — `wiring` is core.connectors and `circuit_motifs` is a
-# composition, but both are what someone means by "circuits".
+# Order on the index. **A category is a domain package.** `biodraw.neuro` ->
+# Neuroscience, `biodraw.cells` -> Cells & tissues, `biodraw.micro` ->
+# Microbes, so the structure a reader browses is the structure they import and
+# finding a drawing and finding its module are the same act. A new domain gets
+# its category for free, and nobody has to adjudicate whether a spine belongs
+# under "dendrites" or "neurons".
+#
+# It used to be five, with Neurons / Dendrites & spines / Circuits split out —
+# nine pages across five filters, three of which were the same package, and
+# most filters showed one or two cards.
 CATEGORIES = (
-    "Neurons",
-    "Dendrites & spines",
-    "Circuits",
+    "Neuroscience",
     "Cells & tissues",
     "Microbes",
+    "Genetics",
+    "Animals",
 )
 
 GITHUB = "https://github.com/deangeckt/biodraw"
@@ -122,6 +129,24 @@ def skill_items():
         for name, text in SKILLS)
 
 
+def img_src(page, src):
+    """Where an image lives, as a URL from `site/`.
+
+    A bare name is that page's own example folder — the 1:1 case, which is
+    most of them. A name with a folder in it (`wiring/bus.png`) is another
+    example's, which is what lets **one card cover several example folders**:
+    wiring and circuit motifs are one page a reader browses and two folders a
+    maintainer builds, and neither had to be bent to the other.
+    """
+    return (f"../examples/{src}" if "/" in src
+            else f"../examples/{page['slug']}/{src}")
+
+
+def page_examples(page):
+    """The example folders a page draws from, in order."""
+    return page.get("examples") or [page["slug"]]
+
+
 def section_id(title):
     return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
 
@@ -131,7 +156,7 @@ def section_id(title):
 # ---------------------------------------------------------------------------
 
 def load_pages():
-    """Every `site/content/<slug>.py`, as its `PAGE` dict."""
+    """Every `site/content/<slug>.py`, as `(cards, standalone pages)`."""
     pages = []
     for path in sorted(CONTENT.glob("*.py")):
         if path.name.startswith("_"):
@@ -143,13 +168,20 @@ def load_pages():
         page.setdefault("slug", path.stem)
         pages.append(page)
 
-    unknown = {p["category"] for p in pages} - set(CATEGORIES)
+    # A standalone page is not in the grid, so it has no category to be in;
+    # everything else must name one that exists.
+    unknown = {p["category"] for p in pages
+               if not p.get("standalone")} - set(CATEGORIES)
     if unknown:
         plural = "y" if len(unknown) == 1 else "ies"
         raise SystemExit(f"unknown categor{plural}: {sorted(unknown)}. "
                          f"Add to CATEGORIES or fix the content module.")
-    pages.sort(key=lambda p: (CATEGORIES.index(p["category"]), p["order"]))
-    return pages
+    cards = sorted((p for p in pages if not p.get("standalone")),
+                   key=lambda p: (CATEGORIES.index(p["category"]),
+                                  p["order"]))
+    extras = sorted((p for p in pages if p.get("standalone")),
+                    key=lambda p: p["order"])
+    return cards, extras
 
 
 # Anything a reader could type. `pip install biodraw` gets them the library
@@ -249,13 +281,13 @@ def check_images(pages):
     """Every referenced image must exist. See the module docstring."""
     missing = []
     for page in pages:
-        folder = EXAMPLES / page["slug"]
         wanted = [page["hero"]]
         for section in page["sections"]:
             wanted += [img["src"] for img in section.get("images", ())]
         for name in wanted:
-            if not (folder / name).is_file():
-                missing.append(f"{page['slug']}/{name}")
+            rel = img_src(page, name).replace("../examples/", "")
+            if not (EXAMPLES / rel).is_file():
+                missing.append(rel)
     if missing:
         raise SystemExit("images referenced but not on disk:\n  " +
                          "\n  ".join(missing))
@@ -279,13 +311,43 @@ def head(title, description):
 """
 
 
-def masthead(home="index.html"):
+# The GitHub mark, inline. *"the main page in the website [is] missing ... a
+# link to github aswell (small icon?)"* — the word "GitHub" in a nav reads as
+# one more section of the site; the mark reads as "the code is over there",
+# which is the thing a reader is looking for. Inline because the site has no
+# asset pipeline and a 700-byte path beats a request.
+GITHUB_MARK = (
+    '<svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" '
+    'focusable="false"><path fill="currentColor" fill-rule="evenodd" '
+    'd="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 '
+    '0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-'
+    '1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 '
+    '2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59'
+    '.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 '
+    '2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51'
+    '.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 '
+    '1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-'
+    '3.58-8-8-8Z"/></svg>')
+
+
+def masthead(extras=()):
+    """The header. `extras` are the standalone pages — see `render_index`.
+
+    A standalone page is one that is *about every card* rather than being one
+    of them, so it belongs in the chrome and not in the grid: from any page,
+    one click away.
+    """
+    links = "".join(
+        f'<a href="{e["slug"]}.html">{html.escape(e["title"])}</a>'
+        for e in extras)
     return f"""<header class="masthead">
   <div class="masthead-inner">
-    <a class="wordmark" href="{home}">biodraw</a>
+    <a class="wordmark" href="index.html">biodraw</a>
     <nav class="masthead-links">
-      <a href="{GITHUB}">GitHub</a>
+      {links}
       <a href="{GITHUB}/blob/main/docs/PLAN.md">Roadmap</a>
+      <a class="gh" href="{GITHUB}" aria-label="biodraw on GitHub"
+         title="biodraw on GitHub">{GITHUB_MARK}</a>
     </nav>
   </div>
 </header>
@@ -356,7 +418,7 @@ def card(page):
      data-category="{html.escape(page['category'])}"
      data-search="{html.escape(haystack)}">
     <span class="plate card-plate">
-      <img class="shot" src="../examples/{page['slug']}/{page['hero']}"
+      <img class="shot" src="{img_src(page, page['hero'])}"
            alt="{html.escape(page['hero_alt'])}" loading="lazy">
     </span>
     <span class="card-body">
@@ -369,7 +431,34 @@ def card(page):
 """
 
 
-def render_index(pages):
+def band(page):
+    """A standalone page, as a full-width strip beside the grid.
+
+    *"neuron style is great! ... but i dont think it should be in a card,
+    rather, somewhere else, which is more of a 'global' or parallel to the
+    main page cards."* A card is one drawing among many and invites
+    comparison with its neighbours; a style is a property **of** all of them,
+    and putting it in the grid says the wrong thing about what it is. Same
+    data as a card, laid out so it cannot be mistaken for one.
+    """
+    return f"""<section class="band">
+  <a class="band-inner" href="{page['slug']}.html">
+    <span class="band-copy">
+      <span class="card-kicker">Every drawing in the catalog</span>
+      <span class="band-title">{html.escape(page['title'])}</span>
+      <span class="card-tagline">{inline(page['tagline'])}</span>
+      <span class="band-go">See them all &rarr;</span>
+    </span>
+    <span class="plate band-plate">
+      <img src="{img_src(page, page['hero'])}"
+           alt="{html.escape(page['hero_alt'])}" loading="lazy">
+    </span>
+  </a>
+</section>
+"""
+
+
+def render_index(pages, extras=()):
     counts = {c: sum(1 for p in pages if p["category"] == c)
               for c in CATEGORIES}
     chips = [f'<button class="filter is-on" data-category="">All'
@@ -383,19 +472,22 @@ def render_index(pages):
             f"</button>")
 
     figures = sum(1 + sum(len(s.get("images", ())) for s in p["sections"])
-                  for p in pages)
+                  for p in (*pages, *extras))
 
     return (
         head("biodraw — bio-inspired vector drawings",
              "A browsable gallery of parametric biological drawings for "
              "matplotlib. Every shape is a few parameters and a seed.")
-        + masthead()
+        + masthead(extras)
         + f"""<main>
 <section class="hero-copy">
   <h1>Bio-inspired vector drawings<br>for papers, posters and slides</h1>
-  <p class="standfirst">Hand-drawn shapes, turned into maths, placeable
-     anywhere. Every drawing below is a few parameters and a seed — not a file
+  <p class="standfirst">A <strong>Python</strong> library. Hand-drawn shapes,
+     turned into maths, drawn onto a matplotlib axes so they sit beside real
+     data. Every drawing below is a few parameters and a seed — not a file
      someone saved.</p>
+  <p class="hero-install"><code>pip install biodraw</code>
+     <a href="{GITHUB}">{GITHUB_MARK}<span>Source on GitHub</span></a></p>
 </section>
 
 <section class="controls">
@@ -410,6 +502,8 @@ def render_index(pages):
 
 <section class="grid" id="grid">
 {''.join(card(p) for p in pages)}</section>
+
+{''.join(band(e) for e in extras)}
 
 <p class="empty" id="empty" hidden>Nothing matches that.
    <button class="linky" id="reset">Show everything</button></p>
@@ -494,7 +588,7 @@ def render_section(page, section):
         for img in images:
             parts.append(
                 f'<figure class="plate zoomable">'
-                f'<img src="../examples/{page["slug"]}/{img["src"]}" '
+                f'<img src="{img_src(page, img["src"])}" '
                 f'alt="{html.escape(img["alt"])}" loading="lazy">'
                 f'<figcaption>{html.escape(img["alt"])}</figcaption>'
                 f"</figure>")
@@ -540,11 +634,13 @@ def render_section(page, section):
     return "\n".join(parts)
 
 
-def render_page(page, pages):
+def render_page(page, pages, extras=()):
+    # A standalone page is not in the sequence of cards, so it gets no
+    # previous/next: it is beside the catalog rather than a place in it.
     order = [p["slug"] for p in pages]
-    i = order.index(page["slug"])
+    i = order.index(page["slug"]) if page["slug"] in order else None
     prev_p = pages[i - 1] if i else None
-    next_p = pages[i + 1] if i + 1 < len(pages) else None
+    next_p = (pages[i + 1] if i is not None and i + 1 < len(pages) else None)
 
     nav = []
     if prev_p:
@@ -561,25 +657,30 @@ def render_page(page, pages):
 
     chips = "".join(f'<span class="chip">{html.escape(s)}</span>'
                     for s in page.get("shapes", ()))
-    build_url = f"{GITHUB}/blob/main/examples/{page['slug']}/build.py"
+    scripts = ", ".join(
+        f'<a href="{GITHUB}/blob/main/examples/{slug}/build.py">'
+        f"<code>{slug}/build.py</code></a>"
+        for slug in page_examples(page))
     intro = "".join(f'<p class="standfirst">{inline(t)}</p>'
                     for t in page.get("intro", ()))
+    crumb = ("" if page.get("standalone") else
+             '  <span aria-hidden="true">·</span> '
+             + html.escape(page["category"]))
     body = "\n".join(render_section(page, s) for s in page["sections"])
 
     return (
         head(f"{page['title']} — biodraw", page["tagline"])
-        + masthead()
+        + masthead(extras)
         + f"""<main class="detail">
 <article>
-  <p class="crumb"><a href="index.html">All examples</a>
-     <span aria-hidden="true">·</span> {html.escape(page['category'])}</p>
+  <p class="crumb"><a href="index.html">All examples</a>{crumb}</p>
 
   <h1>{html.escape(page['title'])}</h1>
   <p class="standfirst">{inline(page['tagline'])}</p>
   <p class="chips">{chips}</p>
 
   <figure class="hero plate zoomable">
-    <img src="../examples/{page['slug']}/{page['hero']}"
+    <img src="{img_src(page, page['hero'])}"
          alt="{html.escape(page['hero_alt'])}">
     <figcaption>{html.escape(page['hero_alt'])}</figcaption>
   </figure>
@@ -588,8 +689,8 @@ def render_page(page, pages):
 
 {body}
 
-  <p class="source-note">Every figure above is output, not a stored asset
-     — <a href="{build_url}">the full script that draws them</a>.</p>
+  <p class="source-note">Every figure above is output, not a stored asset —
+     drawn by {scripts}, in Python, on a matplotlib axes.</p>
 
   <nav class="pager">{''.join(nav)}</nav>
 </article>
@@ -646,22 +747,35 @@ def main():
                     help="fail if rebuilding changes any tracked file")
     args = ap.parse_args()
 
-    pages = load_pages()
+    cards, extras = load_pages()
+    pages = [*cards, *extras]
     check_images(pages)
     check_snippets(pages)
     check_catalog(pages)
 
-    (SITE / "index.html").write_text(render_index(pages), encoding="utf-8",
-                                     newline="\n")
+    (SITE / "index.html").write_text(render_index(cards, extras),
+                                     encoding="utf-8", newline="\n")
     print("wrote site/index.html")
+    written = {"index.html"}
     for page in pages:
         out = SITE / f"{page['slug']}.html"
-        out.write_text(render_page(page, pages), encoding="utf-8",
+        out.write_text(render_page(page, cards, extras), encoding="utf-8",
                        newline="\n")
+        written.add(out.name)
         print(f"wrote site/{out.name}")
 
-    print(f"\n{len(pages)} example(s) across "
-          f"{len({p['category'] for p in pages})} categories.")
+    # Nothing else owns `site/*.html`, so a page whose content module was
+    # renamed or merged away would otherwise sit there for ever: still the
+    # old catalog, still linked from anyone else's history. Merging
+    # wiring and circuit motifs into one card is exactly that case.
+    for stale in sorted(SITE.glob("*.html")):
+        if stale.name not in written:
+            stale.unlink()
+            print(f"removed site/{stale.name} (no content module)")
+
+    print(f"\n{len(cards)} example(s) across "
+          f"{len({p['category'] for p in cards})} categories, "
+          f"{len(extras)} standalone page(s).")
 
     if not args.check:
         return 0

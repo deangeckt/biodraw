@@ -38,8 +38,8 @@ the skills measurably better at anticipating the next comment. A skill that
 had to be told the same class of thing twice was not updated properly the
 first time.
 
-The evidence that step 3 is worth the trouble: of the ten bugs in
-[docs/STATE.md](docs/STATE.md), **three were found by writing a new check and
+The evidence that step 3 is worth the trouble: of the bugs in
+[docs/STATE.md](docs/STATE.md), **most were found by writing a new check and
 running it once** — the stale axon documentation, the `.gitignore` that hid
 the gallery's source, and the unlinted directory behind it. That is the
 cheapest of the five ways a defect has been found here, and the only one that
@@ -70,6 +70,19 @@ Rules that arrived this way so far, with the comment that produced them:
 | "why do we need Rebuilding these drawings subsections?" | A public page shows only what `pip install` can do; the reader's next step is an agent and the skills |
 | "i prefer without the hover animation, its confusing" | Hover may affirm, never replace — if a picture is worth showing, show it |
 | "delete those axon images" | Deleting code means deleting its documentation too — images, prose and links |
+| "these specific blue and red are from my paper, you dont have to commit to those" | A default inherited from one figure is a placeholder, not a decision — and a drawing colour is never a hex literal |
+| "wiring and circuit motifs ... should be under neuroscience" | A gallery category **is** a domain package; browsing structure mirrors import structure |
+| "pyramidal should be red, inhibitory should be green" | A default follows the reader's existing convention, not the designer's taste — and where the convention is hazardous (red/green), say so and ship the escape |
+| "you simply took the figure as is — i wanted to expand the catalog with new styles" | A reference figure is a source of **capabilities**, not a thing to reproduce. Take the technique into the catalog as variants; cloning one figure adds one figure |
+| "circuits are taking heavy toll ... i prefer to expand the catalog with new stuff" | Breadth beats depth: a new shape adds more to a catalog than a better arrangement of the shapes already in it |
+| "the neuron styles ... are really one style, with diff lw and colours" | A colour and a linewidth are not a style. A style changes how the shape is *drawn*; anything else is a setting within one |
+| "neuron types — each type should get a card on its own" | A name a reader would search for gets its own card; the family argument stays behind on the body-plan card |
+| "circuit motifs and wiring should be merged into one card" | One card per subject a reader is looking for — a gallery page and an example folder are no longer required to be the same thing |
+| "i dont think it should be in card, rather ... more of a 'global'" | A card is a drawing; a property of *every* drawing goes in the chrome, not in the grid |
+| "the main page ... is missing the fact that this catalog is driven by python" | Say what the thing **is** above the fold. The pictures cannot tell a reader what medium they came out of |
+| "the 'on a branch' eight image is almost only white space" | The frame is the drawing's shape, not the figure's — and anything about how a drawing sits on the page is invisible to an agent, so it has to be a number |
+| "instead of a 'colour' section, you can add variation on spines; head size, neck size" | A page about one shape shows *that shape's* variation. A knob the catalog cannot express yet is the finding, not the section |
+| "grab text book images, take the basic ones … very simple drawings, not complex realistic images, sometimes an outline is even enough" | A reference is a parts list and a set of proportions, never something to trace or commit. And the catalog entry is the **schematic**: if an outline reads at figure size, the detail was costing bytes and attention for nothing |
 
 ## Fight complexity
 

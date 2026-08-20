@@ -85,7 +85,7 @@ L 72.616752 102.125009
 L 73.176391 107.314392 
 L 73.939536 112.473249 
 z
-" clip-path="url(#p692b9c4a8f)" style="fill: #ff0000; stroke: #ff0000; stroke-width: 4; stroke-linecap: round"/>
+" clip-path="url(#p692b9c4a8f)" style="fill: #c0392b; stroke: #c0392b; stroke-width: 4; stroke-linecap: round"/>
    </g>
    <g id="spine.fill.1">
     <path d="M 45.601435 117.092817 
@@ -144,7 +144,7 @@ L 72.616752 102.125009
 L 73.176391 107.314392 
 L 73.939536 112.473249 
 z
-" clip-path="url(#p692b9c4a8f)" style="fill: #ffd9d9"/>
+" clip-path="url(#p692b9c4a8f)" style="fill: #f6e1df"/>
    </g>
   </g>
  </g>

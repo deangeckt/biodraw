@@ -18,6 +18,10 @@ refuses to run with it.
 `--quality debug` is the way to actually look at geometry: uncapped and
 unquantized, several times the bytes, and not something to commit. See
 `biodraw.io.QUALITY`.
+
+Every run also reports **loose frames** — images whose drawing leaves a
+quarter of the picture empty. See `FRAME_MIN` below for why that is a report
+and not a failure.
 """
 
 import argparse
@@ -35,6 +39,66 @@ EXAMPLES = ROOT / "examples"
 
 sys.path.insert(0, str(ROOT))
 from biodraw import io  # noqa: E402
+
+# The frame check.
+#
+# *"the 'on a branch' eight image is almost only white space image."* True,
+# and measurable: the ink in that PNG used 62% of its width. `save_compact`
+# trims with `bbox_inches="tight"`, which trims to the **axes**, not to the
+# ink — and the axes are equal-aspect, so a tall narrow drawing in a square
+# figure keeps its white margins all the way into the committed file. Nothing
+# was watching, and the three emptiest images in the whole catalog were all
+# on the one page a reader had just complained about.
+#
+# The measure is the ink's bounding box as a fraction of the frame, per axis.
+# The fix is to shape the figure like the data — see `_framed` in
+# `examples/dendritic_spine/build.py` — or to tighten the limits.
+#
+# It reports rather than fails. A portrait of a round cell cannot fill a
+# rectangle, so the practical floor is around 0.75 and a threshold sharp
+# enough to fail on would be wrong about half the catalog. What it must not
+# do is stay silent about a 0.62.
+FRAME_MIN = 0.72
+
+
+def ink_box(path):
+    """`(width, height)` of the ink's bounding box, as fractions of the
+    image. `None` for an image with no ink in it at all."""
+    import matplotlib.image as mpimg
+    import numpy as np
+
+    a = mpimg.imread(str(path))
+    if a.ndim == 2:                          # greyscale
+        ink = a < 0.985
+    else:
+        ink = a[..., :3].min(axis=2) < 0.985
+        if a.shape[-1] == 4:                 # ...and not transparent
+            ink &= a[..., 3] > 0.02
+    ys, xs = np.nonzero(ink)
+    if not len(xs):
+        return None
+    return ((xs.max() - xs.min() + 1) / a.shape[1],
+            (ys.max() - ys.min() + 1) / a.shape[0])
+
+
+def report_frames(folders):
+    """Print any image whose drawing leaves a quarter of its frame empty."""
+    loose = []
+    for folder in folders:
+        for png in sorted(folder.glob("*.png")):
+            box = ink_box(png)
+            if box is None:
+                loose.append((0.0, 0.0, png))
+            elif min(box) < FRAME_MIN:
+                loose.append((*box, png))
+    if not loose:
+        return
+    print()
+    print(f"Loose frames (ink under {FRAME_MIN:.0%} of an axis — the figure "
+          f"is a different shape from the drawing on it):")
+    for w, h, png in sorted(loose, key=lambda r: min(r[0], r[1])):
+        print(f"  {min(w, h):.0%}  (w {w:.0%}, h {h:.0%})  "
+              f"{png.relative_to(ROOT)}")
 
 
 def builds(pattern=None):
@@ -89,6 +153,8 @@ def main():
         # in a full run. That equivalence is what `--check` assumes.
         with matplotlib.rc_context():
             runpy.run_path(str(script), run_name="__main__")
+
+    report_frames([script.parent for script in scripts])
 
     if not args.check:
         return 0

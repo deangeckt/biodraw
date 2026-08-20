@@ -25,7 +25,7 @@ import numpy as np
 
 from .anchor import AnchorSet, select
 from .geom import rot_matrix
-from .render import render_hollow, resolve_fill
+from .render import render_hollow, render_skeleton, resolve_fill
 
 __all__ = ["Layer", "Shape"]
 
@@ -54,6 +54,13 @@ class Layer:
                        inner layer is how a nucleus reads as denser than the
                        cytoplasm around it *without* introducing a second hue:
                        the same ink, more of it.
+      wall_lw          wall thickness for this layer alone, in points, or a
+                       **multiple** of what `draw` was asked for if it is
+                       given as a string like `'0.5x'`. `0` draws no wall at
+                       all, which is what a *marking* wants: a zebrafish's
+                       stripe is a shape with no edge, and stroked at the
+                       body's own weight it stops being a stripe and becomes
+                       a pipe laid on the fish.
       dz               z-offset from the shape's own `zorder`. `None` stacks
                        the layers in the order given, 0.1 apart —
                        `render_hollow` already puts 0.05 between its own two
@@ -62,17 +69,27 @@ class Layer:
                        next.
     """
 
-    __slots__ = ("closed", "open_", "name", "edge", "fill", "fill_alpha", "dz")
+    __slots__ = ("closed", "open_", "name", "edge", "fill", "fill_alpha",
+                 "wall_lw", "dz")
 
     def __init__(self, closed=(), open_=(), name=None, edge=None, fill=None,
-                 fill_alpha=None, dz=None):
+                 fill_alpha=None, wall_lw=None, dz=None):
         self.closed = list(closed)
         self.open_ = list(open_)
         self.name = name
         self.edge = edge
         self.fill = fill
         self.fill_alpha = fill_alpha
+        self.wall_lw = wall_lw
         self.dz = dz
+
+    def resolve_lw(self, wall_lw):
+        """This layer's wall width, given what `draw` was asked for."""
+        if self.wall_lw is None:
+            return wall_lw
+        if isinstance(self.wall_lw, str):
+            return wall_lw * float(self.wall_lw.rstrip("xX"))
+        return float(self.wall_lw)
 
     def __repr__(self):
         return (f"Layer({self.name!r}, closed={len(self.closed)}, "
@@ -151,6 +168,16 @@ class Shape:
         closed, open_ = self._parts()
         return [Layer(closed=closed, open_=open_)]
 
+    def _skeleton(self):
+        """`(strokes, bodies)` for the skeleton style, or `None`.
+
+        A stroke is `(polyline, half_width)` in world units; a body is a
+        closed outline. Returning `None` means this shape has no centreline
+        worth drawing — a blob is an area, not a process — and
+        `draw(style='skeleton')` will say so rather than guess.
+        """
+        return None
+
     def _anchors(self):
         return AnchorSet()
 
@@ -213,10 +240,18 @@ class Shape:
 
     # -- drawing -----------------------------------------------------------
 
-    def draw(self, ax, edge=None, fill=None, fill_alpha=None, wall_lw=1.0,
+    def draw(self, ax, style="hollow", edge=None, fill=None,
+             fill_alpha=None, wall_lw=1.0,
              alpha=1.0, bg="white", zorder=3, gid=None):
         """Render the shape onto `ax`.
 
+          style       `'hollow'` (the default) walls every process into a
+                      tube and fuses them into one contour; `'skeleton'`
+                      strokes their centrelines instead. These are different
+                      drawing *languages*, not the same one re-inked: a
+                      hollow cell says a process has a width and a wall, a
+                      skeleton says it exists and connects two places. Colour,
+                      weight and fill are settings *within* a style.
           edge        the wall colour. `None` takes the class default.
           fill        the interior. `None` washes it with `edge` (the usual
                       case); `'white'` gives a hollow outline; anything else
@@ -236,6 +271,23 @@ class Shape:
 
         Returns the list of artists, bottom layer first.
         """
+        if style == "skeleton":
+            skel = self._skeleton()
+            if skel is None:
+                raise ValueError(
+                    f"{type(self).__name__} has no skeleton to draw — it is "
+                    "an area rather than a set of processes. Use the default "
+                    "style.")
+            strokes, bodies = skel
+            return render_skeleton(
+                ax, strokes, bodies,
+                color=self.edge if edge is None else edge,
+                lw=wall_lw * 2.4, alpha=alpha, bg=bg, zorder=zorder,
+                gid=gid or type(self).__name__.lower())
+        if style != "hollow":
+            raise ValueError(
+                f"unknown style {style!r}; available: 'hollow', 'skeleton'")
+
         from .render import blend
 
         edge = self.edge if edge is None else edge
@@ -252,7 +304,7 @@ class Shape:
                 fill=blend(resolve_fill(lay_fill, lay_alpha, lay_edge, bg),
                            alpha, bg),
                 edge=blend(lay_edge, alpha, bg),
-                wall_lw=wall_lw,
+                wall_lw=layer.resolve_lw(wall_lw),
                 zorder=zorder + (0.1 * i if layer.dz is None else layer.dz),
                 open_parts=list(layer.open_),
                 gid=f"{gid}.{layer.name}" if layer.name else gid,

@@ -12,7 +12,8 @@ it, and adding a new one is mostly a matter of handing it the right parts.
 
 import numpy as np
 
-__all__ = ["FILL_ALPHA", "shade", "blend", "resolve_fill", "render_hollow"]
+__all__ = ["FILL_ALPHA", "shade", "blend", "resolve_fill",
+           "render_hollow", "render_skeleton"]
 
 
 # How strongly a shape's interior is tinted with its own (wall) colour, when
@@ -149,3 +150,72 @@ def render_hollow(ax, parts, fill, edge, wall_lw, zorder=3, open_parts=(),
             a.set_gid(f"{gid}.{'wall' if i < n_wall else 'fill'}.{i}")
 
     return artists
+
+
+def render_skeleton(ax, strokes, bodies=(), color="#111111", lw=1.6,
+                    body_fill=None, body_lw=None, zorder=3, gid=None,
+                    alpha=1.0, bg="white", taper_steps=7):
+    """Draw a shape as **stroked centrelines** instead of walled tubes.
+
+    A genuinely different drawing language, not the same one re-inked. A
+    hollow shape says *this process has a width and a wall*; a skeleton says
+    *this process exists and connects these two places*, which is what a
+    circuit diagram, a connectome figure and most textbook schematics
+    actually claim. At small sizes it is also the only one that survives:
+    two walls a fraction of a point apart merge into a smudge, where one
+    stroke stays a line.
+
+    `strokes` is `(polyline, half_width)` pairs. The width is honoured by
+    splitting each centreline into `taper_steps` segments drawn at
+    decreasing linewidth — matplotlib has no variable-width stroke, and a
+    tapered process drawn at one weight loses the thing that made it read as
+    a process. Set `taper_steps=1` for a uniform hairline.
+
+    `bodies` are closed outlines — somata — drawn as filled shapes, because a
+    cell body is an area even in a diagram that treats its processes as
+    lines.
+    """
+    import numpy as np
+    from matplotlib.patches import PathPatch
+    from matplotlib.path import Path
+
+    color = blend(color, alpha, bg)
+    body_fill = (color if body_fill is None
+                 else blend(body_fill, alpha, bg))
+    artists = []
+
+    for xy, half_w in strokes:
+        xy = np.asarray(xy, dtype=float)
+        if len(xy) < 2:
+            continue
+        w = np.asarray(half_w, dtype=float)
+        if w.ndim == 0:
+            w = np.full(len(xy), float(w))
+        n = max(1, int(taper_steps))
+        # Overlap each segment by one vertex so the joins do not show as gaps
+        # where the weight steps down.
+        edges = np.linspace(0, len(xy), n + 1).astype(int)
+        for k in range(n):
+            a, b = edges[k], min(edges[k + 1] + 1, len(xy))
+            if b - a < 2:
+                continue
+            (ln,) = ax.plot(xy[a:b, 0], xy[a:b, 1], color=color,
+                            lw=lw * float(w[a:b].mean() / max(w[0], 1e-9)),
+                            solid_capstyle="round", solid_joinstyle="round",
+                            zorder=zorder)
+            artists.append(ln)
+
+    for body in bodies:
+        pth = body if isinstance(body, Path) else Path(
+            np.asarray(body, dtype=float), closed=True)
+        a = PathPatch(pth, facecolor=body_fill, edgecolor=color,
+                      linewidth=lw if body_lw is None else body_lw,
+                      joinstyle="round", zorder=zorder + 0.05)
+        ax.add_patch(a)
+        artists.append(a)
+
+    if gid:
+        for i, art in enumerate(artists):
+            art.set_gid(f"{gid}.skeleton.{i}")
+    return artists
+

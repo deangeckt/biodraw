@@ -115,7 +115,7 @@ class Pyramidal(Shape):
     `wave_amp`, `wave_n`, `spine_angle_deg`, `first_t`, `last_t`, ...).
     """
 
-    edge = get_palette()["excitatory"]
+    edge = get_palette()["primary"]
 
     # Where along the bare proximal trunk shaft contacts may land. Kept below
     # `first_t` so a shaft contact never arrives beside a spine head — that
@@ -516,6 +516,25 @@ class Pyramidal(Shape):
         else:
             local = [apex, base_l, base_r]
         return self.to_world(np.array(local))
+
+
+    def _skeleton(self):
+        """Centrelines and the soma, for `draw(style='skeleton')`.
+
+        The width handed over is the *drawn* tube half-width, so a skeleton
+        keeps the cell's own taper and its thick-to-thin ordering — a
+        schematic that draws every process at one weight loses which one was
+        the trunk.
+        """
+        import numpy as np
+        hw = self.half_width
+        strokes = []
+        for item in self._branches():
+            br = item[1] if not hasattr(item[0], "centre") else item[0]
+            n = len(br.centre)
+            strokes.append((self.to_world(br.centre),
+                            np.linspace(hw, hw * self.taper, n)))
+        return strokes, [self._soma_path()]
 
     # -- anchors -----------------------------------------------------------
 

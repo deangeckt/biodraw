@@ -15,7 +15,7 @@ import biodraw as bd  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 PAL = bd.style.palette.get()
-EXC, INH, GREY = PAL["excitatory"], PAL["inhibitory"], PAL["neutral"]
+EXC, INH, GREY = PAL["primary"], PAL["secondary"], PAL["neutral"]
 
 plt.rcParams.update({"font.size": 9, "axes.linewidth": 0.8})
 
@@ -246,11 +246,11 @@ def palettes():
         bd.canvas(ax=ax)
         src = _bas((-1.6, 0.5), 0.85)
         dst = _pyr((1.4, 0.0), 0.62)
-        src.draw(ax=ax, edge=p["inhibitory"], wall_lw=0.9)
-        dst.draw(ax=ax, edge=p["excitatory"], wall_lw=0.9)
+        src.draw(ax=ax, edge=p["secondary"], wall_lw=0.9)
+        dst.draw(ax=ax, edge=p["primary"], wall_lw=0.9)
         bd.connect(ax=ax, source=src.anchor("soma", nearest=dst.at),
                    target=dst.anchor("soma", nearest=src.at), gap=0.05,
-                   drop=0.30, rad=0.06, color=p["inhibitory"], endcap="bar",
+                   drop=0.30, rad=0.06, color=p["secondary"], endcap="bar",
                    cap_size=44.0, lw=1.4)
         ax.set_title(name, fontsize=10, color="#333333", loc="left")
         bd.fit(ax, src.points + dst.points, pad=0.28)

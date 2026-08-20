@@ -2,9 +2,8 @@
 
 PAGE = dict(
     title="Pyramidal cell",
-    category="Neurons",
+    category="Neuroscience",
     order=0,
-    build_pattern="pyramidal",
     tagline="A triangular soma with spiny dendrites out of it — apical up, "
             "basals down — soma, dendrites and every spine forming one "
             "unbroken outline.",
@@ -14,7 +13,7 @@ PAGE = dict(
     keywords=[
               "pyramidal",
               "neuron",
-              "excitatory",
+              "primary",
               "soma",
               "apical",
               "basal",

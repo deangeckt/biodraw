@@ -15,7 +15,8 @@ import numpy as np
 __all__ = [
     "unit", "rot", "rot_matrix", "perp",
     "tangents", "normals", "arclength", "resample",
-    "signed_area", "close_ring", "is_closed",
+    "signed_area",
+    "support", "close_ring", "is_closed",
 ]
 
 
@@ -103,6 +104,20 @@ def resample(pts, n, closed=False):
     t = np.linspace(0.0, 1.0, int(n), endpoint=not closed)
     return np.column_stack([np.interp(t, s, c[:, 0]),
                             np.interp(t, s, c[:, 1])])
+
+
+def support(points, direction):
+    """The vertex furthest along `direction` — a point on the outer rim.
+
+    The cheap answer to "where is the edge of this thing at that angle?" for
+    a shape that is a **union of parts** and therefore has no closed-form
+    outline: a supporting point is on the rim by construction, whatever the
+    parts are doing. Anchors on a lobed protein and on an animal silhouette
+    are both placed this way.
+    """
+    d = unit(direction)
+    p = np.asarray(points, dtype=float)
+    return p[int(np.argmax(p @ d))]
 
 
 def signed_area(ring):

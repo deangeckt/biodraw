@@ -20,5 +20,8 @@ circuit figures actually do and what a reader parses instantly.
 
 from .basket import Basket
 from .pyramidal import Pyramidal
+from .radial import RadialCell
+from .types import Astrocyte, Bipolar, Granule, Purkinje
 
-__all__ = ["Basket", "Pyramidal"]
+__all__ = ["Astrocyte", "Basket", "Bipolar", "Granule",
+           "Purkinje", "Pyramidal", "RadialCell"]

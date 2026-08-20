@@ -3,8 +3,7 @@
 PAGE = dict(
     title="Epithelial sheet",
     category="Cells & tissues",
-    order=1,
-    build_pattern="epithelial",
+    order=2,
     tagline="A row of cells standing on a basement membrane — many cells that "
             "must not become one.",
     hero="epithelium.png",

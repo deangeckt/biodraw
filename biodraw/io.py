@@ -170,7 +170,15 @@ def save_compact(fig, path, quality=None, max_width=None, colors=None,
     dpi = prof["dpi"] if dpi is None else dpi
 
     path = str(path)
-    fig.savefig(path, dpi=dpi, bbox_inches="tight", facecolor=facecolor)
+    # `pad_inches` defaults to 0.1, which is a *fixed* margin on a figure
+    # whose size varies by a factor of ten across this catalog: on a wide
+    # sheet it is 1% of the width and invisible, on a portrait of a bipolar
+    # cell 0.86 inches wide it is 19% of the file, and the frame report in
+    # `tools/build_gallery.py` reads that as a loose frame. The page already
+    # puts every drawing on a padded plate, so the margin in the file itself
+    # only has to keep the ink off the edge.
+    fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=0.02,
+                facecolor=facecolor)
 
     im = Image.open(path).convert("RGB")
     if max_width and im.width > int(max_width):

@@ -13,12 +13,19 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 import biodraw as bd  # noqa: E402
+from biodraw.core import render  # noqa: E402
 from biodraw.core.paths import neck_polygon  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 PAL = bd.style.palette.get()
-INK = PAL["excitatory"]
-SOMA_C = PAL["inhibitory"]
+INK = PAL["primary"]
+# The blueprint fills shapes by hand rather than through
+# `Shape.draw`, so it has to ask for the same interior wash
+# `render_hollow` would have used. Derived, never hardcoded: a
+# literal tint silently keeps the old palette when the palette
+# changes, which is exactly what happened here.
+WASH = render.resolve_fill(None, None, INK)
+SOMA_C = PAL["secondary"]
 # Annotation colours for the construction figures. Local on purpose:
 # these label a *diagram about* the drawing, not the drawing, so they
 # are not the library's identity palette's business.
@@ -139,13 +146,13 @@ def blueprint():
         bow_bottom=cell.soma_bow_bottom, bow_side=cell.soma_bow_side)
     v = path.vertices
     hw = cell.half_width
-    ax.fill(v[:, 0], v[:, 1], color="#FFE3E3", zorder=1)
+    ax.fill(v[:, 0], v[:, 1], color=WASH, zorder=1)
     ax.plot(v[:, 0], v[:, 1], color=INK, lw=1.6, zorder=3)
     # The apical tube walls, carrying on up out of the neck.
     for s in (-1, 1):
         ax.plot([s * hw, s * hw], [pts["P_t_l"][1], 0.78], color=INK, lw=1.6,
                 zorder=3)
-    ax.fill_betweenx([pts["P_t_l"][1], 0.78], -hw, hw, color="#FFE3E3",
+    ax.fill_betweenx([pts["P_t_l"][1], 0.78], -hw, hw, color=WASH,
                      zorder=1)
     # Where a flat cut would have gone instead — two corner stacks per side.
     ax.plot([-hw - 0.10, hw + 0.10], [pts["P_t_l"][1]] * 2, color=GREY,
@@ -181,7 +188,7 @@ def blueprint():
     outline = br.outline(width=cell.width * cell.basal_width,
                          taper=cell.taper,
                          base_ext=1.2 * cell.basal_half_width)
-    ax.fill(outline[:, 0], outline[:, 1], color="#FFE3E3", zorder=3)
+    ax.fill(outline[:, 0], outline[:, 1], color=WASH, zorder=3)
     ax.plot(outline[:, 0], outline[:, 1], color=INK, lw=1.3, zorder=4)
     ax.plot(br.centre[:, 0], br.centre[:, 1], color=SOMA_C, lw=1.0, ls=":",
             zorder=5)

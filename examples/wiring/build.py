@@ -16,8 +16,8 @@ import biodraw as bd  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 PAL = bd.style.palette.get()
-EXC = PAL["excitatory"]
-INH = PAL["inhibitory"]
+EXC = PAL["primary"]
+INH = PAL["secondary"]
 GREY = PAL["neutral"]
 
 plt.rcParams.update({"font.size": 9, "axes.linewidth": 0.8})
@@ -26,7 +26,11 @@ plt.rcParams.update({"font.size": 9, "axes.linewidth": 0.8})
 def endcaps():
     """The mark at the far end is a claim, not decoration."""
     kinds = bd.core.connectors.ENDCAPS
-    fig, axes = plt.subplots(1, len(kinds), figsize=(11.5, 2.0), dpi=150)
+    # The panel is as tall as the drawing needs and no taller: the phantom
+    # box below sets the frame, and an over-tall figure turns the surplus
+    # into white space in the committed PNG (the frame report in
+    # `tools/build_gallery.py` had this one at 69% of its height).
+    fig, axes = plt.subplots(1, len(kinds), figsize=(11.5, 1.55), dpi=150)
     for ax, kind in zip(axes, kinds, strict=True):
         bd.canvas(ax=ax)
         cell = bd.cells.Blob(radius=0.30, organelles=0, nucleolus=0.0,
@@ -43,7 +47,10 @@ def endcaps():
             lw=1.4, cap_size=44.0,
         )
         ax.set_title(repr(kind), fontsize=9, color=GREY)
-        bd.fit(ax, cell.points + [np.array([[-0.45, -0.45], [1.7, 0.45]])],
+        # A phantom box, so every panel is framed identically whatever its
+        # endcap does. Its half-height clears the cell wall (0.30) and the
+        # bowed connector (~0.20) and nothing more.
+        bd.fit(ax, cell.points + [np.array([[-0.45, -0.34], [1.7, 0.34]])],
                pad=0.05)
     fig.tight_layout(w_pad=0.6)
     return fig, "endcaps.png"
@@ -110,6 +117,54 @@ def one_to_many():
     return fig, "one_to_many.png"
 
 
+def bus():
+    """Curves fan; a bus shares. Same source, same three targets, two claims.
+
+    A separate curve per target says *three separate things happened*. A stem
+    dropping to one horizontal, with a riser turning up into each target, says
+    *these all share a source* — and the eye follows a straight line where it
+    has to trace a curve.
+
+    The right angles are the point rather than a limitation: a square corner
+    reads as **routing**, which is exactly what a shared rail is claiming, so
+    `corner` defaults to 0.
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 3.4), dpi=150)
+    places = [(-2.6, 1.1), (0.0, 1.1), (2.6, 1.1)]
+    for ax, mode in zip(axes, ("one curve each", "one bus"), strict=True):
+        bd.canvas(ax=ax)
+        src = bd.neuro.Pyramidal(spines=0, basal=2, basal_spines=0,
+                                 scale=0.62, at=(0.0, -1.7))
+        src.draw(ax=ax, wall_lw=0.9)
+        targets = []
+        for k, place in enumerate(places):
+            cell = bd.neuro.Pyramidal(spines=0, basal=2, basal_spines=0,
+                                      scale=0.52, at=place, seed=k)
+            cell.draw(ax=ax, wall_lw=0.9)
+            low = min(a.xy[1] for a in cell.anchors("soma"))
+            targets.append(bd.Anchor((cell.at[0], low), (0.0, -1.0), "soma"))
+        if mode == "one bus":
+            # The rail goes *below* every cell, including the source. Put it
+            # between them and the stem climbs back through the source's own
+            # soma, which reads as an overdrawn dendrite rather than a route.
+            bd.connect_bus(ax=ax, source=src.anchor("axon"), targets=targets,
+                           rail=-3.05, gap=0.10, color=EXC, lw=1.8,
+                           # weight is a variable: the third is the weak one
+                           lws=[1.8, 1.8, 0.7],
+                           endcap="arrow", cap_size=120.0)
+        else:
+            for k, target in enumerate(targets):
+                bd.connect(ax=ax, source=src.anchor("axon"), target=target,
+                           gap=0.10, drop=0.85, rad=0.06, color=EXC,
+                           lw=1.8 if k < 2 else 0.7, endcap="arrow",
+                           cap_size=120.0)
+        ax.set_title(mode, fontsize=10, color=GREY, loc="left")
+        bd.fit(ax, src.points + [np.array([[-3.4, -3.5], [3.4, 2.3]])],
+               pad=0.15)
+    fig.tight_layout(w_pad=1.2)
+    return fig, "bus.png"
+
+
 def circuit():
     """Two cell types and one branching arbor onto three named places.
 
@@ -151,7 +206,7 @@ def circuit():
     return fig, "circuit.png"
 
 
-BUILDS = (circuit, endcaps, connector_shapes, one_to_many)
+BUILDS = (circuit, endcaps, connector_shapes, one_to_many, bus)
 
 
 def main():
