@@ -3,7 +3,7 @@
 Built to the house style Dean set for this whole half of the roadmap: *"use
 very simple drawings, not complex realistic images, sometimes an outline is
 even enough."* Every drawing on the page is an outline with no interior
-detail beyond an eye, which is also why the page is light: five images and
+detail beyond the eyes, which is also why the page is light: five images and
 about 80 kB.
 """
 
@@ -51,8 +51,8 @@ PAGE = dict(
         dict(
             title="One knob each",
             images=[dict(src="knobs.png",
-                         alt="Tail against body, wings on or off, stripe "
-                             "count, how curled the worm is.")],
+                         alt="Tail against body, wings on or off, body "
+                             "depth, how curled the worm is.")],
         ),
 
         dict(
@@ -91,7 +91,7 @@ mouse = bd.animals.Mouse(
 mouse.draw(ax=ax, wall_lw=1.1)
 mouse.fit(ax, pad=0.12)
 
-fish = bd.animals.Zebrafish(stripes=4)   # 0 for a mutant, 6 for a dense one
+fish = bd.animals.Zebrafish(depth=1.35)  # a deeper-bodied fish
 fly = bd.animals.Fly(wings=False)        # a wingless mutant, in one word
 worm = bd.animals.Worm(curl=0.22, waves=2.2)
 

@@ -1,11 +1,11 @@
 """The base every animal silhouette is built on.
 
-Model organisms are the one category on `docs/PLAN.md` where what people need
-to vary is **orientation**, not identity: a mouse facing left and a mouse
-facing right are the same animal, and a stock library makes you download two
-files that will not match. So `facing` is on the base class rather than on
-any one animal, and it is a *mirror* — not a rotation, which would put the
-animal on its back.
+Model organisms are the one category on `docs/MILESTONES.md` where what
+people need to vary is **orientation**, not identity: a mouse facing left
+and a mouse facing right are the same animal, and a stock library makes you
+download two files that will not match. So `facing` is on the base class
+rather than on any one animal, and it is a *mirror* — not a rotation, which
+would put the animal on its back.
 
 The other decision the base carries is the house style, and it came from the
 maintainer: *"use very simple drawings, not complex realistic images,

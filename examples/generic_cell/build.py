@@ -24,6 +24,18 @@ NUC = PAL["secondary"]
 MARK_A, MARK_B = "#7C3AED", "#059669"
 ORG, WALL_C = MARK_A, MARK_B
 GREY = "#9AA0A6"
+# *"this 'grey' default color ... is shouting claude"*. Measured at the time:
+# 27 of the 79 committed images had no saturated ink in them at all, and
+# every one of those was in a non-neuroscience folder — the newer domains
+# fetched the palette for `ink` and `neutral` and never reached for an
+# identity hue.
+#
+# The fix is not a second hue per part: `Blob.WASH` deliberately inks the
+# nucleus as *more of the same ink* rather than a different colour, because a
+# nucleus is a denser part of the cell and not a different kind of thing.
+# Passing `edge=` a hue keeps that intact — every wash inherits it — so the
+# drawing gains colour without gaining a claim.
+SUBJECT = PAL["primary"]
 
 plt.rcParams.update({
     "font.size": 9,
@@ -45,7 +57,7 @@ def portrait():
     """The cell on its own."""
     fig, ax = bd.canvas(figsize=(3.4, 3.2))
     cell = _cell()
-    cell.draw(ax=ax, wall_lw=1.0, gid="cell")
+    cell.draw(ax=ax, edge=SUBJECT, wall_lw=1.0, gid="cell")
     cell.fit(ax, pad=0.12)
     return fig, "cell.png"
 
@@ -66,6 +78,7 @@ def contents():
         aspect=1.0,
         labels=["0", "3", "6", "10 — the most that fits",
                 "16, smaller", "22, smaller still"],
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "contents.png"
 
@@ -84,6 +97,7 @@ def body_shapes():
         row_labels=["round", "flattened"],
         col_labels=[f"s={s:g}\nwobble={w:g}" for s in squares
                     for w in wobbles],
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "body_shapes.png"
 
@@ -104,6 +118,7 @@ def membranes():
         aspect=1.0,
         row_labels=["microvilli", "filopodia", "pseudopodia"],
         col_labels=[f"{a:g}° of wall" for a in arcs],
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "membranes.png"
 
@@ -116,6 +131,7 @@ def seeds():
         variants=[dict(organelles=8, protrusions=9, seed=s)
                   for s in range(8)],
         labels="auto", cols=8, cell_in=1.05, aspect=1.0,
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "seeds.png"
 
@@ -209,7 +225,8 @@ def blueprint():
     # -- 4. anchors ----------------------------------------------------------
     ax = axes[3]
     bd.canvas(ax=ax)
-    cell.draw(ax=ax, wall_lw=0.7, fill="white", gid="anchors")
+    cell.draw(ax=ax, edge=SUBJECT, wall_lw=0.7, fill="white",
+              gid="anchors")
     colors = {"wall": WALL_C, "nucleus": NUC, "organelle": ORG, "tip": GREY}
     for kind, color in colors.items():
         found = cell.anchors(kind)

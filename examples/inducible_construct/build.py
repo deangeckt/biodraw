@@ -7,10 +7,10 @@ four-repeat operator, a minimal promoter, a gene of interest, a terminator,
 and the two-lobed CUP2 protein that closes around a Cu(II) ion and carries a
 transactivation domain.
 
-What the figure is *for* here is the argument in `docs/PLAN.md`, milestone 10:
-every knob on this page is a count or a length that somebody currently draws
-by hand — your repeat number, your insert, your domain list — and a stock
-asset cannot know any of them.
+What the figure is *for* here is the argument in `docs/MILESTONES.md`,
+milestone 10: every knob on this page is a count or a length that somebody
+currently draws by hand — your repeat number, your insert, your domain list
+— and a stock asset cannot know any of them.
 
     python tools/build_gallery.py construct
 """
@@ -38,6 +38,13 @@ PAL = bd.style.palette.get()
 INK = PAL["ink"]
 PROTEIN = PAL["tertiary"]
 LIGAND = PAL["primary"]
+# The DNA itself. Three kinds of thing on this page, three hues: the
+# track is what is *encoded*, the protein is what reads it, the ligand
+# is what switches it — which is exactly what the identity slots are
+# for. Drawn in `ink` the construct was the one black thing beside two
+# coloured ones, and three of this folder's five figures came out with
+# no colour in them at all.
+TRACK = PAL["secondary"]
 # Annotation colours for the captions and the blueprint's rulers — a diagram
 # *about* the drawing is not the drawing, and is not the palette's business.
 TEXT = "#555555"
@@ -46,20 +53,18 @@ GREY = "#9AA0A6"
 plt.rcParams.update({"font.size": 9})
 
 
-def _label(ax, anchor, text, gap=0.05, **kw):
-    """Text at an anchor, standing off along its normal.
-
-    Every label on this page is placed this way rather than at a hand-tuned
-    offset: the track's `label` anchor sits at that glyph's *own* top, so a
-    tall promoter and a short coding sequence both get their name clear of
-    themselves and neither is tuned by hand. This is the one-line stand-in
-    for `annotate.label` (milestone 8).
-    """
-    kw.setdefault("ha", "center")
-    kw.setdefault("va", "bottom" if anchor.normal[1] >= 0 else "top")
-    kw.setdefault("fontsize", 8)
-    kw.setdefault("color", TEXT)
-    return ax.text(*anchor.offset(gap), text, **kw)
+# Every label on this page is placed from an anchor rather than at a
+# hand-tuned offset: the track's `label` anchor sits at that glyph's *own*
+# top, so a tall promoter and a short coding sequence both get their name
+# clear of themselves and neither is tuned by hand.
+#
+# This file used to carry a six-line `_label` helper doing exactly that,
+# described in its own docstring as "the one-line stand-in for
+# `annotate.label` (milestone 8)". `bd.label` is that function, so the
+# stand-in is gone. The one behaviour that did not survive was its always
+# centring horizontally: `bd.label` takes the horizontal alignment from the
+# normal too, which is what a sideways anchor needs.
+LABEL = dict(fontsize=8, color=TEXT)
 
 
 def _system(operator=4):
@@ -88,7 +93,7 @@ def construct():
     track, cup2 = _system()
     fig, ax = bd.canvas(figsize=(7.4, 2.6))
 
-    track.draw(ax=ax, edge=INK, wall_lw=1.0, gid="construct")
+    track.draw(ax=ax, edge=TRACK, wall_lw=1.0, gid="construct")
     cup2.draw(ax=ax, edge=PROTEIN, wall_lw=1.0, gid="cup2")
 
     # The ligand is a dot at an anchor, not a shape. See the module docstring
@@ -108,15 +113,17 @@ def construct():
     # reason `label` hugs its glyph and `tick` shares a baseline.
     for a in track.anchors("tick"):
         if a.meta.get("label") and a.meta["name"] != "promoter":
-            _label(ax, a, a.meta["label"], gap=0.06)
+            bd.label(ax=ax, at=a, text=a.meta["label"],
+                     gap=0.06, **LABEL)
     # Left-aligned rather than centred: a centred name on a 0.30-wide glyph
     # reaches back under the protein bound beside it. Running it rightwards
     # puts it over the empty air above the coding sequence.
-    _label(ax, track.anchor("label", name="promoter"), "minimal promoter",
-           gap=0.05, ha="left")
-    _label(ax, cup2.anchor("tag"), "Gal4-TAD", gap=0.04)
-    _label(ax, cup2.anchor("wall", deg=180.0), "CUP2", gap=0.06,
-           color=PROTEIN, ha="right", va="center")
+    bd.label(ax=ax, at=track.anchor("label", name="promoter"),
+             text="minimal promoter", gap=0.05, ha="left", **LABEL)
+    bd.label(ax=ax, at=cup2.anchor("tag"), text="Gal4-TAD",
+             gap=0.04, **LABEL)
+    bd.label(ax=ax, at=cup2.anchor("wall", deg=180.0), text="CUP2",
+             gap=0.06, fontsize=8, color=PROTEIN)
 
     bd.fit(ax, track.points + cup2.points, pad=0.34)
     return fig, "construct.png"
@@ -176,7 +183,7 @@ def blueprint():
     # -- 2. the drawing -----------------------------------------------------
     ax = axes[1]
     bd.canvas(ax=ax)
-    track.draw(ax=ax, edge=INK, wall_lw=0.9)
+    track.draw(ax=ax, edge=TRACK, wall_lw=0.9)
     for x0, x1 in spans:
         ax.annotate("", xy=(x0, -0.30), xytext=(x1, -0.30),
                     arrowprops=dict(arrowstyle="<->", color=GREY, lw=0.7))
@@ -210,7 +217,7 @@ def vocabulary():
             ax = axes[r][c]
             bd.canvas(ax=ax)
             one = bd.Track([glyph], lead=0.16)
-            one.draw(ax=ax, edge=INK, wall_lw=1.0)
+            one.draw(ax=ax, edge=TRACK, wall_lw=1.0)
             one.fit(ax, pad=0.10)
             ax.set_ylim(-0.42, 0.52)
             if not r:
@@ -233,7 +240,7 @@ def repeats():
     for ax, n in zip(axes, counts, strict=True):
         bd.canvas(ax=ax)
         track = bd.Track([Repeat(n=n), Promoter(), CDS(width=0.5)])
-        track.draw(ax=ax, edge=INK, wall_lw=1.0)
+        track.draw(ax=ax, edge=TRACK, wall_lw=1.0)
         track.fit(ax, pad=0.08)
         ax.set_ylim(-0.34, 0.52)
         ax.set_title(f"n = {n}", fontsize=9, color=TEXT)

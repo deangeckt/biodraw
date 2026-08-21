@@ -116,7 +116,7 @@ def test_protrusions_are_equally_wavy_per_unit_of_themselves():
     """`protrusion_jitter` varies their lengths, so a shared cycle *count*
     makes the short ones wiggle faster than the long ones.
 
-    The library's own rule (`docs/PLAN.md` drawing rule 2, and check 1 of
+    The library's own rule (`docs/RULES.md` drawing rule 2, and check 1 of
     `skills/review-a-drawing`), which `Blob` was breaking: measured at 1.88x
     across the six pseudopodia of `examples/cell_atlas/`'s macrophage, against
     the 1.2x the checklist allows.

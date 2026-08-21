@@ -9,7 +9,7 @@ here to keep in step.
 
 Why a schema rather than markdown
 ---------------------------------
-`docs/PLAN.md` rule 1 is *image first, code second — always. Never open a
+`docs/RULES.md` rule 1 is *image first, code second — always. Never open a
 section with a code block.* Written as prose that gets read once. Written as a
 schema it cannot be violated: a section renders `images`, then `body`, then
 `code`, in that order, and there is no field that puts code above a picture.
@@ -31,7 +31,7 @@ about, as a caption, or it belongs in the code's tuning comments where the
 reasoning already lives. The one exception is the single snippet that says how
 to draw the thing.
 
-`docs/PLAN.md` carries the rule; `BUDGET` below is the number, so it cannot
+`docs/RULES.md` carries the rule; `BUDGET` below is the number, so it cannot
 creep back the way it got here.
 
 The checks this runs, each because something real got through:
@@ -45,7 +45,7 @@ The checks this runs, each because something real got through:
 - **the catalog budget** — see above.
 
 Images are referenced as `../examples/<slug>/<file>` rather than copied into
-`site/`, for two reasons: the seven folders are ~1.6 MB and `docs/PLAN.md`
+`site/`, for two reasons: the seven folders are ~1.6 MB and `docs/RULES.md`
 budgets image weight explicitly, and a rebuilt gallery is picked up by the
 site with no second step. That means **GitHub Pages must publish from the
 repository root**, not from `site/` — the site is then served at `/site/`.
@@ -80,11 +80,15 @@ CATEGORIES = (
     "Microbes",
     "Genetics",
     "Animals",
+    # `biodraw.lab` — the first category that draws no living thing. It is in
+    # the catalog on the roster test, not in spite of it: an instrument with
+    # counts in it is a thing that varies, and that is the whole line.
+    "Lab & methods",
 )
 
 GITHUB = "https://github.com/deangeckt/biodraw"
 
-# The supported way to drive the library. `docs/PLAN.md`: most figures will be
+# The supported way to drive the library. `docs/SCOPE.md`: most figures will be
 # described, not typed — so the skills are the interface, not a footnote.
 SKILLS = (
     ("draw-a-figure",
@@ -274,7 +278,82 @@ def check_catalog(pages):
         raise SystemExit(
             "the catalog budget is exceeded:\n  " + "\n  ".join(bad)
             + "\n\nSee `A catalog, not an article` in this file's docstring "
-              "and the documentation rules in docs/PLAN.md.")
+              "and the documentation rules in docs/RULES.md.")
+
+
+def check_readme(cards, extras):
+    """`README.md` quotes the catalog's size; the catalog generates it.
+
+    *"the readme do need a major change to reflect the main website."* The
+    README had drifted into a second copy of the index — the same pitch,
+    the same skills paragraph — and was cut back to a front door. What a
+    front door still has to carry is the one thing a picture cannot say:
+    how much is in there. Two numbers, written by hand, next to two numbers
+    generated from the content modules; adding an example would silently
+    falsify the README the way `examples/wiring/README.md` outlived the class
+    it documented.
+
+    So the numbers are checked rather than trusted. The same pair the index
+    renders in its tally, counted the same way.
+    """
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    figures = sum(1 + sum(len(s.get("images", ())) for s in p["sections"])
+                  for p in (*cards, *extras))
+
+    claim = re.search(r"\*\*(\d+) examples, (\d+) figures\*\*", readme)
+    if not claim:
+        raise SystemExit(
+            "README.md no longer states the catalog's size. Expected a line "
+            "matching `**N examples, M figures**` — see check_readme in "
+            "this file for why it is checked and not trusted.")
+
+    said = (int(claim.group(1)), int(claim.group(2)))
+    real = (len(cards), figures)
+    if said != real:
+        raise SystemExit(
+            f"README.md says {said[0]} examples and {said[1]} figures; the "
+            f"catalog has {real[0]} and {real[1]}. Update the line in "
+            f"README.md.")
+
+
+def check_docs():
+    """Every `docs/*.md` a file points at has to exist.
+
+    PLAN.md was one 862-line file under `docs/` and the masthead's *Roadmap*
+    link pointed at it: *"that's too long for users to read."* Splitting it to
+    ROADMAP / SCOPE / RULES / MILESTONES dragged **31 inbound references**
+    with it — tuning comments in `biodraw/`, docstrings in `tests/`, prose in
+    `skills/`, two comments in `site/assets/style.css`. Every one of them was
+    a path in a string that no tool had ever read.
+
+    That is the same failure as `examples/wiring/README.md` outliving the
+    class it documented, and the same answer: the reference is checked, not
+    trusted. Cheap, and it runs on every prose change.
+    """
+    skip = {".git", "__pycache__", ".pytest_cache", ".ruff_cache", "site"}
+    missing = []
+    for path in ROOT.rglob("*"):
+        if not path.is_file() or set(path.parts) & skip:
+            continue
+        if path.suffix not in {".py", ".md", ".css", ".html", ".toml"}:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        # A prefixed path from anywhere; a bare capitalised one only inside
+        # docs/, where STATE.md links to its siblings without the prefix.
+        names = set(re.findall(r"docs/([A-Z_]+\.md)", text))
+        if path.parent == ROOT / "docs":
+            names |= set(re.findall(r"\]\(([A-Z_]+\.md)\)", text))
+        for name in sorted(names):
+            if not (ROOT / "docs" / name).exists():
+                missing.append(f"{path.relative_to(ROOT)} → docs/{name}")
+    if missing:
+        raise SystemExit(
+            "These files point at a docs page that does not exist:\n  "
+            + "\n  ".join(missing)
+            + "\nSee check_docs in this file for why this is checked.")
 
 
 def check_images(pages):
@@ -297,6 +376,21 @@ def check_images(pages):
 # chrome
 # ---------------------------------------------------------------------------
 
+# The three families the site actually uses, in the weights it actually
+# uses — asking for more is bytes a reader waits for and never sees.
+# *"the fontstyle is shouting claude"*: the previous stack was Palatino/
+# Georgia over system-ui, which is what every tool defaults to. Every family
+# here has a full system fallback in `style.css`, so a blocked or slow
+# fonts.googleapis.com costs personality, never legibility — and
+# `display=swap` means text paints immediately either way.
+#
+# This is the site's only external request. The library itself keeps its
+# numpy-and-matplotlib-only rule; nothing here is imported by `biodraw`.
+FONTS = """<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Space+Grotesk:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400&display=swap">"""
+
+
 def head(title, description):
     return f"""<!doctype html>
 <html lang="en">
@@ -305,6 +399,7 @@ def head(title, description):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(description)}">
+{FONTS}
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -336,6 +431,13 @@ def masthead(extras=()):
     A standalone page is one that is *about every card* rather than being one
     of them, so it belongs in the chrome and not in the grid: from any page,
     one click away.
+
+    There was a *Roadmap* link here, pointing at the old `PLAN.md`. It went
+    when that file was split, and the reason it did not simply follow it is
+    that the masthead sits on every catalog page, in front of a reader who
+    came for drawings — a roadmap is a contributor document, and the GitHub
+    mark beside it already leads to all four. A link that most readers should
+    not click is a link that should not be in the chrome.
     """
     links = "".join(
         f'<a href="{e["slug"]}.html">{html.escape(e["title"])}</a>'
@@ -345,7 +447,6 @@ def masthead(extras=()):
     <a class="wordmark" href="index.html">biodraw</a>
     <nav class="masthead-links">
       {links}
-      <a href="{GITHUB}/blob/main/docs/PLAN.md">Roadmap</a>
       <a class="gh" href="{GITHUB}" aria-label="biodraw on GitHub"
          title="biodraw on GitHub">{GITHUB_MARK}</a>
     </nav>
@@ -752,6 +853,8 @@ def main():
     check_images(pages)
     check_snippets(pages)
     check_catalog(pages)
+    check_readme(cards, extras)
+    check_docs()
 
     (SITE / "index.html").write_text(render_index(cards, extras),
                                      encoding="utf-8", newline="\n")

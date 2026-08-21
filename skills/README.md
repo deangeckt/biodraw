@@ -42,7 +42,7 @@ When a user-hat comment arrives, four steps, in order:
 
 1. **Fix the specific thing.**
 2. **Name the general rule it is an instance of**, and write it down —
-   `docs/PLAN.md` if it governs the repo, a skill if it governs how a figure
+   `docs/RULES.md` if it governs the repo, a skill if it governs how a figure
    gets made.
 3. **Add a check to `review-a-drawing`** so the next agent catches it without
    being told. *This is the step that makes the loop actually converge.* A
@@ -56,7 +56,7 @@ properly the first time.
 
 ## What makes a skill acceptable here
 
-Copied from `docs/PLAN.md`, because it is the contract:
+Copied from `docs/RULES.md`, because it is the contract:
 
 1. **Name its trigger precisely** — when it applies and, as importantly, when
    it does not.

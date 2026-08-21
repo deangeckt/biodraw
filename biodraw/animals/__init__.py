@@ -9,7 +9,7 @@ ships one file per view and they never match each other.
 
 So `facing` is on the base class, `size` is on the base class, and each
 animal's own knobs are the parts somebody would actually change: the mouse's
-tail against its body, the fly's wings, the fish's stripe count, how curled
+tail against its body, the fly's wings, the fish's body depth, how curled
 the worm is.
 
 House style, from the maintainer: *"use very simple drawings, not complex
@@ -23,7 +23,7 @@ Where the proportions came from
 Reference figures, read as a **parts list and a set of proportions**, then
 written as numbers in `forms.py`. Nothing here is traced off a downloaded
 image and no reference image is committed — which is the rule in
-`docs/PLAN.md` for this category and also the only version that leaves a
+`docs/RULES.md` for this category and also the only version that leaves a
 shape with knobs: a traced JPEG scales and does nothing else.
 """
 

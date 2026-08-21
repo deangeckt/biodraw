@@ -7,7 +7,7 @@ bodies with no interior detail beyond an eye — the shape that survives at the
 centimetre a methods figure prints it at.
 
 What each one varies is what somebody would actually change: the mouse's tail
-against its body, the fly's wings, the fish's stripe count, how curled the
+against its body, the fly's wings, the fish's body depth, how curled the
 worm is — and, on all four, **which way it faces**, which is the thing a
 stock library cannot give you because it ships one file per view.
 
@@ -32,6 +32,18 @@ INK = bd.style.palette.get()["neutral"]
 # drawing, and neither is a construction arrow.
 TEXT = "#555555"
 GREY = "#9AA0A6"
+# *"this 'grey' default color ... is shouting claude"*. Measured at the time:
+# 27 of the 79 committed images had no saturated ink in them at all, and
+# every one of those was in a non-neuroscience folder — the newer domains
+# fetched the palette for `ink` and `neutral` and never reached for an
+# identity hue.
+#
+# The fix is not a second hue per part: `Blob.WASH` deliberately inks the
+# nucleus as *more of the same ink* rather than a different colour, because a
+# nucleus is a denser part of the cell and not a different kind of thing.
+# Passing `edge=` a hue keeps that intact — every wash inherits it — so the
+# drawing gains colour without gaining a claim.
+SUBJECT = bd.style.palette.get()["tertiary"]
 
 plt.rcParams.update({"font.size": 9})
 
@@ -42,7 +54,7 @@ FORMS = (("Mouse", Mouse), ("Fly", Fly), ("Zebrafish", Zebrafish),
 def _panel(ax, animals, pad=0.12, lw=1.1):
     bd.canvas(ax=ax)
     for animal in animals:
-        animal.draw(ax=ax, edge=INK, wall_lw=lw)
+        animal.draw(ax=ax, edge=SUBJECT, wall_lw=lw)
     bd.fit(ax, [p for a in animals for p in a.points], pad=pad)
 
 
@@ -87,11 +99,14 @@ def blueprint():
     _panel(ax, [mouse])
     for a in mouse.anchors("wall"):
         ax.plot(*a.xy, "o", ms=2.6, color=GREY, zorder=8)
+    # `bd.label` takes the stand-off *and* the alignment from the anchor's
+    # normal, so a nose pointing left gets right-aligned text and a tail
+    # pointing right gets left-aligned — each growing away from the animal
+    # rather than back across it. Hand-written, this was `ha="center"` for
+    # both, which put half of each word over the mouse.
     for kind in ("nose", "tail"):
-        a = mouse.anchor(kind)
-        ax.annotate(kind, xy=a.xy, xytext=a.offset(0.22), fontsize=8,
-                    color=TEXT, ha="center",
-                    arrowprops=dict(arrowstyle="-", color=GREY, lw=0.7))
+        bd.label(ax=ax, at=mouse.anchor(kind), text=kind, gap=0.22,
+                 leader=True, fontsize=8, color=TEXT, leader_color=GREY)
     ax.set_title("3 · wall anchors, and the two it names", fontsize=9.5,
                  loc="left", color=TEXT)
 
@@ -127,11 +142,17 @@ def knobs():
     sheets = [
         ("mouse · tail", [Mouse(tail=t, at=(0.0, -i * 0.88))
                           for i, t in enumerate((0.25, 0.78, 1.30))]),
-        ("fly · wings", [Fly(wings=w, legs=lg, at=(0.0, -i * 0.80))
+        # 1.02, not the 0.80 the side-view fly used: dorsal, the animal is
+        # 0.78 tall with its legs out, so 0.80 left a 0.02 gap and one fly's
+        # legs ran into the next one's.
+        ("fly · wings", [Fly(wings=w, legs=lg, at=(0.0, -i * 1.02))
                          for i, (w, lg) in enumerate([(True, 3), (False, 3),
                                                       (False, 0)])]),
-        ("fish · stripes", [Zebrafish(stripes=n, at=(0.0, -i * 0.52))
-                            for i, n in enumerate((0, 3, 6))]),
+        # Depth, since the stripes were removed — see `Zebrafish`. It is the
+        # knob that survives the same test the stripes failed: a deeper or
+        # shallower body still reads at icon size, where four bars did not.
+        ("fish · depth", [Zebrafish(depth=d, at=(0.0, -i * 0.52))
+                          for i, d in enumerate((0.70, 1.0, 1.35))]),
         ("worm · curl", [Worm(curl=c, waves=w, at=(0.0, -i * 0.52))
                          for i, (c, w) in enumerate([(0.02, 0.4),
                                                      (0.10, 1.4),
@@ -162,7 +183,7 @@ def to_scale():
     drawn = []
     for name, cls, mm in real:
         animal = cls(size=mm / 80.0, at=(x, 0.0))
-        animal.draw(ax=ax, edge=INK, wall_lw=0.9)
+        animal.draw(ax=ax, edge=SUBJECT, wall_lw=0.9)
         drawn.append(animal)
         ax.text(x, -0.34, f"{name}\n{mm:g} mm", ha="center", va="top",
                 fontsize=8, color=TEXT)

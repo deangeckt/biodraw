@@ -162,6 +162,25 @@ count from a per-unit rate rather than carrying it across branches — see
 `Pyramidal._n_spines` — not by shrinking the spines, which changes what the
 drawing says about them.
 
+**The same check on a fan, which is where it was missed.** Parts repeated
+around a hub have an *angular* density, and the trap is the same one written
+the other way up: `lab.Microscope` held its objective spread as a fixed total
+of ±18°, so the step between barrels **shrank as barrels were added**. At
+`objectives=5` adjacent tips came out 0.023 apart against 0.032 of barrel and
+fused into a lump nobody could count — the knob the shape exists for stopped
+working at the settings it exists to show.
+
+```python
+tips = np.array([a.xy for a in shape.anchors("objective")])
+sep = np.linalg.norm(np.diff(tips, axis=0), axis=1).min()
+print(f"closest tips {sep:.3f} vs barrel width {2 * hw_tip:.3f}")
+```
+
+Run it **at every count the knob offers**, not at the default. Both failures
+here — this one and the spine tuft — were invisible at the setting the shape
+was tuned in. The fix is the same shape as check 1's: hold the **step**, and
+let the total follow from the count.
+
 ### 5 · Anchor normals point outward
 
 Two separate bugs here have had connectors reaching *through* a cell.
@@ -340,7 +359,7 @@ lines of code across 66 drawings — about a hundred words per picture — and t
 of its sections carried **no image at all**.
 
 The reason it got there is instructive: documentation rule 2, *more images
-than prose*, had been in `docs/PLAN.md` since session 1 and everyone agreed
+than prose*, had been in `docs/RULES.md` since session 1 and everyone agreed
 with it. Nothing measured it, so it drifted for three sessions. It is a number
 now.
 
@@ -452,6 +471,162 @@ tree: `examples/epithelial_sheet` coloured a **nucleus** with
 palette carrying one field's vocabulary is the same mistake as the claim
 colours, one level up.
 
+---
+
+### 14 · A drawing that came out grey
+
+**The comment that produced it:** *"both the readme and the website is a bit
+too 'claude' in terms of style and color ... this 'grey' default color of
+claude ... is shouting claude."*
+
+Check 12 catches a colour that is *wrong*. This one catches a drawing that
+never asked for a colour at all — the more common failure, and invisible in
+review because nothing looks broken. Measured when the comment arrived:
+**27 of 79 committed images had no saturated ink in them whatever**, and
+every single one was outside `biodraw.neuro`. The newer domains fetched the
+palette for `ink` and `neutral`, drew in near-black on white, and no check
+had an opinion.
+
+A shape drawn without `edge=` takes its class default, which is
+`palette["ink"]` — correct for a blueprint, wrong for the drawing a catalog
+is showing off. The fix is one argument, not a second hue per part: passing
+`edge=` a hue leaves `WASH` intact, so a nucleus stays *more of the same
+ink* rather than becoming a different kind of thing.
+
+```bash
+# fraction of non-white pixels carrying real saturation, per image
+py -3.12 - <<'EOF'
+import numpy as np, pathlib
+from matplotlib import image as mpimg
+for p in sorted(pathlib.Path("examples").rglob("*.png")):
+    a = mpimg.imread(p)
+    if a.ndim == 2:
+        print(f"  0.0%  {p}  (greyscale)"); continue
+    rgb = a[..., :3]
+    rgb = (rgb * 255 if rgb.max() <= 1.0 else rgb).astype(np.float32)
+    mx, mn = rgb.max(-1), rgb.min(-1)
+    sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1), 0)
+    ink = mx < 250                       # ignore the white page
+    frac = float((sat[ink] > 0.15).mean()) if ink.sum() else 0.0
+    if frac < 0.02:
+        print(f"  {frac*100:5.1f}%  {p}")
+EOF
+```
+
+Anything this prints is a drawing with no colour in it. That is a **finding,
+not automatically a defect**: `mono` renders and greyscale checks are
+supposed to come out at zero, and a blueprint may legitimately be furniture
+on white. What it must never be is an accident — if an image is here and
+nobody chose that, it was drawn in the default and the default is grey.
+
+Run it per folder rather than per file. The signal that mattered was not one
+grey image; it was that *every* image in six folders was grey while every
+neuroscience folder sat between 16% and 50%. A whole domain at zero means
+that domain's `build.py` never reached for the palette.
+
+---
+
+### 15 · A mirrored pair actually mirrors
+
+**The comment that produced it:** *"the fly in the animals sections doesnt
+look like one"* — and the first redraw of it had one fat wing and one thin
+sliver.
+
+A part built for the far side by multiplying a `side` of `-1` through its
+*construction* is not the mirror of the near one. `bowed_ring` bows each edge
+by a signed amount relative to the ring's traversal, and negating the
+vertices' `y` reverses the ring's handedness — so the same bulges bow the
+wrong way and the two sides come out different shapes. The rule: **build one
+side, then mirror the points**, never build both from a signed formula.
+
+```python
+# right: one construction, mirrored
+ring = bowed_ring(verts, bulges)
+far = ring * np.array([1.0, -1.0])
+
+# wrong: the same formula with the sign pushed through it
+far = bowed_ring([(x, -y) for x, y in verts], [-b for b in bulges])
+```
+
+The check is that the drawn shape is symmetric about its own axis:
+
+```python
+import numpy as np, biodraw as bd
+s = bd.animals.Fly()
+p = np.vstack([np.asarray(q) for q in s.points])
+print(p[:, 1].min(), p[:, 1].max())      # must be equal and opposite
+```
+
+Equal-and-opposite bounds are necessary, not sufficient — two different
+shapes can share a bounding box. When a pair looks wrong and the bounds
+agree, compare the two parts' `length` and centroid directly, the way
+`tests/pins.py` does.
+
+This applies to anything that comes in pairs: wings, ears, the legs of a
+dorsal animal, paired dendrites. It does **not** apply where a repeated part
+is *supposed* to differ — see check 2, which is the opposite rule for parts
+that repeat rather than mirror. A pair mirrors; a run varies.
+
+### 16 · Every label is inside the frame, and clear of everything else
+
+**Where it came from:** building `annotate` in session 8. Two real defects in
+one afternoon, both invisible to the tests and both in figures that had been
+committed and reviewed.
+
+**Text is not ink.** `bd.fit` frames a drawing from its `points`, and a label
+is not in them — so a label can sit outside the axes, or on top of the panel
+title, or across the caption, and *nothing* fails. Autoscale ignores text
+too. Measured when this was written: three leader labels on a `cells.Blob` at
+`pad=0.12` were **all three** outside the axes, and the repository had 26
+hand-written `set_xlim` / `set_ylim` calls against 24 `fit` calls — almost
+every one of them widening a frame that had cropped something.
+
+The first half is free: **hand `fit` the marks.**
+
+```python
+marks  = bd.label(ax=ax, at=cell.anchor("wall", deg=225.0), text="wall")
+marks += bd.scalebar(ax=ax, at=(0.0, -1.1), size=10, per_unit=8.0, units="µm")
+bd.fit(ax, cell.points, pad=0.10, marks=marks)   # not points alone
+```
+
+The second half is not, because a title, a caption or another label is
+neither ink nor a mark. Compare the drawn extents — every pair, not the pair
+you suspect:
+
+```python
+import itertools
+fig.canvas.draw()
+r = fig.canvas.get_renderer()
+boxes = {t.get_text()[:16]: t.get_window_extent(r) for t in texts}
+boxes["TITLE"] = ax.title.get_window_extent(r)
+for (a, ba), (b, bb) in itertools.combinations(boxes.items(), 2):
+    assert not ba.overlaps(bb), f"{a} overlaps {b}"
+
+# ...and that no label sits over the drawing it is naming
+inv = ax.transData.inverted()
+ink = np.vstack([np.asarray(q) for q in cell.points])
+for name, bb in boxes.items():
+    d = bb.transformed(inv)
+    inside = ((ink[:, 0] >= d.x0) & (ink[:, 0] <= d.x1)
+              & (ink[:, 1] >= d.y0) & (ink[:, 1] <= d.y1)).sum()
+    assert not inside, f"{name} sits over {inside} vertices of the drawing"
+```
+
+Run it **whenever a label moves**, including when it moves because something
+else changed. Both defects this check exists for were second-order: taking
+alignment from the anchor's normal moved a `90°` marker from `va='center'` to
+`va='bottom'`, which put it 43 px above the axes and through its own panel's
+title; fixing *that* with `marks=` shrank the panel until a `270°` marker met
+the caption underneath. Neither was noticed by looking at the figure. Both
+took one loop to find.
+
+The corollary, for choosing where a label goes at all: **a leader is about
+where the anchor is, not about taste.** A part on the wall is already at the
+edge and a line to it is clutter; a part buried inside the body cannot be
+named without one.
+
+---
+
 ## Reporting
 
 Say what you measured and what you did not. "Tests pass" and "it looks right"
@@ -477,3 +652,29 @@ Where a choice is a scientific claim, **ask**:
 The library deliberately does not decide any of these for you — there is no
 contact-placement engine, because there is no sensible default for a claim.
 Name the anchors the figure means, and if you are unsure which it means, ask.
+
+**And whether a new thing belongs in the catalog at all.** This one has no
+numeric check and should not be given a fake one — it is a judgement, and the
+rule is documentation rule 9 in `docs/RULES.md`: *does the library draw it?*
+A shape or a way of drawing earns a page. A **utility** — something that puts
+marks on a drawing somebody else made — does not, however widely it is used.
+`annotate` shipped a *Labels & scale* page on the strength of an agent's own
+recommendation and it came straight back off: *"i see the page ... its not
+needed."*
+
+Two things follow for how you ask, not just what:
+
+- **Ask after there is something to look at.** A question about how to
+  present a feature cannot be answered before the feature exists. Asked
+  early, it collects agreement with whichever option you marked
+  *(Recommended)* — which is your opinion returned to you with a signature
+  on it.
+- **Never bundle it with a question that can be answered now.** *"what
+  should I build next"* is answerable today; *"where should the built thing
+  go"* is not. Put together, approval of the first carries the second
+  through unexamined.
+
+The cost of getting this wrong is small and recoverable — a page, an example
+folder, an hour. The cost of *not asking* about a scientific claim is a
+figure that says something untrue. Weight them accordingly: ask hard about
+claims, and about presentation just wait until it can be seen.

@@ -7,14 +7,14 @@ each of these is an outline built from the same core primitives as everything
 else: superellipse bodies, `Branch` tubes for tails and legs, and one union.
 
 Each one's knobs are the parts a reader would actually change: how long the
-mouse's tail is, whether the fly has its wings, how many stripes the fish
-carries, how curled the worm is. Identity is carried by the **silhouette**,
+mouse's tail is, whether the fly has its wings, how deep the fish's body
+is, how curled the worm is. Identity is carried by the **silhouette**,
 which is why none of these needs colour to be told apart — the same rule the
 neurons are drawn under.
 
 Proportions were read off reference figures and then written as numbers here;
 nothing is traced, and no reference image is committed. That is the rule in
-`docs/PLAN.md` for this whole category: a reference is a parts list and a set
+`docs/RULES.md` for this whole category: a reference is a parts list and a set
 of proportions, and a shape that came from tracing a downloaded picture has
 no knobs.
 """
@@ -88,79 +88,140 @@ class Mouse(Animal):
 
 
 class Fly(Animal):
-    """A fly in side view: head, thorax, abdomen, wings, legs.
+    """A fly seen from above: head, two eyes, thorax, abdomen, wings, legs.
+
+    **Dorsal, where the other three are in side view.** *"the fly in the
+    animals sections doesnt look like one"*, with a reference of the clean
+    top-down fly every methods figure uses. The side view was the mistake:
+    from the side a fly is a lumpy bean with a dark blob at one end, and the
+    two features a reader actually names it by — the pair of eyes and the two
+    wings spread behind — are edge-on and invisible. Projection is part of
+    the parts list, and for this animal the recognisable one is from above.
+
+    It costs nothing structurally: drawn head-to-`+x` like everything else
+    here, `facing` still mirrors it correctly, so it sits in a row beside the
+    side-view animals without special-casing.
 
     Wings are a separate layer rather than part of the union, because a wing
-    laid over an abdomen has to still *have* an edge where it crosses it —
+    laid over the abdomen has to still *have* an edge where it crosses it —
     fused, the two become one blob and the drawing loses the one feature that
     says insect.
     """
 
     def __init__(self, wings=True, legs=3, **kw):
         self.wings = bool(wings)
+        #: Legs **per side** — a fly has three, and they mirror.
         self.legs = max(0, int(legs))
         super().__init__(**kw)
 
+    #: Eye centres, as `(x, |y|)`. They are in the union *and* marked on top:
+    #: from above a fly's eyes are most of the head's outline, so an eye that
+    #: is only an interior blob sits on the drawing rather than in it.
+    EYE_AT = (0.300, 0.057)
+
+    def _eye(self, side):
+        return _blob(0.070, 0.050, (self.EYE_AT[0], self.EYE_AT[1] * side),
+                     squareness=2.1, deg=-20.0 * side)
+
     def _body(self):
         return [
-            # Abdomen: tapered and tipped down, which is what makes the
-            # three-part body read as an insect rather than as a bean.
-            _blob(0.27, 0.165, (-0.26, -0.06), squareness=2.6, deg=-10.0),
-            _blob(0.20, 0.185, (0.10, 0.01), squareness=2.5),   # thorax
-            _blob(0.115, 0.115, (0.36, 0.02), squareness=2.2),  # head
+            # Abdomen: the long taper at the back, and narrower than the
+            # thorax. Squareness near 2 keeps it a true oval — at 2.7 the
+            # sides run straight and it came out a blunt rectangle, which
+            # reads as a beetle and buried the wings behind it.
+            _blob(0.22, 0.120, (-0.28, 0.0), squareness=2.1),
+            # The waist. Without it the thorax and abdomen union into one
+            # bean and the animal loses its three-part body — which was most
+            # of why the old drawing read as a mammal.
+            _blob(0.085, 0.052, (-0.07, 0.0), squareness=2.2),
+            # Thorax: the widest thing on the animal, and the only part that
+            # is wider than it is long. Get this backwards and it reads ant.
+            _blob(0.175, 0.155, (0.10, 0.0), squareness=2.4),
+            # The head is a wide capsule *across* the body, because from
+            # above a fly's head is the pair of eyes and little else. Wide
+            # enough to contain them: eyes that stand out past the head
+            # silhouette read as two balloons stuck on the front.
+            _blob(0.085, 0.113, (0.295, 0.0), squareness=2.3),
         ]
 
     def _forms(self):
         closed = self._body()
-        # Legs leave the underside of the thorax and bend back, the way a
-        # standing fly's do. Straight spokes read as a spider.
-        for k in range(self.legs):
-            closed.append(_limb((0.18 - 0.15 * k, -0.13),
-                                (0.45 - 0.34 * k, -1.0), 0.26 - 0.015 * k,
-                                0.024, 0.011, bend=0.06))
+        # Three legs a side, leaving the thorax: front pair forward, middle
+        # pair out, hind pair back. All six are drawn because a fly seen from
+        # above shows all six, and drawing three was most of why the old one
+        # looked like a quadruped.
+        for side in (+1, -1):
+            for k in range(self.legs):
+                closed.append(_limb(
+                    (0.18 - 0.11 * k, 0.10 * side),
+                    (0.55 - 0.55 * k, 1.0 * side), 0.30 - 0.02 * k,
+                    0.021, 0.010, bend=0.05 * side))
         return closed, []
 
-    def _wing(self, lift, length):
+    def _wing(self, side, length=0.62):
         """A leaf, not an ellipse.
 
         A fly's wing is a teardrop rooted at the thorax and widest two-thirds
         of the way out. Drawn as an ellipse it reads as a balloon tied to the
-        insect, which is what the first two drafts of this looked like.
+        insect, which is what the first two drafts of this looked like. The
+        pair sweeps back and outward past the abdomen tip — a wing that stops
+        short of the abdomen reads as a beetle's case.
+
+        The far wing is the near wing mirrored in y, rather than the same
+        construction with `side` multiplied through it. Mirroring the
+        *vertices* reverses the ring's handedness, so the bulges bow the
+        wrong way and the two wings come out different shapes — which is
+        exactly what the first dorsal draft did.
         """
-        return bowed_ring([(0.05, 0.055 + lift),
-                           (-length, 0.115 + lift),
-                           (-0.62 * length, 0.005 + lift)],
-                          [0.09, 0.035, 0.07], n_per_edge=20)
+        ring = bowed_ring([(0.12, 0.055), (-0.29 - 0.63 * length, 0.27),
+                           (-0.24, 0.030)],
+                          [0.115, 0.050, 0.045], n_per_edge=22)
+        return ring if side > 0 else ring * np.array([1.0, -1.0])
 
     def _layers(self):
-        """Body first, then the wings over it, then the eye."""
+        """Wings *under* the body, then the body, then the eyes.
+
+        Over the body the wings are two opaque leaves laid across the animal
+        and the abdomen disappears under them — which is what the first
+        dorsal draft did. Underneath, the body occludes them exactly where a
+        real wing passes behind it, and what is left showing is the part that
+        says insect.
+        """
         closed, open_ = self._parts()
-        layers = [Layer(closed=closed, open_=open_, name="body")]
+        layers = []
         if self.wings:
-            wings = [self.to_world(self._faced(self._wing(*a)))
-                     for a in ((-0.02, 0.50), (-0.075, 0.44))]
+            wings = [self.to_world(self._faced(self._wing(s)))
+                     for s in (+1, -1)]
             layers.append(Layer(closed=wings, name="wings", fill="white",
                                 wall_lw="0.8x"))
-        # A fly is mostly eye, and that is the one interior mark it gets.
-        eye = self.to_world(self._faced(_blob(0.075, 0.080, (0.40, 0.03))))
-        layers.append(Layer(closed=[eye], name="eye", fill_alpha=0.75))
+        layers.append(Layer(closed=closed, open_=open_, name="body"))
+        # A fly is mostly eye, and from above that is *two* of them, meeting
+        # near the midline. They are the interior mark that carries the
+        # animal: covered up, the silhouette could be any winged insect.
+        eyes = [self.to_world(self._faced(self._eye(s))) for s in (+1, -1)]
+        layers.append(Layer(closed=eyes, name="eyes", fill_alpha=0.75))
         return layers
 
     def _named(self):
-        return [("head", (0.475, 0.02), (1.0, 0.0))]
+        return [("head", (0.380, 0.0), (1.0, 0.0))]
 
 
 class Zebrafish(Animal):
-    """A zebrafish in side view: body, three fins, stripes.
+    """A zebrafish in side view: body and three fins.
 
-    The stripes are a count, and that is the argument for drawing rather than
-    downloading one: a figure comparing wild type with a striping mutant
-    needs the same fish at two stripe numbers, which no asset can give. They
-    are drawn as bars trimmed to the body outline, in their own layer.
+    **The stripes are gone.** *"why is the zebrafish is having 3 stripes? no
+    need i think."* They were four horizontal bars trimmed to the body, and
+    the argument for them was that a stripe *count* is the knob no downloaded
+    asset can give you. That argument was true and still lost: at catalog
+    size the bars did not follow the body's taper, stopped abruptly inboard
+    of the outline, and the middle one ran through the eye — so the feature
+    that was supposed to justify the shape was the worst-looking thing on it.
+    A capability that only looks right at a size nobody views it at is not a
+    capability. The fish reads as a fish from its silhouette, which is the
+    rule the rest of this module is drawn under.
     """
 
-    def __init__(self, stripes=4, fins=True, depth=1.0, **kw):
-        self.stripes = max(0, int(stripes))
+    def __init__(self, fins=True, depth=1.0, **kw):
         self.fins = bool(fins)
         self.depth = float(depth)
         super().__init__(**kw)
@@ -196,44 +257,9 @@ class Zebrafish(Animal):
             ]
         return closed, []
 
-    def _stripe_bars(self):
-        """Horizontal bars trimmed to the body's own outline.
-
-        A stripe has to end where the fish does. There is no clipping in the
-        renderer — `render_hollow` unions, it does not intersect — so the
-        trim is arithmetic: cross the body ring with the stripe's centre line
-        and take the span between the outermost crossings.
-        """
-        ring = self._body_ring()
-        bars, ys = [], np.linspace(0.068, -0.050, self.stripes)
-        for y in ys:
-            xs = []
-            for (x0, y0), (x1, y1) in zip(ring, np.roll(ring, -1, axis=0),
-                                          strict=True):
-                if (y0 - y) * (y1 - y) < 0:
-                    xs.append(x0 + (x1 - x0) * (y - y0) / (y1 - y0))
-            if len(xs) < 2:
-                continue
-            lo, hi = min(xs), max(xs)
-            inset = 0.075 + 0.05 * abs(y)
-            lo, hi = lo + inset, hi - inset
-            if hi - lo < 0.05:
-                continue
-            h = 0.007
-            bars.append(rounded_ring([(lo, y - h), (hi, y - h),
-                                      (hi, y + h), (lo, y + h)], 0.012))
-        return bars
-
     def _layers(self):
         closed, open_ = self._parts()
         layers = [Layer(closed=closed, open_=open_, name="body")]
-        if self.stripes:
-            bars = [self.to_world(self._faced(b)) for b in self._stripe_bars()]
-            # Solid, not washed: at this size a stripe is two wall strokes
-            # with a sliver of fill between them, and a washed one reads as a
-            # grey pipe laid on the fish rather than as a marking in it.
-            layers.append(Layer(closed=bars, name="stripes", fill_alpha=1.0,
-                                wall_lw=0.0))
         eye = self.to_world(self._faced(_blob(0.030, 0.028, (0.315, 0.042))))
         layers.append(Layer(closed=[eye], name="eye", fill_alpha=0.8))
         return layers

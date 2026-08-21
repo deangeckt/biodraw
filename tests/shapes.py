@@ -17,6 +17,7 @@ from biodraw.core.branch import Branch
 from biodraw.core.scatter import scatter_in
 from biodraw.core.track import Track
 from biodraw.genetics import CDS, Promoter, Protein, Repeat, Terminator
+from biodraw.lab import Microscope
 from biodraw.micro import Bacterium
 from biodraw.neuro import (
     Astrocyte,
@@ -135,8 +136,8 @@ def collect():
     shapes["blob.anchors"] = blob.anchors().points()
 
     # -- animals -----------------------------------------------------------
-    # One assembled silhouette per body plan, plus the two that carry a
-    # layer the union does not see (the fly's wing, the fish's stripe).
+    # One assembled silhouette per body plan, plus the one part that lives in
+    # a layer the union does not see: the fly's wing.
     mouse = Mouse()
     m_closed, m_open = mouse.parts
     shapes["mouse.body"] = m_closed[0]
@@ -145,13 +146,27 @@ def collect():
     shapes["mouse.mirrored.body"] = Mouse(facing=-1).parts[0][0]
 
     fly = Fly()
-    shapes["fly.thorax"] = fly.parts[0][1]
-    shapes["fly.wing"] = fly.layers[1].closed[0]
+    # Both of these were positional (`parts[0][1]`, `layers[1]`) and both
+    # silently changed meaning when the fly was redrawn dorsal: a waist blob
+    # went in ahead of the thorax, and the wings moved *under* the body. The
+    # pins still passed as "changed geometry" rather than as "you are now
+    # pinning a different part", which is the failure worth avoiding — a pin
+    # is only worth having if its name stays true. Selected by name now.
+    # `parts` concatenates every layer, so an index into it moves whenever a
+    # layer is added or reordered — which is precisely what happened. Go
+    # through the named layer instead. Within the body layer the blobs come
+    # before the legs, and the thorax is "the widest thing on the animal" —
+    # the class says so, and that is what picks it out of the four.
+    _fly_body = next(lay for lay in fly.layers if lay.name == "body")
+    shapes["fly.thorax"] = max(
+        _fly_body.closed[:len(fly._body())],
+        key=lambda p: np.ptp(np.asarray(p)[:, 1]))
+    shapes["fly.wing"] = next(
+        lay for lay in fly.layers if lay.name == "wings").closed[0]
 
     fish = Zebrafish()
     shapes["fish.body"] = fish.parts[0][0]
     shapes["fish.caudal"] = fish.parts[0][1]
-    shapes["fish.stripe.first"] = fish.layers[1].closed[0]
 
     shapes["worm.body"] = Worm().parts[0][0]
 
@@ -238,5 +253,25 @@ def collect():
         shapes[f"radial.{name}.soma"] = closed[-1]
         shapes[f"radial.{name}.first"] = (open_ or closed)[0]
         shapes[f"radial.{name}.anchors"] = cell.anchors().points()
+
+    # -- the instrument ----------------------------------------------------
+    # Upright and inverted are different arrangements of one shape, and the
+    # numbers they share live in `_layout`. Pin both, and the anchors with
+    # them: the first version had `_named` re-deriving the turret and getting
+    # the objectives' direction backwards, which no drawing test would have
+    # noticed because the outline was right.
+    for name, scope in (("upright", Microscope()),
+                        ("inverted", Microscope(inverted=True)),
+                        ("bare", Microscope(objectives=1, stage=False,
+                                            condenser=False))):
+        closed, _ = scope.parts
+        shapes[f"microscope.{name}.body"] = closed[0]
+        # ...and one barrel. `closed[0]` is the foot, which no optical knob
+        # can reach: changing the objective fan from a total spread to a
+        # per-barrel step moved every tip and left the body pins untouched,
+        # so the net had a hole exactly where the shape's own knob lives.
+        # Objectives follow foot, arm, head, tube and nosepiece.
+        shapes[f"microscope.{name}.objective"] = closed[5]
+        shapes[f"microscope.{name}.anchors"] = scope.anchors().points()
 
     return shapes

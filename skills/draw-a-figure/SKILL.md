@@ -126,7 +126,7 @@ These are scientific claims, not styling choices.
 
 ## Documenting it
 
-If the figure becomes an example, the rules are in `docs/PLAN.md`. The short
+If the figure becomes an example, the rules are in `docs/RULES.md`. The short
 version: **image first, code second**, always; more images than prose; every
 documented call uses named arguments with trailing comments; variants are the
 unit of documentation, shown as grids rather than portraits; every example

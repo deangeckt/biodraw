@@ -24,7 +24,7 @@ __all__ = ["canvas", "fit", "save", "save_compact",
 #   compact  what a *published* repository can afford to carry. Capped at
 #            1000 px and quantized to 32 colours, which is visually lossless
 #            on flat line art and about a third the bytes. See the weight
-#            budget in docs/PLAN.md.
+#            budget in docs/RULES.md.
 #   review   the default while this repository is unpublished. A contact
 #            sheet of eighteen cells capped at 1000 px gives each cell about
 #            55 pixels, which is too few to see a kink in a fork, an overlap
@@ -105,7 +105,33 @@ def canvas(figsize=(4.0, 4.0), dpi=150, ax=None, facecolor="white"):
     return fig, ax
 
 
-def fit(ax, points, pad=0.20):
+def _mark_corners(ax, marks):
+    """Data-space corners of each annotation artist, at the current limits.
+
+    Text is sized in **points**, so its extent in the drawing's units depends
+    on the limits — which is the thing being computed. `fit` therefore
+    measures, grows, and measures again.
+
+    One pass is not enough, and the reason is worth keeping because it is
+    counter-intuitive: growing the limits looks like it can only make text
+    *smaller* in data units, which would make a single measurement safely
+    generous. It does not, because `canvas` locks the aspect and matplotlib
+    satisfies that by shrinking the axes **box**. Fewer pixels for the same
+    data range means fixed-point text covers *more* data units than it did
+    when measured. Tried as one pass: two of eight artists were still clipped
+    at `pad=0.12`.
+    """
+    fig = ax.get_figure()
+    fig.canvas.draw()
+    inv = ax.transData.inverted()
+    out = []
+    for t in marks:
+        bb = t.get_window_extent().transformed(inv)
+        out.append([[bb.x0, bb.y0], [bb.x1, bb.y1]])
+    return np.asarray(out, dtype=float).reshape(-1, 2) if out else None
+
+
+def fit(ax, points, pad=0.20, marks=()):
     """Fit the axes around everything drawn, with `pad` of margin.
 
     `pad` is in the drawing's own **local units**, so it scales with the shape
@@ -116,6 +142,21 @@ def fit(ax, points, pad=0.20):
 
     `points` may be a single (n, 2) array or any mix of arrays and
     `matplotlib.path.Path` objects.
+
+    `marks` are the artists `annotate.label` and `annotate.scalebar` returned
+    — text and its leader, a scale bar and its caption — and they are folded
+    into the frame by their drawn extent.
+
+    Why `marks` is not optional in spirit
+    -------------------------------------
+    A shape's `points` are its ink, and **text is not ink**, so a label sits
+    outside everything `fit` can see. Measured when `annotate` was written:
+    three leader labels on a `cells.Blob` at `pad=0.12` were **all three**
+    clipped by the axes, and two of three survived even at `pad=0.55`. The
+    repository had been paying for this all along without naming it — 26
+    hand-written `set_xlim` / `set_ylim` calls across `examples/` against 24
+    `fit` calls, almost every one of them widening a frame that had cropped
+    something. Pass the labels and the pad goes back to meaning what it says.
     """
     parts = []
     for p in ([points] if isinstance(points, np.ndarray) and points.ndim == 2
@@ -128,6 +169,33 @@ def fit(ax, points, pad=0.20):
     ax.set_xlim(x0, x1)
     ax.set_ylim(y0, y1)
     ax.set_aspect("equal")
+
+    # Measure, grow, measure again — see `_mark_corners` for why one pass
+    # leaves text outside the frame. Three is a cap, not a target: the frame
+    # stops moving after two on every figure in `examples/`, and the loop
+    # exits on that rather than always paying for the third.
+    for _ in range(3):
+        corners = _mark_corners(ax, marks) if len(marks) else None
+        if corners is None:
+            break
+        # The text's own box already carries its clearance from the anchor,
+        # so `pad` is applied to it too rather than being spent twice — a
+        # label ends up with the same white beyond it as the ink has beyond
+        # its edge.
+        grown = (min(x0, corners[:, 0].min() - pad),
+                 min(y0, corners[:, 1].min() - pad),
+                 max(x1, corners[:, 0].max() + pad),
+                 max(y1, corners[:, 1].max() + pad))
+        # Settled when the frame stops moving by more than a thousandth of
+        # its own span, which is far below anything visible at any dpi.
+        tol = 1e-3 * max(x1 - x0, y1 - y0)
+        done = all(abs(a - b) <= tol
+                   for a, b in zip(grown, (x0, y0, x1, y1), strict=True))
+        x0, y0, x1, y1 = grown
+        ax.set_xlim(x0, x1)
+        ax.set_ylim(y0, y1)
+        if done:
+            break
     return (x0, y0, x1, y1)
 
 

@@ -3,10 +3,10 @@
 The fourth domain package, and the first one whose parts list came off a
 figure rather than out of the field: chemically and light inducible expression
 systems, figure 1 of doi.org/10.1016/j.tibtech.2023.03.007. That matters
-because the guess had been wrong. `docs/PLAN.md` argued genetics on double
-helices, plasmid maps and exon/intron structure, and the figure contains none
-of them — it is **linear constructs and protein complexes**, which is a
-different parts list reached by the same reasoning.
+because the guess had been wrong. `docs/MILESTONES.md` argued genetics on
+double helices, plasmid maps and exon/intron structure, and the figure
+contains none of them — it is **linear constructs and protein complexes**,
+which is a different parts list reached by the same reasoning.
 
 Two halves, and one core primitive underneath:
 
@@ -22,8 +22,8 @@ Two halves, and one core primitive underneath:
 Everything a reader will want to change is a **count or a length**: how many
 repeats in the operator, how long the coding sequence, how many domains on
 the protein, how far open the clamshell. That is the roster test in
-`docs/PLAN.md` — a stock asset cannot know your repeat number — and it is why
-this category exists where a proteins category did not.
+`docs/MILESTONES.md` — a stock asset cannot know your repeat number — and it
+is why this category exists where a proteins category did not.
 
 What is deliberately absent
 ---------------------------

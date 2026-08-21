@@ -3,9 +3,14 @@
 One of four cells that used to share a single *Neuron types* card. *"neuron
 types — each type should get a card on its own."* A reader looking for a
 bipolar cell searches for "bipolar", and a card called "Neuron types" is not
-that; the family argument — that all of these are one body plan at five
-settings — is still made, on the [Radial body plan](radial_cell.html) card
-that stayed behind.
+that.
+
+The family argument — that all of these are one body plan at five settings —
+kept a *Radial body plan* card of its own for a while, and that has gone too:
+*"i dont see why we need a card for 'Radial body plan', lets remove it."*
+A card is something a reader looks for by name, and nobody searches a
+drawing catalog for a body plan. The argument still lives where it is
+load-bearing: in `neuro.RadialCell`, which every one of these cells is.
 """
 
 PAGE = dict(

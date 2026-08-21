@@ -301,7 +301,7 @@ def main():
     for build in BUILDS:
         fig, name = build()
         # Compact raster for anything the gallery shows — see
-        # `biodraw.io.save_compact`, and the weight budget in docs/PLAN.md.
+        # `biodraw.io.save_compact`, and the weight budget in docs/RULES.md.
         bd.save_compact(fig, HERE / name)
         plt.close(fig)
         size = (HERE / name).stat().st_size / 1024

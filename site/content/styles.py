@@ -44,6 +44,19 @@ PAGE = dict(
         "A colour and a linewidth are not a style. `hollow` says a process "
         "has a width and a wall; `skeleton` says it exists and connects two "
         "places.",
+
+        # Moved off README.md, which had grown a *How it works* section:
+        # the gallery is the documentation, and the README is a front door.
+        # It is the one thing true of every drawing in the catalog, so it
+        # belongs on the standalone page rather than in any one card.
+        "Everything in the first language is a **hollow shape**: a wall "
+        "around a washed interior. Overlapping parts must read as one "
+        "unbroken contour — no seam where a spine meets a dendrite "
+        "— and matplotlib has no boolean union, so `render_hollow` "
+        "fakes one in two passes: stroke and fill every part in the wall "
+        "colour, then repaint the union's interior on top, wiping exactly "
+        "the strokes that fell inside a neighbour. What survives is the "
+        "outer rim, and almost every visual decision here follows from it.",
     ],
 
     sections=[

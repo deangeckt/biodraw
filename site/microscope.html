@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Radial body plan — biodraw</title>
-<meta name="description" content="A soma with processes leaving it. Five named cells are this shape at five settings — and so is the one you need next.">
+<title>Microscope — biodraw</title>
+<meta name="description" content="An instrument with counts in it: n objectives, an upright body or an inverted one.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Space+Grotesk:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400&display=swap">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -13,7 +16,6 @@
     <a class="wordmark" href="index.html">biodraw</a>
     <nav class="masthead-links">
       <a href="styles.html">Drawing styles</a>
-      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
       <a class="gh" href="https://github.com/deangeckt/biodraw" aria-label="biodraw on GitHub"
          title="biodraw on GitHub"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
     </nav>
@@ -21,73 +23,70 @@
 </header>
 <main class="detail">
 <article>
-  <p class="crumb"><a href="index.html">All examples</a>  <span aria-hidden="true">·</span> Neuroscience</p>
+  <p class="crumb"><a href="index.html">All examples</a>  <span aria-hidden="true">·</span> Lab &amp; methods</p>
 
-  <h1>Radial body plan</h1>
-  <p class="standfirst">A soma with processes leaving it. Five named cells are this shape at five settings — and so is the one you need next.</p>
-  <p class="chips"><span class="chip">neuro.RadialCell</span></p>
+  <h1>Microscope</h1>
+  <p class="standfirst">An instrument with counts in it: n objectives, an upright body or an inverted one.</p>
+  <p class="chips"><span class="chip">lab.Microscope</span></p>
 
   <figure class="hero plate zoomable">
-    <img src="../examples/radial_cell/types.png"
-         alt="Six cell types side by side, each named by its silhouette">
-    <figcaption>Six cell types side by side, each named by its silhouette</figcaption>
+    <img src="../examples/microscope/microscope.png"
+         alt="An upright compound microscope with a camera port">
+    <figcaption>An upright compound microscope with a camera port</figcaption>
   </figure>
 
-  <p class="standfirst">How many processes leave, over what arc, and how often they branch. Those three carry every cell on this page.</p>
+  <p class="standfirst">Free libraries carry thousands of scientific icons and this library does not compete with them. What a downloaded microscope cannot know is <strong>your</strong> nosepiece — so the count is the reason to draw it.</p>
 
 <section class="block">
-<h2 id="named-by-silhouette-not-by-colour">Named by silhouette, not by colour</h2>
+<h2 id="however-many-objectives">However many objectives</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/radial_cell/told_apart.png" alt="A cell recognisable only by its hue fails a greyscale printout." loading="lazy"><figcaption>A cell recognisable only by its hue fails a greyscale printout.</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/microscope/objectives.png" alt="A turret is indexed: one barrel sits on the optical axis, the rest fan around it." loading="lazy"><figcaption>A turret is indexed: one barrel sits on the optical axis, the rest fan around it.</figcaption></figure>
 </div>
 </section>
 <section class="block">
-<h2 id="the-arc">The arc</h2>
+<h2 id="upright-or-inverted">Upright, or inverted</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/radial_cell/arc.png" alt="360° is a stellate cell, a wedge is a Purkinje, 180° with two processes is bipolar." loading="lazy"><figcaption>360° is a stellate cell, a wedge is a Purkinje, 180° with two processes is bipolar.</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/microscope/bodies.png" alt="Not a mirror. Inverted optics look up from under the stage, with the lamp above." loading="lazy"><figcaption>Not a mirror. Inverted optics look up from under the stage, with the lamp above.</figcaption></figure>
 </div>
 </section>
 <section class="block">
-<h2 id="branching-depth">Branching depth</h2>
+<h2 id="fitted-or-stripped-back">Fitted, or stripped back</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/radial_cell/depth.png" alt="Branch count is dendrites x (2^(depth+1) - 1) — past 3 it adds crossings, not detail." loading="lazy"><figcaption>Branch count is dendrites x (2^(depth+1) - 1) — past 3 it adds crossings, not detail.</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/microscope/fittings.png" alt="A figure about optics wants the light path. A workflow figure wants the silhouette." loading="lazy"><figcaption>A figure about optics wants the light path. A workflow figure wants the silhouette.</figcaption></figure>
 </div>
 </section>
 <section class="block">
-<h2 id="proportion">Proportion</h2>
-<div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/radial_cell/sizes.png" alt="A granule cell at a basket cell&#x27;s proportions stops reading as a granule cell." loading="lazy"><figcaption>A granule cell at a basket cell&#x27;s proportions stops reading as a granule cell.</figcaption></figure>
-</div>
-</section>
-<section class="block">
-<h2 id="setting-one-yourself">Setting one yourself</h2>
+<h2 id="drawing-one">Drawing one</h2>
 <div class="codeblock"><button class="copy" type="button">Copy</button><pre><code>import biodraw as bd
 
-cell = bd.neuro.RadialCell(
-    dendrites=5,        # how many processes leave the soma
-    arc_deg=150.0,      # over what arc — 360 is a star, a wedge is a fan
-    start_deg=15.0,     # where that arc begins, counter-clockwise from +x
-    length=1.1,         # process length, against a soma radius of ~0.4
-    forks=0.5,          # where along a process it splits, or None for plain
-    depth=3,            # how many generations of splitting
-    seed=1,             # fixes the jitter, so the figure regenerates
+scope = bd.lab.Microscope(
+    objectives=4,        # the knob it exists for
+    inverted=False,      # a different instrument, not a flipped one
+    condenser=True,      # sub-stage optics and the lamp under them
+    camera=True,         # the port on top
 )
-cell.draw(ax=ax, wall_lw=0.85)
-cell.fit(ax, pad=0.22)
+scope.draw(ax=ax, edge=ink, wall_lw=1.2)
 
-# ...or take one of the five that are already named
-bd.neuro.Purkinje()     # or Basket, Bipolar, Granule, Astrocyte</code></pre></div>
+# Anchors, like every shape here: `objective`, `eyepiece`, `stage`, `base`,
+# plus `wall` all round for a caption to stand off.
+bd.label(ax=ax, at=scope.anchor(&quot;stage&quot;), text=&quot;specimen&quot;, gap=0.08)</code></pre></div>
+</section>
+<section class="block">
+<h2 id="how-it-is-put-together">How it is put together</h2>
+<div class="figs is-single">
+<figure class="plate zoomable"><img src="../examples/microscope/blueprint.png" alt="The working distance is the one number that must be positive. It was negative at first." loading="lazy"><figcaption>The working distance is the one number that must be positive. It was negative at first.</figcaption></figure>
+</div>
 </section>
 
   <p class="source-note">Every figure above is output, not a stored asset —
-     drawn by <a href="https://github.com/deangeckt/biodraw/blob/main/examples/radial_cell/build.py"><code>radial_cell/build.py</code></a>, in Python, on a matplotlib axes.</p>
+     drawn by <a href="https://github.com/deangeckt/biodraw/blob/main/examples/microscope/build.py"><code>microscope/build.py</code></a>, in Python, on a matplotlib axes.</p>
 
-  <nav class="pager"><a class="prev" href="astrocyte.html"><span>Previous</span>Astrocyte</a><a class="next" href="dendritic_spine.html"><span>Next</span>Dendritic spine</a></nav>
+  <nav class="pager"><a class="prev" href="animals.html"><span>Previous</span>Model organisms</a></nav>
 </article>
 
 <aside class="rail">
   <p class="rail-head">On this page</p>
-  <ul><li><a href="#named-by-silhouette-not-by-colour">Named by silhouette, not by colour</a></li><li><a href="#the-arc">The arc</a></li><li><a href="#branching-depth">Branching depth</a></li><li><a href="#proportion">Proportion</a></li><li><a href="#setting-one-yourself">Setting one yourself</a></li></ul>
+  <ul><li><a href="#however-many-objectives">However many objectives</a></li><li><a href="#upright-or-inverted">Upright, or inverted</a></li><li><a href="#fitted-or-stripped-back">Fitted, or stripped back</a></li><li><a href="#drawing-one">Drawing one</a></li><li><a href="#how-it-is-put-together">How it is put together</a></li></ul>
 </aside>
 </main>
 <div class="lightbox" id="lightbox" hidden>

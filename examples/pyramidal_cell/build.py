@@ -254,7 +254,7 @@ def main():
     # rasters above put together, because the hollow render carries two paths
     # per part. `examples/dendritic_spine/spine.svg` is kept as the one
     # demonstration that vector export works; re-proving it in every folder
-    # would cost ~100 kB each for nothing. See docs/PLAN.md.
+    # would cost ~100 kB each for nothing. See docs/RULES.md.
 
 
 if __name__ == "__main__":

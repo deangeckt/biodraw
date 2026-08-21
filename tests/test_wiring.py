@@ -70,7 +70,7 @@ def test_basket_soma_anchors_point_outward():
 
 def test_basket_dendrites_differ():
     """The same rule as the pyramidal fork, applied to a run rather than a
-    pair — see docs/PLAN.md."""
+    pair — see docs/RULES.md."""
     cell = Basket(dendrites=8, jitter=0.22, forks=None, seed=2)
     degs = [d["deg"] for d in cell.geometry["dendrites"]]
     lens = [d["branch"].length for d in cell.geometry["dendrites"]]

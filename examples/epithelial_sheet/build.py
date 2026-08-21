@@ -25,6 +25,18 @@ JOIN = PAL["primary"]
 # are not the library's identity palette's business.
 APICAL_C = "#059669"
 GREY = "#9AA0A6"
+# *"this 'grey' default color ... is shouting claude"*. Measured at the time:
+# 27 of the 79 committed images had no saturated ink in them at all, and
+# every one of those was in a non-neuroscience folder — the newer domains
+# fetched the palette for `ink` and `neutral` and never reached for an
+# identity hue.
+#
+# The fix is not a second hue per part: `Blob.WASH` deliberately inks the
+# nucleus as *more of the same ink* rather than a different colour, because a
+# nucleus is a denser part of the cell and not a different kind of thing.
+# Passing `edge=` a hue keeps that intact — every wash inherits it — so the
+# drawing gains colour without gaining a claim.
+SUBJECT = PAL["tertiary"]
 
 plt.rcParams.update({
     "font.size": 9,
@@ -46,7 +58,7 @@ def portrait():
     """A columnar epithelium with a brush border, on its membrane."""
     fig, ax = bd.canvas(figsize=(4.4, 2.6))
     sheet = _sheet()
-    sheet.draw(ax=ax, wall_lw=1.0, gid="epithelium")
+    sheet.draw(ax=ax, edge=SUBJECT, wall_lw=1.0, gid="epithelium")
     sheet.fit(ax, pad=0.10)
     return fig, "epithelium.png"
 
@@ -68,6 +80,7 @@ def curvature():
         labels=["flat", "60° — a fold", "140° — a villus",
                 "-60°", "-140° — a duct", "-360° — closed"],
         cols=3, cell_in=1.9, aspect=0.95, pad=0.10,
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "curvature.png"
 
@@ -84,6 +97,7 @@ def cell_shapes():
         aspect=0.8, pad=0.08,
         row_labels=["squamous", "cuboidal", "columnar"],
         col_labels=[f"taper {t:g}" for t in tapers],
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "cell_shapes.png"
 
@@ -101,6 +115,7 @@ def borders():
         aspect=0.85, pad=0.08,
         row_labels=["short", "long"],
         col_labels=[f"{n} per cell" for n in counts],
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "borders.png"
 
@@ -125,7 +140,7 @@ def blueprint():
             fontsize=8, color=GREY, ha="center")
     # And below it, the same outlines a layer each.
     lowered = sheet.moved(at=(0.0, -1.55))
-    lowered.draw(ax=ax, wall_lw=1.1, gid="layered")
+    lowered.draw(ax=ax, edge=SUBJECT, wall_lw=1.1, gid="layered")
     ax.text(0.0, -1.85, "a Layer each — the walls survive", fontsize=8,
             color=JOIN, ha="center")
     bd.fit(ax, outlines + lowered.points, pad=0.16)
@@ -162,7 +177,7 @@ def blueprint():
     ax = axes[2]
     bent = bd.cells.Sheet(cells=7, curve_deg=150.0, height=0.55,
                           microvilli=0, seed=1)
-    bent.draw(ax=ax, wall_lw=0.9, fill="white", gid="arc")
+    bent.draw(ax=ax, edge=SUBJECT, wall_lw=0.9, fill="white", gid="arc")
     theta, r, centre = bent.arc
     ax.scatter(*centre, s=30, color=JOIN, zorder=6)
     for c in bent.geometry["cells"][::3]:
@@ -186,7 +201,8 @@ def blueprint():
     # -- 4. anchors ----------------------------------------------------------
     ax = axes[3]
     bd.canvas(ax=ax)
-    sheet.draw(ax=ax, wall_lw=0.7, fill="white", gid="anchors")
+    sheet.draw(ax=ax, edge=SUBJECT, wall_lw=0.7, fill="white",
+               gid="anchors")
     colors = {"apical": APICAL_C, "basal": GREY, "nucleus": NUC,
               "junction": JOIN}
     for kind, color in colors.items():

@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>biodraw — bio-inspired vector drawings</title>
 <meta name="description" content="A browsable gallery of parametric biological drawings for matplotlib. Every shape is a few parameters and a seed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Space+Grotesk:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400&display=swap">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -13,7 +16,6 @@
     <a class="wordmark" href="index.html">biodraw</a>
     <nav class="masthead-links">
       <a href="styles.html">Drawing styles</a>
-      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
       <a class="gh" href="https://github.com/deangeckt/biodraw" aria-label="biodraw on GitHub"
          title="biodraw on GitHub"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
     </nav>
@@ -31,7 +33,7 @@
 </section>
 
 <section class="controls">
-  <div class="filters"><button class="filter is-on" data-category="">All<span class="count">15</span></button><button class="filter" data-category="Neuroscience">Neuroscience<span class="count">9</span></button><button class="filter" data-category="Cells &amp; tissues">Cells &amp; tissues<span class="count">3</span></button><button class="filter" data-category="Microbes">Microbes<span class="count">1</span></button><button class="filter" data-category="Genetics">Genetics<span class="count">1</span></button><button class="filter" data-category="Animals">Animals<span class="count">1</span></button></div>
+  <div class="filters"><button class="filter is-on" data-category="">All<span class="count">15</span></button><button class="filter" data-category="Neuroscience">Neuroscience<span class="count">8</span></button><button class="filter" data-category="Cells &amp; tissues">Cells &amp; tissues<span class="count">3</span></button><button class="filter" data-category="Microbes">Microbes<span class="count">1</span></button><button class="filter" data-category="Genetics">Genetics<span class="count">1</span></button><button class="filter" data-category="Animals">Animals<span class="count">1</span></button><button class="filter" data-category="Lab &amp; methods">Lab &amp; methods<span class="count">1</span></button></div>
   <input id="search" type="search" placeholder="Search shapes, tissue, knobs…"
          autocomplete="off" aria-label="Search examples">
 </section>
@@ -123,20 +125,6 @@
       <span class="card-title">Astrocyte</span>
       <span class="card-tagline">A bush of fine processes in every direction — where a Purkinje cell is a fan, this is a cloud.</span>
       <span class="chips"><span class="chip">neuro.Astrocyte</span></span>
-    </span>
-  </a>
-  <a class="card" href="radial_cell.html"
-     data-category="Neuroscience"
-     data-search="radial body plan a soma with processes leaving it. five named cells are this shape at five settings — and so is the one you need next. neuro.radialcell radial body plan cell type custom stellate multipolar arc branching depth arbor dendrite neuroscience">
-    <span class="plate card-plate">
-      <img class="shot" src="../examples/radial_cell/types.png"
-           alt="Six cell types side by side, each named by its silhouette" loading="lazy">
-    </span>
-    <span class="card-body">
-      <span class="card-kicker">Neuroscience</span>
-      <span class="card-title">Radial body plan</span>
-      <span class="card-tagline">A soma with processes leaving it. Five named cells are this shape at five settings — and so is the one you need next.</span>
-      <span class="chips"><span class="chip">neuro.RadialCell</span></span>
     </span>
   </a>
   <a class="card" href="dendritic_spine.html"
@@ -249,6 +237,20 @@
       <span class="card-title">Model organisms</span>
       <span class="card-tagline">Mouse, fly, zebrafish and worm as silhouettes — and facing whichever way your panel needs.</span>
       <span class="chips"><span class="chip">animals.Mouse</span><span class="chip">animals.Fly</span><span class="chip">animals.Zebrafish</span><span class="chip">animals.Worm</span></span>
+    </span>
+  </a>
+  <a class="card" href="microscope.html"
+     data-category="Lab &amp; methods"
+     data-search="microscope an instrument with counts in it: n objectives, an upright body or an inverted one. lab.microscope microscope objective nosepiece turret eyepiece stage condenser inverted upright instrument equipment methods lab &amp; methods">
+    <span class="plate card-plate">
+      <img class="shot" src="../examples/microscope/microscope.png"
+           alt="An upright compound microscope with a camera port" loading="lazy">
+    </span>
+    <span class="card-body">
+      <span class="card-kicker">Lab &amp; methods</span>
+      <span class="card-title">Microscope</span>
+      <span class="card-tagline">An instrument with counts in it: n objectives, an upright body or an inverted one.</span>
+      <span class="chips"><span class="chip">lab.Microscope</span></span>
     </span>
   </a>
 </section>

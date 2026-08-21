@@ -13,7 +13,8 @@ They are **cartoons keyed to what a reader recognises**, not measured
 morphologies. A macrophage is drawn with pseudopodia and a lot of loose
 cytoplasmic content because that is how a macrophage is drawn; nothing here
 was traced off a micrograph, and none of the numbers came from one. The
-library draws, and the figure's claims stay the author's — see `docs/PLAN.md`.
+library draws, and the figure's claims stay the author's — see
+`docs/MILESTONES.md`.
 """
 
 import pathlib
@@ -31,6 +32,18 @@ HERE = pathlib.Path(__file__).resolve().parent
 PAL = bd.style.palette.get()
 INK = PAL["ink"]
 GREY = PAL["neutral"]
+# *"this 'grey' default color ... is shouting claude"*. Measured at the time:
+# 27 of the 79 committed images had no saturated ink in them at all, and
+# every one of those was in a non-neuroscience folder — the newer domains
+# fetched the palette for `ink` and `neutral` and never reached for an
+# identity hue.
+#
+# The fix is not a second hue per part: `Blob.WASH` deliberately inks the
+# nucleus as *more of the same ink* rather than a different colour, because a
+# nucleus is a denser part of the cell and not a different kind of thing.
+# Passing `edge=` a hue keeps that intact — every wash inherits it — so the
+# drawing gains colour without gaining a claim.
+SUBJECT = PAL["primary"]
 
 plt.rcParams.update({
     "font.size": 9,
@@ -154,6 +167,7 @@ def atlas():
         variants=[kw for _, kw in ATLAS],
         labels=[name for name, _ in ATLAS],
         cols=6, cell_in=1.5, aspect=1.0, pad=0.16,
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "atlas.png"
 
@@ -228,6 +242,7 @@ def derivations():
         factory=bd.cells.Blob, variants=variants, labels=labels, cols=4,
         cell_in=1.6, aspect=1.0, pad=0.16, label_size=6.5,
         row_labels=[name for name, _, _ in rows],
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "derivations.png"
 
@@ -282,7 +297,8 @@ def to_scale():
 
     right = 0.0
     for name, um, cell in scale_row():
-        cell.draw(ax=ax, wall_lw=0.9, gid=name.replace(" ", "_"))
+        cell.draw(ax=ax, edge=SUBJECT, wall_lw=0.9,
+                  gid=name.replace(" ", "_"))
         ink = np.vstack([np.asarray(p) for p in cell.points])
         right = max(right, ink[:, 0].max())
         # Under the drawing, not under the body, or a caption lands inside
@@ -291,14 +307,11 @@ def to_scale():
                 fontsize=7.5, color=GREY, ha="center", va="top")
     ax.set_xlim(-0.15, right + 0.15)
 
-    # A 10 um bar, drawn in the figure's own units — `annotate.scalebar` is
-    # milestone 8 and does not exist yet, so this is four lines of matplotlib
-    # against the same coordinates the cells are in.
-    bar = 10.0 / UM_PER_UNIT
-    y = 1.30
-    ax.plot([0.0, bar], [y, y], color=INK, lw=2.0, solid_capstyle="butt")
-    ax.text(bar / 2.0, y + 0.06, "10 µm", fontsize=8, color=INK,
-            ha="center")
+    # A 10 um bar. `per_unit` is the whole of it: the library does the
+    # division, and the butt cap — a projecting cap would make the bar
+    # longer than the length it claims.
+    bd.scalebar(ax=ax, at=(0.0, 1.30), size=10, per_unit=UM_PER_UNIT,
+                units="µm", fontsize=8, color=INK)
     ax.set_ylim(-1.35, 1.65)
     return fig, "to_scale.png"
 

@@ -6,7 +6,17 @@ and a new domain should be too — if something cannot be expressed here, that
 is a gap in the core rather than a reason to special-case it upstairs.
 """
 
-from . import connectors, geom, paths, profile, render, scatter, track
+from . import (
+    annotate,
+    connectors,
+    geom,
+    paths,
+    profile,
+    render,
+    scatter,
+    track,
+)
+from .annotate import label, scalebar
 from .branch import WIDTH_PER_DECORATION, Branch
 from .connectors import connect, connect_tree, endcap
 from .profile import Profile
@@ -20,9 +30,11 @@ from .shape import Layer, Shape
 from .track import Glyph, Track
 
 __all__ = [
-    "connectors", "geom", "paths", "profile", "render", "scatter", "track",
+    "annotate", "connectors", "geom", "paths", "profile", "render",
+    "scatter", "track",
     "Branch", "WIDTH_PER_DECORATION",
     "Profile", "Layer", "Shape", "Glyph", "Track",
     "render_hollow", "resolve_fill", "blend", "shade", "FILL_ALPHA",
     "scatter_in", "connect", "connect_tree", "endcap",
+    "label", "scalebar",
 ]

@@ -24,6 +24,17 @@ HERE = pathlib.Path(__file__).resolve().parent
 PAL = bd.style.palette.get()
 INK = PAL["ink"]
 GREY = PAL["neutral"]
+# *"this 'grey' default color ... is shouting claude"*. Measured at the time:
+# 27 of the 79 committed images had no saturated ink in them at all, and
+# every one of those was in a non-neuroscience folder — the newer domains
+# fetched the palette for `ink` and `neutral` and never reached for an
+# identity hue.
+#
+# The fix is not a second hue per part: the wash machinery deliberately inks
+# an inner part as *more of the same ink* rather than a different colour.
+# Passing `edge=` a hue keeps that intact — every wash inherits it — so the
+# drawing gains colour without gaining a claim.
+SUBJECT = PAL["secondary"]
 # Annotation colours for the construction figure. Local on purpose: these
 # label a diagram *about* the drawing, not the drawing.
 # Annotation colours for the construction figures. Local on purpose:
@@ -67,7 +78,7 @@ def portrait():
     fig, ax = bd.canvas(figsize=(4.6, 2.6))
     cell = _cell(length=1.50, capsule=0.16, nucleoid=0.62, granules=4,
                  flagella=7, flagella_arc_deg=360.0, pili=16)
-    cell.draw(ax=ax, wall_lw=1.0, gid="bacterium")
+    cell.draw(ax=ax, edge=SUBJECT, wall_lw=1.0, gid="bacterium")
     cell.fit(ax, pad=0.10)
     return fig, "bacterium.png"
 
@@ -79,6 +90,7 @@ def named():
         variants=[dict(seed=3, **kw) for _, kw in NAMED],
         labels=[name for name, _ in NAMED],
         cols=3, cell_in=1.9, aspect=0.72, pad=0.10,
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "named.png"
 
@@ -102,6 +114,7 @@ def forms():
         cols=len(lengths), cell_in=1.35, aspect=0.80, pad=0.10,
         row_labels=[name for name, _ in axes],
         col_labels=[f"length={ln:g}" for ln in lengths],
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "forms.png"
 
@@ -125,6 +138,7 @@ def flagella():
         variants=[dict(seed=5, length=1.30, **kw) for _, kw in kinds],
         labels=[name for name, _ in kinds],
         cols=4, cell_in=1.9, aspect=0.80, pad=0.08,
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "flagella.png"
 
@@ -144,6 +158,7 @@ def envelope():
         variants=[dict(seed=2, length=1.40, **kw) for _, kw in variants],
         labels=[name for name, _ in variants],
         cols=6, cell_in=1.45, aspect=0.86, pad=0.10,
+        draw_kw=dict(edge=SUBJECT),
     )
     return fig, "envelope.png"
 
@@ -215,7 +230,8 @@ def colony():
         cells = [_cell(**kw).moved(at=(x, y), rotate_deg=rot)
                  for x, y, rot in places]
         for i, cell in enumerate(cells):
-            cell.draw(ax=ax, wall_lw=0.9, gid=f"{name}.{i}")
+            cell.draw(ax=ax, edge=SUBJECT, wall_lw=0.9,
+                      gid=f"{name}.{i}")
         bd.fit(ax, [p for cell in cells for p in cell.points], pad=0.10)
         ax.set_title(f"{name}\n{len(cells)} cells, one `moved()` each",
                      fontsize=8, color=GREY)
@@ -280,6 +296,7 @@ def blueprint():
     mid = c.mean(axis=0)
     ax.fill(ring[:, 0], ring[:, 1], color="#F2F2F2", zorder=1)
     ax.plot(ring[:, 0], ring[:, 1], color=GREY, lw=1.2, zorder=2)
+    marks = []
     for deg in (0, 90, 180, 270):
         xy, n = cell.wall_at(deg)
         ax.plot([mid[0], xy[0]], [mid[1], xy[1]], color=MARK_A, lw=0.7,
@@ -287,9 +304,18 @@ def blueprint():
         ax.scatter(*xy, s=22, color=MARK_A, zorder=5)
         ax.quiver(xy[0], xy[1], n[0], n[1], color=MARK_A, scale=9,
                   width=0.008, zorder=5)
-        ax.text(xy[0] + n[0] * 0.20, xy[1] + n[1] * 0.20, f"{deg}°",
-                fontsize=7.5, color=MARK_A, ha="center", va="center")
-    ax.text(mid[0], ring[:, 1].min() - 0.34,
+        marks += bd.label(ax=ax, at=cell.anchor("wall", deg=float(deg)),
+                          text=f"{deg}°", gap=0.20, fontsize=7.5,
+                          color=MARK_A)
+    # The labels have to be in the frame, not merely drawn: autoscale ignores
+    # text, so the 90 deg marker sat 43 px above the axes and straight through
+    # this panel's own title. Measured, not noticed.
+    bd.fit(ax, [ring], pad=0.12, marks=marks)
+    # 0.60 rather than 0.34: the 270 deg marker is aligned from its own
+    # normal now, so it hangs *below* the wall instead of straddling it, and
+    # at 0.34 the two boxes overlapped. Checked by comparing extents, not by
+    # looking - every pair of boxes in this panel is clear at 0.60.
+    ax.text(mid[0], ring[:, 1].min() - 0.60,
             "0° is one pole, 180° the other —\n"
             "resolved against the outline as drawn",
             fontsize=8, color=GREY, ha="center")
@@ -300,7 +326,8 @@ def blueprint():
     # -- 4. anchors ----------------------------------------------------------
     ax = axes[3]
     bd.canvas(ax=ax)
-    cell.draw(ax=ax, wall_lw=0.7, fill="white", gid="anchors")
+    cell.draw(ax=ax, edge=SUBJECT, wall_lw=0.7, fill="white",
+              gid="anchors")
     for kind, color in (("pole", MARK_C), ("wall", MARK_B),
                         ("flagellum", MARK_A)):
         found = cell.anchors(kind)

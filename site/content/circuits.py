@@ -10,7 +10,7 @@ have to be the same thing.
 
 The two prose sections wiring used to carry — *where contacts land is yours
 to say* and *why there is no axon class* — were cut when the pages went to a
-catalog. Neither was lost: the first is `docs/PLAN.md` and the placement
+catalog. Neither was lost: the first is `docs/MILESTONES.md` and the placement
 engine's entry in `docs/STATE.md`, the second is the module docstring of
 `biodraw/neuro/__init__.py`, where someone reaching for `neuro.Axon` will
 actually meet it.

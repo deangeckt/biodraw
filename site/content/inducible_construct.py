@@ -2,7 +2,7 @@
 
 The parts list came off figure 1 of doi.org/10.1016/j.tibtech.2023.03.007,
 which Dean supplied as a screenshot, and not off the field. Worth keeping in
-mind when reading the page: `docs/PLAN.md` had argued genetics on double
+mind when reading the page: `docs/MILESTONES.md` had argued genetics on double
 helices, plasmid maps and exon structure, and the figure contains none of
 them. Taking the inventory off the picture is the step this repository keeps
 proving it cannot skip.

@@ -1,8 +1,10 @@
 # Working on biodraw
 
 How this repository is built, as distinct from what it contains. For what it
-contains, see [docs/PLAN.md](docs/PLAN.md); for how to *drive* the library,
-see [AGENTS.md](AGENTS.md).
+contains, see [docs/ROADMAP.md](docs/ROADMAP.md) and the three files it points
+at — [SCOPE.md](docs/SCOPE.md), [RULES.md](docs/RULES.md),
+[MILESTONES.md](docs/MILESTONES.md); for how to *drive* the library, see
+[AGENTS.md](AGENTS.md).
 
 ## The conversation is the training signal
 
@@ -23,7 +25,7 @@ literal content:
 
 1. **Fix the specific thing.**
 2. **Ask what general rule it is an instance of**, and write that rule down —
-   in `docs/PLAN.md` if it governs the repo, in a skill if it governs how a
+   in `docs/RULES.md` if it governs the repo, in a skill if it governs how a
    figure gets made.
 3. **Add a check to [`skills/review-a-drawing`](skills/review-a-drawing/SKILL.md)**,
    so the next agent catches it without being told. **This is the step that
@@ -82,7 +84,13 @@ Rules that arrived this way so far, with the comment that produced them:
 | "the main page ... is missing the fact that this catalog is driven by python" | Say what the thing **is** above the fold. The pictures cannot tell a reader what medium they came out of |
 | "the 'on a branch' eight image is almost only white space" | The frame is the drawing's shape, not the figure's — and anything about how a drawing sits on the page is invisible to an agent, so it has to be a number |
 | "instead of a 'colour' section, you can add variation on spines; head size, neck size" | A page about one shape shows *that shape's* variation. A knob the catalog cannot express yet is the finding, not the section |
+| "why is the zebrafish is having 3 stripes? no need i think" | **A capability that only looks right at a size nobody views it at is not a capability.** The stripe count was the documented reason the fish was parametric, and it still went — the argument for a feature is not evidence that the drawing works |
+| "the fly in the animals sections doesnt look like one" (with a clean top-down reference) | **Projection is part of the parts list.** Identity lives in the silhouette, so draw the view that puts the identifying features *in* it — a fly from the side hides both the eyes and the wings, and no amount of tuning fixes the wrong projection |
+| "this 'grey' default color of claude (as well as the fontstyle) is shouting claude" | A default that looks like *some tool's default* is a defect in a catalog of drawings. Measured: 27 of 79 images had no colour at all, every one outside `neuro` — so the check is a number (`review-a-drawing` 14), not a taste |
+| "the readme do need a major change to reflect the main website" | The front-door rule needed a *check*, not a restatement: the README had quietly become a second copy of the index. Prose duplication is caught by deleting it; the number left behind is caught by `check_readme` |
 | "grab text book images, take the basic ones … very simple drawings, not complex realistic images, sometimes an outline is even enough" | A reference is a parts list and a set of proportions, never something to trace or commit. And the catalog entry is the **schematic**: if an outline reads at figure size, the detail was costing bytes and attention for nothing |
+| "i see the page: 'Labels & scale' its not needed" | A utility is not a catalog entry. Card-or-standalone was a false choice — the third answer is *not in the catalog at all*, and it applies to every remaining utility on the roadmap |
+| "id rather understand better what the feature is before approving it" | A question whose answer needs seeing the work is a review, not a question. Ask it after there is something to look at, and never bundled with one that can be answered now |
 
 ## Fight complexity
 
@@ -130,6 +138,26 @@ through every example built on it.
 
 Exception: routine judgement calls with an obvious default. Do not ask which
 variable name to use.
+
+**Ask only what can be answered yet.** *"id rather understand better what the
+feature is before approving it."* `annotate` was built, and in the same
+dialog that asked what to build next it also asked **where the finished
+thing should sit in the gallery** — a question about presenting something
+that did not exist and had never been seen. The only signal available was the
+option marked *(Recommended)*, so the question collected a rubber stamp, and
+a page nobody wanted was built on it.
+
+So: a question whose answer depends on seeing the work is not a question yet,
+it is a **review**, and it belongs after there is something to look at.
+Bundling one with a question that *is* answerable now is worse than not
+asking, because approval of the answerable one launders the rest. Concretely,
+when a dialog is about to mix *what should I build* with *how should the
+built thing be presented*, ask the first, build, show, and then ask the
+second — or discover the second no longer needs asking.
+
+A corollary about the recommendation itself: marking an option
+*(Recommended)* while the maintainer has no way to evaluate it makes the
+recommendation the whole answer. Reserve it for choices they can weigh.
 
 ## Report honestly
 

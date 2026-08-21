@@ -1,18 +1,22 @@
 # Where things stand
 
 A running handoff. Read this, then [CLAUDE.md](../CLAUDE.md) for how the repo
-is developed and [PLAN.md](PLAN.md) for where it is going.
+is developed and [ROADMAP.md](ROADMAP.md) for where it is going.
 
-Last updated: session 7 (2026-08-19). Pushed to
+Last updated: session 8 (2026-08-20). Pushed to
 [github.com/deangeckt/biodraw](https://github.com/deangeckt/biodraw) and
 **live at [deangeckt.github.io/biodraw](https://deangeckt.github.io/biodraw/)**.
 
 ## Built and verified
 
-**356 tests pass, `ruff check .` clean, all 79 example images across
-seventeen folders regenerate byte-identically, and the sixteen-page gallery
-rebuilds from its content modules.** Run them with `py -3.12` on this
-machine — `python` is a Windows Store stub here.
+**403 tests pass, `ruff check .` clean, all 80 example images across
+seventeen folders regenerate byte-identically, and the seventeen-page gallery
+rebuilds from its content modules.** Run them with `py -3.12` on this machine —
+`python` is a Windows Store stub here.
+
+`tools/build_gallery.py --check` compares against `git HEAD`, so it fails
+while sessions 7 and 8 sit uncommitted; determinism itself was verified
+directly, by hashing every image across two consecutive rebuilds.
 
 | | |
 |---|---|
@@ -22,21 +26,128 @@ machine — `python` is a Windows Store stub here.
 | `biodraw/cells/` | `Blob` — wall, nucleus, nucleolus, scattered organelles, protrusions · `Sheet` — epithelial row, brush border, basement membrane, curvature to a closed ring |
 | `biodraw/animals/` | `Mouse`, `Fly`, `Zebrafish`, `Worm` — silhouettes on a shared `Animal` base that carries `size` and `facing` |
 | `biodraw/genetics/` | `Repeat`, `Promoter`, `CDS`, `Terminator` — SBOL construct glyphs on a `core.Track` — plus `Protein`, a lobed body with domain tags and a `cleft` anchor |
+| `biodraw/lab/` | `Microscope` — upright or inverted, *n* objectives on the nosepiece, stage, condenser, camera port. The first shape here that is not alive |
 | `biodraw/micro/` | `Bacterium` — a capsule body whose named forms are *settings* (length, `curve_deg`, `twists`), plus capsule, nucleoid, granules, flagella and pili |
+| `biodraw/core/annotate.py` | `label` — text from an anchor's normal, with an optional leader · `scalebar` — a bar of a stated real length, and `fit(marks=...)` to keep both in frame |
 | `biodraw/layout/` | `contact_sheet` |
 | `biodraw/style/` | three palettes |
 | `biodraw/io.py` | `canvas`, `fit`, `save` (vector, SVG hygiene, byte-reproducible), `save_compact` (rasters) + three quality profiles |
-| `examples/` | `dendritic_spine`, `pyramidal_cell`, `basket_cell`, `bipolar`, `granule`, `purkinje`, `astrocyte`, `radial_cell`, `styles`, `wiring`, `circuit_motifs`, `generic_cell`, `cell_atlas`, `epithelial_sheet`, `bacteria` — `build.py` + images, ~2.8 MB at `review` quality |
-| `site/` | the gallery: index with category filter and search, **13 cards across three categories plus one standalone page** (drawing styles, in the masthead and a band beside the grid), built from `site/content/*.py` by `tools/build_site.py`. Root `index.html` + `.nojekyll` so GitHub Pages serves it from the repository root — **live**, and held to the catalog budget by `check_catalog` |
-| `tests/` | 94 numeric shape pins + 2 image baselines |
+| `examples/` | `dendritic_spine`, `pyramidal_cell`, `basket_cell`, `bipolar`, `granule`, `purkinje`, `astrocyte`, `styles`, `wiring`, `circuit_motifs`, `generic_cell`, `cell_atlas`, `epithelial_sheet`, `bacteria` — `build.py` + images, ~2.8 MB at `review` quality |
+| `site/` | the gallery: index with category filter and search, **15 cards across six categories plus one standalone page** (drawing styles, in the masthead and a band beside the grid), built from `site/content/*.py` by `tools/build_site.py`. Root `index.html` + `.nojekyll` so GitHub Pages serves it from the repository root — **live**, and held to the catalog budget by `check_catalog` |
+| `tests/` | 102 numeric shape pins + 2 image baselines |
 
 ## Decisions taken
+
+**Session 8, last.** `biodraw.lab.Microscope` — milestone 10's microscopy
+half, and a sixth gallery category. Full write-up in
+[MILESTONES.md](MILESTONES.md); what belongs here is what the build cost.
+
+**A knob was cut, and that is the useful part.** The inventory asked for five
+and `binocular` is not drawable in a side elevation: two eyepiece tubes are
+separated *into the page*, so one hides behind the other. Measured before
+cutting — **0.0%** change to the inverted body, 11.6% to the upright's single
+tube with the barrels still fused. The zebrafish's stripes and the side-on
+fly, in one flag. Say "binocular" in a word beside the drawing instead.
+
+**Three defects, none of them visible in the picture:**
+
+1. the objectives were drawn **through the stage** — working distance
+   **-0.044**. The outline was completely convincing;
+2. the objective *anchors* pointed **up** out of an upright body, 0.14 above
+   a turret whose barrels hung below it. Cause: `_named` re-deriving numbers
+   `_forms` already owned. Both halves were internally consistent, which is
+   why only reading them showed it. Fixed by one `_layout` dict;
+3. the objective fan was a fixed **total** spread, so the angular step shrank
+   as barrels were added and at `objectives=5` the tips fused into a lump you
+   could not count. Drawing rule 3 on an angle. Now half of check 4 in
+   `review-a-drawing`, with the instruction to run it *at every count the
+   knob offers* rather than at the default.
+
+Worth keeping for the next shape: **the first pin missed all three.** It was
+`closed[0]`, the foot, which no optical knob can reach — so changing the fan
+moved every barrel and left the pins green. A pin on a part nothing varies is
+a pin that is not watching anything.
+
+**Session 8, then.** `annotate` shipped — `bd.label` and `bd.scalebar`,
+the last of milestone 8. The write-up is in [MILESTONES.md](MILESTONES.md);
+what belongs here is what it cost and what it moved.
+
+**It also shipped `examples/annotation/` and a standalone *Labels & scale*
+page, and both were removed within the hour**: *"i see the page: 'Labels &
+scale' its not needed."* That is documentation rule 9's third answer now — a
+utility is not a catalog entry — but the more useful half of the comment was
+the second sentence, *"id rather understand better what the feature is before
+approving it."*
+
+The failure was in how it was asked, and it is written up in `CLAUDE.md`
+under *Ask only what can be answered yet*. In one dialog I asked what to
+build next **and** where the finished thing should sit in the gallery. The
+second question was about a feature that did not exist and had never been
+seen, so the only signal available was the option I had marked
+*(Recommended)* — and my own opinion came back with a signature on it. A
+question whose answer needs seeing the work is a review, not a question.
+
+Worth recording that the machinery handled the reversal cleanly with no
+manual tidying: `build_site.py` removed the orphaned `annotation.html` on the
+next run, and `check_readme` caught the figure count moving 74 → 79 → 74 in
+both directions.
+
+**Four committed images moved, all of them intended**, and each was checked
+against the version it replaced rather than accepted because the build ran:
+`inducible_construct/construct.png` (a local `_label` helper deleted, and
+`Gal4-TAD` now grows away from the protein instead of straddling it — zero
+ink inside its box, measured), `animals/blueprint.png`, `bacteria/blueprint.png`
+and `cell_atlas/to_scale.png`. Everything else stayed byte-identical.
+
+**One regression I caused and had to chase.** Taking alignment from the
+normal moved the bacteria blueprint's `90°` marker from `va='center'` to
+`va='bottom'`, which pushed it 43 px above the axes and straight through that
+panel's own title. Autoscale ignores text, so nothing complained. Fixed with
+`fit(..., marks=...)`, which then shrank the panel enough that `270°` met the
+caption below it — so the caption moved from 0.34 to 0.60. **Both were found
+by comparing extents in a loop, neither by looking**, and that is the only
+reason they were found at all.
+
+The conversion was deliberately *not* all 61 sites. The ones converted are
+the ones that name a place on a shape; the explanatory sentences drawn onto
+blueprints stayed `ax.text`, because they are the figure's argument rather
+than a label, and forcing prose through a labelling API would be the wrong
+shape for both.
+
+**Session 8, before that.** PLAN.md, under `docs/`, was split into four. It had 862
+lines and 48 kB, and the masthead's *Roadmap* link pointed at it: *"that's
+too long for users to read."* Measured, the reason was structural rather than
+verbose — **milestones alone were 540 lines, 63% of the file**, and nearly all
+of that is shipped history and two reference inventories. A reader clicking
+*Roadmap* opened on a 4,800-line origin story and met the first unshipped
+thing at line 378.
+
+So: [ROADMAP.md](ROADMAP.md) (92 lines — what is in it, what is next, and
+what is deliberately *not* planned), [SCOPE.md](SCOPE.md), [RULES.md](RULES.md)
+and [MILESTONES.md](MILESTONES.md). Two sections moved rather than staying
+where they were filed, because both are live rules and neither is history:
+*how the reference figures are used* became drawing rules 6 and 7, and *what
+makes a skill good* joined the other contracts in RULES.
+
+**The Roadmap link is gone from the masthead entirely**, rather than
+following the split. The masthead sits on every catalog page in front of a
+reader who came for drawings; a roadmap is a contributor document, and the
+GitHub mark beside it already leads to all four files.
+
+The part worth keeping is what the split cost: **31 inbound references** —
+tuning comments in `biodraw/`, docstrings in `tests/`, prose in `skills/`,
+two comments in `site/assets/style.css` — every one a path in a string that
+no tool had ever read. That is `examples/wiring/README.md` outliving
+`neuro.Axon` all over again, so it got the same answer: `check_docs` in
+`tools/build_site.py` fails the build if any file points at a `docs/` page
+that does not exist. It caught two references on its first run, both in the
+comment explaining why it exists.
 
 **Session 7, last.** `biodraw.animals` — mouse, fly, zebrafish, worm — with
 `examples/animals/` and a fifth gallery category. The direction that shaped
 it: *"use very simple drawings, not complex realistic images, sometimes an
 outline is even enough"*, and *"grab text book images, take the basic ones"*
-— which is now a rule in PLAN: **a reference is a parts list and a set of
+— which is now drawing rule 6: **a reference is a parts list and a set of
 proportions**, read and then written as numbers, never traced and never
 committed. A traced picture has no knobs, which is the entire argument for
 this library over a stock one.
@@ -45,8 +156,9 @@ this library over a stock one.
 Two smaller things came out of the build, both worth keeping:
 
 - `Layer` gained **`wall_lw`** (a number, or `'0.8x'` as a multiple). A
-  zebrafish stripe stroked at the body's wall weight reads as a pipe laid on
-  the fish rather than as a marking in it;
+  marking stroked at the body's wall weight reads as a pipe laid on the
+  animal rather than as a marking in it. Built for the zebrafish's stripes
+  and outlived them — the fly's wing uses the multiple form;
 - an animal's `wall` anchors are taken over **what is drawn**, layers
   included. Computed from `_forms()` alone they sat under the fly's own
   wing — the one place a label must not go. The test found that, not the eye.
@@ -79,8 +191,11 @@ shape of the catalog rather than one page of it:
 - **each named cell type is its own card** — `bipolar`, `granule`,
   `purkinje` and `astrocyte` are example folders and gallery pages now.
   Nobody looking for a Purkinje cell searches for "neuron types". The family
-  argument stayed behind on a *Radial body plan* card, which is also the
-  entry point for a cell the library does not name;
+  argument stayed behind on a *Radial body plan* card for a session, then
+  that went too — *"i dont see why we need a card"* — because nobody
+  searches a drawing catalog for a body plan either. `neuro.RadialCell` is
+  still the entry point for a cell the library does not name; it is
+  documented where it is used rather than on a card of its own;
 - **wiring and circuit motifs are one card**, over two example folders. That
   needed the site builder to stop assuming a page *is* a folder: an image may
   now be written `wiring/bus.png`, and a page may list the `examples` it
@@ -102,7 +217,7 @@ Nothing else in the suite moved.
 
 Also, from the same session and worth keeping: `save_compact` pads 0.02 inch
 instead of matplotlib's fixed 0.1, and `build_gallery` reports loose frames
-on every run. See the image weight budget in PLAN.md.
+on every run. See the image weight budget in [RULES.md](RULES.md).
 
 **Session 6, last.** `render_skeleton` and `Shape.draw(style='skeleton')`
 — a second drawing *language*, not a re-ink. The first styles page
@@ -131,8 +246,8 @@ branches sweeping one arc, and they cross until the union fuses the fan into a
 lattice. Past about depth 3 the extra generation adds crossings, not detail.
 (This paragraph said "forty-five" until session 7, when someone multiplied it
 out. 45 is the same cell one generation *down*.)
-The named forms are tuned under that ceiling and `examples/radial_cell/`
-shows it happening.
+The named forms are tuned under that ceiling. (`examples/radial_cell/`
+showed it happening; the folder went with its card.)
 
 **Session 6, later.** The default palette is **red / green / blue** —
 excitatory red and inhibitory green, the convention most neuroscience readers
@@ -193,10 +308,20 @@ stop":
   collaterals. It worked, and at the size an axon appears in a circuit panel
   it read as a fat beaded worm competing with the cells it connected. A
   projection is now a line with a mark on the end.
+- **`Zebrafish(stripes=...)`** — four bars trimmed to the body outline, and
+  the documented *reason* the fish was parametric at all: a stripe count is
+  the knob no downloaded asset can give you. The argument was sound and the
+  drawing still lost. At catalog size the bars did not follow the body's
+  taper, stopped short of the outline, and the middle one ran through the
+  eye. *"why is the zebrafish is having 3 stripes? no need i think."*
+  `Layer.wall_lw` was built for them and outlived them — the fly's wing uses
+  it.
 
-All three were removed on the maintainer's user-hat feedback, and all three
+All four were removed on the maintainer's user-hat feedback, and all four
 made the library smaller and clearer. The pattern is worth keeping in mind:
-the failure mode of a drawing library is doing the author's thinking for them.
+the failure mode of a drawing library is doing the author's thinking for
+them — and the newest entry adds a second one, that a capability which only
+looks right at a size nobody views it at is not a capability.
 
 ## Bugs found, and how
 
@@ -394,16 +519,20 @@ example rather than at new code:
 
 ## Open, in priority order
 
-0. **Three categories Dean has asked for: animals, microscopy and genetics.**
-   Written up as milestone 10 in [PLAN.md](PLAN.md). **Genetics is now
-   unblocked** — see 0b. Animals wants a decision between traced silhouettes
-   (free today, vary only in scale) and a jointed body plan (varies in pose,
-   needs a core addition) — the recommendation is silhouettes first.
-   **Microscopy is blocked on what it means**: equipment (a microscope, a
-   slide) is the case this library's own scope section says to download from
-   BioArt rather than draw, while a field of view — section outlines,
-   magnification, density, scale bars, inset boxes — varies and is exactly
-   what no stock library can offer. Ask before building.
+**[ROADMAP.md](ROADMAP.md) now carries the ordered list** — it is the file a
+reader clicks, so a second ordering here would be the drift the split was
+meant to end. What stays below is what belongs in a handoff and nowhere
+else: the reference figures, and the items whose cost is only visible from
+inside the repo.
+
+0. **Animals and genetics shipped in session 7; microscopy did not.** Animals
+   went as silhouettes rather than a jointed rig — the pose question is still
+   open and nobody has needed it. Microscopy was decided the same session and
+   is the *instrument*, not the field of view: *"microscopy i meant drawing of
+   a microscope illustration."* The scope argument against it — that a
+   microscope is the case for downloading from BioArt — stands as an argument
+   and not as a veto, because a drawn one has counts in it. Inventory in
+   [MILESTONES.md](MILESTONES.md), milestone 10.
 
 0b. **Both reference figures have arrived — the block is lifted.** Dean
    supplied screenshots in session 6, after two sessions of failed fetches
@@ -411,7 +540,7 @@ example rather than at new code:
    **Do not attempt to fetch either again.** The screenshots were pasted into
    the conversation and are not in the repository — they are figures from
    published papers and should not be committed — so **the inventories in
-   [PLAN.md](PLAN.md) milestone 10 are the record**. Work from those. If
+   [MILESTONES.md](MILESTONES.md) milestone 10 are the record**. Work from those. If
    something is genuinely missing from them, ask Dean to re-send the image
    rather than guessing or re-fetching:
 
@@ -510,11 +639,11 @@ example rather than at new code:
   site: *"its still too much text, its should be more catalog then
   code-snippet."* 6,662 words → 3,227, 43 code blocks → 10 (one per page),
   and all 66 drawings kept. See documentation rule 7 in
-  [PLAN.md](PLAN.md), `check_catalog` in `tools/build_site.py`, and check 11
+  [RULES.md](RULES.md), `check_catalog` in `tools/build_site.py`, and check 11
   of `review-a-drawing`.
 
   The part worth remembering is *why* it drifted: documentation rule 2, **more
-  images than prose**, had been in `PLAN.md` since session 1, was never
+  images than prose**, had been in `RULES.md` since session 1, was never
   disputed, and was never measured. Three sessions of prose accreted under a
   rule everyone agreed with. Nothing here has ever been fixed by writing the
   rule down more firmly — only by turning it into a number that fails a build.
@@ -541,7 +670,7 @@ Three decisions worth keeping:
 
 - **Content is a schema, not markdown.** A section renders `images`, then
   `body`, then `code`, and there is no field that puts code above a picture.
-  `PLAN.md` documentation rule 1 stopped being prose someone reads once and
+  `RULES.md` documentation rule 1 stopped being prose someone reads once and
   became the data structure. A markdown parser would also have been a
   dependency for no gain, since the schema carries the block structure anyway.
 - **Images are referenced, not copied** — `../examples/<slug>/<file>`. The

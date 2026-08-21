@@ -91,21 +91,13 @@ def test_the_mouses_tail_is_a_length():
     assert spans[0] < spans[1] < spans[2]
 
 
-def test_stripes_are_trimmed_to_the_body():
-    """Stripes are drawn as bars and cut to the outline by arithmetic, since
-    the renderer unions and cannot intersect. A stripe that overhangs is a
-    line lying across the fish."""
-    fish = Zebrafish(stripes=5)
-    body = Path(fish._body_ring(), closed=True)
-    bars = fish._stripe_bars()
-    assert len(bars) == 5
-    for bar in bars:
-        assert body.contains_points(bar).all()
-
-
-def test_no_stripes_means_no_stripe_layer():
-    assert [lay.name for lay in Zebrafish(stripes=0).layers] == ["body", "eye"]
-    assert "stripes" in [lay.name for lay in Zebrafish().layers]
+def test_fish_is_body_and_eye_only():
+    """The stripes were removed — see `Zebrafish`. This is the check that
+    they do not come back by accident, and that `stripes=` is gone rather
+    than silently accepted and ignored."""
+    assert [lay.name for lay in Zebrafish().layers] == ["body", "eye"]
+    with pytest.raises(TypeError):
+        Zebrafish(stripes=4)
 
 
 def test_wings_and_legs_can_be_taken_off():

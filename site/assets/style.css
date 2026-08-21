@@ -1,35 +1,46 @@
 /* biodraw — the gallery.
 
-   Editorial: a journal's figure supplement rather than a docs site. Serif for
-   anything that is read, sans for anything that is operated, mono for code.
+   Serif for anything that is read, sans for anything that is operated, a
+   display grotesque for anything that names something, mono for code.
+
+   *"both the readme and the website is a bit too 'claude' in terms of style
+   and color ... this 'grey' default color of claude (as well as the
+   fontstyle) is shouting claude."* The ground was a warm cream (#FBFAF7)
+   under warm-grey inks, with an accent whose own comment said it had been
+   "taken down" — a palette that apologised for itself. It is now a clean
+   white ground, a near-neutral cool ink, and one vivid accent used like it
+   means it. A default that reads as *some tool's default* is the one thing
+   a catalog of drawings cannot afford.
 
    One constraint drives more of this file than any aesthetic choice: the
    committed PNGs are palette-mode with **white backgrounds and no alpha**
-   (see docs/PLAN.md, the image weight budget — quantising to 32 colours is
+   (see docs/RULES.md, the image weight budget — quantising to 32 colours is
    what makes a variant cost 0.8 kB). So every drawing sits on an explicit
    light `.plate`, in dark mode too. Letting a drawing inherit a dark page
    would put a white rectangle on it. */
 
 :root {
-  --paper:      #FBFAF7;
-  --paper-2:    #F3F1EB;
-  --ink:        #1E1C19;
-  --ink-soft:   #5B564E;
-  --ink-faint:  #8B8479;
-  --rule:       #DFDACE;
-  --rule-soft:  #EBE7DE;
-  --accent:     #A0392C;   /* the library's excitatory red, taken down */
-  --accent-2:   #2E5E6E;
+  --paper:      #FFFFFF;
+  --paper-2:    #F4F6F8;
+  --ink:        #14161A;
+  --ink-soft:   #4A5058;
+  --ink-faint:  #858D97;
+  --rule:       #DCE1E6;
+  --rule-soft:  #EDF0F3;
+  --accent:     #E5401C;   /* vivid, and used like it means it */
+  --accent-2:   #0F7FC4;
   --plate:      #FFFFFF;   /* never themed — see the note above */
-  --plate-edge: #E4DFD4;
-  --code-bg:    #F5F2EC;
+  --plate-edge: #DCE1E6;
+  --code-bg:    #F4F6F8;
 
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+  --display: "Bricolage Grotesque", "Space Grotesk", system-ui,
+             -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --serif: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", Palatino,
            Georgia, "Times New Roman", serif;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
-          sans-serif;
-  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-          "Liberation Mono", monospace;
+  --sans: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+          Consolas, "Liberation Mono", monospace;
 
   --measure: 34rem;
   --wide: 60rem;
@@ -37,18 +48,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper:     #171613;
-    --paper-2:   #1F1D19;
-    --ink:       #EBE6DC;
-    --ink-soft:  #B0A99C;
-    --ink-faint: #857E71;
-    --rule:      #35322B;
-    --rule-soft: #26241F;
-    --accent:    #D9705F;
-    --accent-2:  #7FB6C7;
-    --plate:     #FAF9F6;
-    --plate-edge:#2E2B25;
-    --code-bg:   #201E1A;
+    --paper:     #0F1115;
+    --paper-2:   #171A20;
+    --ink:       #ECEFF3;
+    --ink-soft:  #A7B0BA;
+    --ink-faint: #79828D;
+    --rule:      #2A2F37;
+    --rule-soft: #1E222A;
+    --accent:    #FF6A47;
+    --accent-2:  #4FA8E8;
+    --plate:     #FFFFFF;
+    --plate-edge:#2A2F37;
+    --code-bg:   #171A20;
   }
 }
 
@@ -97,7 +108,7 @@ code {
   gap: 1rem;
 }
 .wordmark {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: 1.4rem;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -141,10 +152,11 @@ main {
 
 .hero-copy { padding: 3.4rem 0 2.2rem; }
 .hero-copy h1 {
-  font-size: clamp(1.9rem, 4.6vw, 3rem);
-  line-height: 1.14;
-  font-weight: 500;
-  letter-spacing: -0.017em;
+  font-family: var(--display);
+  font-size: clamp(2rem, 4.8vw, 3.15rem);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.028em;
   margin: 0 0 1rem;
 }
 .standfirst {
@@ -153,6 +165,13 @@ main {
   max-width: var(--measure);
   margin: 0;
 }
+
+/* `margin: 0` is right for the usual single standfirst, where whatever
+   follows supplies the gap. The drawing-styles page is the first with two —
+   the hollow-shape paragraph moved off README.md — and without this they
+   render flush, reading as one run-on block. Only the second and later get
+   the gap, so every other page is untouched. */
+.standfirst + .standfirst { margin-top: 0.9rem; }
 
 /* The install line under the standfirst. It is here rather than only at the
    foot of the page because the index never said, above the fold, what this
@@ -212,16 +231,16 @@ main {
 }
 .filter:hover { border-color: var(--rule); color: var(--ink); }
 .filter.is-on {
-  border-color: var(--ink);
-  color: var(--ink);
-  background: var(--paper-2);
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 .count {
   font-size: 0.72em;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
-.filter.is-on .count { color: var(--ink-soft); }
+.filter.is-on .count { color: #fff; opacity: 0.72; }
 
 #search {
   font-family: var(--sans);
@@ -242,7 +261,7 @@ main {
   color: var(--ink-faint);
   margin: 1rem 0 1.8rem;
 }
-.tally strong { color: var(--ink-soft); font-weight: 600; }
+.tally strong { color: var(--accent); font-weight: 700; }
 
 /* -------------------------------------------------------------------- grid */
 
@@ -281,9 +300,9 @@ main {
    earlier version cross-faded the portrait into that example's variant sheet,
    and it read as the card changing identity — you could not compare two
    cards, and what you clicked was not what you had been looking at. See
-   docs/PLAN.md, documentation rule 6. */
+   docs/RULES.md, documentation rule 6. */
 .card:hover .plate,
-.card:focus-visible .plate { border-color: var(--ink-faint); }
+.card:focus-visible .plate { border-color: var(--accent); }
 
 .card-body { display: block; padding: 0.85rem 0.1rem 0; }
 .card-kicker {
@@ -297,9 +316,10 @@ main {
 }
 .card-title {
   display: block;
+  font-family: var(--display);
   font-size: 1.12rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.014em;
   margin-bottom: 0.25rem;
 }
 .card:hover .card-title { color: var(--accent); }
@@ -437,9 +457,10 @@ main {
 .crumb a:hover { color: var(--accent); }
 
 .detail h1 {
-  font-size: clamp(1.9rem, 4vw, 2.6rem);
-  font-weight: 500;
-  letter-spacing: -0.018em;
+  font-family: var(--display);
+  font-size: clamp(2rem, 4.2vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.028em;
   line-height: 1.14;
   margin: 0 0 0.7rem;
 }
@@ -450,12 +471,13 @@ main {
 
 .block { margin: 3rem 0; }
 .block h2 {
-  font-size: 1.28rem;
+  font-family: var(--display);
+  font-size: 1.3rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   margin: 0 0 1rem;
   padding-bottom: 0.45rem;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 2px solid var(--accent);
   scroll-margin-top: 1.5rem;
 }
 .block p { margin: 0 0 1rem; }

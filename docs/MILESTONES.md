@@ -1,309 +1,14 @@
-# Roadmap
+# Milestones
 
-Where `biodraw` is going, and why it is shaped the way it is.
+What was built, in the order it was built, and what each one turned out to
+cost. Most of this is history and is kept for one reason: **several entries
+record something being built, shipped, and then deliberately removed**, and
+the reasoning behind a removal is the most expensive thing here to
+rediscover. See also *Things built and then deliberately removed* in
+[STATE.md](STATE.md).
 
-## Where it came from
-
-The seed is a 4800-line module that drew one figure in one paper — cartoon
-pyramidal and inhibitory cells, spiny dendrites, projecting axons, synapses,
-and wired circuit panels — driven entirely by deep keyword dicts tuned by hand
-for that figure.
-
-Underneath that figure-specific surface it already had four clean layers, and
-the first three are **not neuron-specific**: a tapered open-ended tube is a
-hypha or a vessel, a superellipse is any cell body, and the spine placement is
-really *stamp a traced unit profile along a path*. `biodraw` is built on that
-seam: a domain-neutral core, with `neuro` as the first domain built on it.
-
-## What this is for, and what it is not
-
-Free libraries of scientific art already exist and are good — NIAID's
-[BioArt Source](https://bioart.niaid.nih.gov/) carries 2,000+ vectors and
-icons across sixteen categories (viruses, anatomy, cells and organelles,
-bacteria, proteins, lab equipment, plants). **This library does not compete
-with those and should never try.** If a figure needs a virion or a centrifuge,
-the right move is to download one.
-
-The gap it fills is that a static asset cannot become the next one. Figures
-need *variation* — the same cell at three spine densities to make the point,
-the epithelium curved into a duct, one more basal on the cell in panel B — and
-with a fixed asset that means editing points by hand, which ends
-reproducibility and costs the same again at every revision. Here a variant is
-a parameter, a rebuild is one command, and the drawing lands on a matplotlib
-axes so it sits beside real data.
-
-Two consequences for how this is built, both already load-bearing:
-
-- **Variants are the unit of documentation** (see the documentation rules
-  below). The README shows grids because the grid *is* the argument.
-- **Tracing has to be public API**, not a story about how the shapes were
-  made. A researcher's own drawing joining the library on equal terms with the
-  bundled ones is the thing a stock library structurally cannot offer.
-
-BioArt's category list also doubles as the roster checklist — it is a survey
-of what people actually reach for, compiled by people who had to answer that
-question professionally. Anything on it that wants *varying* is a candidate
-here; anything that only wants downloading is not.
-
-## Decisions
-
-| | |
-|---|---|
-| License | MIT |
-| API | Objects + **anchors** for people; introspection + checks for agents |
-| Scope | Domain-neutral core, `neuro` as the first complete domain |
-| Rendering | matplotlib only, plus SVG hygiene (named layers, text as text) |
-| Fidelity | Primitives pinned by image tests; the seed figure ships as the flagship example |
-| Shapes | Traced from drawings, not synthesised — and tracing is public API |
-
-## Documentation rules
-
-These apply to every page of the gallery, every example folder, and the
-main README. Rules 1 and 7 are now **enforced by the build**: a gallery
-section is `images` then `body` then `code`, and `tools/build_site.py` has no
-field that puts a code block above a picture — and `check_catalog` refuses a
-page that exceeds the word, snippet or caption budget, or that carries a
-section with no drawing in it. Rule 2 spent three sessions as prose everyone
-agreed with while the site grew to a hundred words per picture, which is the
-argument for the numbers in rule 7.
-
-1. **Image first, code second — always.** A reader should see what a thing
-   looks like before being shown how to make it. Never open a section with a
-   code block; open it with the picture the code produces. If a section has no
-   image worth showing, ask whether it needs the code either.
-2. **More images than prose.** The product is drawings. A wall of text about a
-   drawing library is a failure of the library.
-3. **Snippets use keyword arguments with meaningful names.**
-   `render_hollow(ax, [part], "#FFD9D9", "#FF0000", 2.0)` tells a reader
-   nothing. Every argument in documentation is named, and anything non-obvious
-   carries a trailing comment:
-
-   ```python
-   render.render_hollow(
-       ax=ax,
-       parts=[outline],
-       fill="#FFD9D9",      # the interior wash
-       edge="#FF0000",      # the wall
-       wall_lw=2.0,         # wall thickness, in points
-   )
-   ```
-
-   This doubles as an API test: if a call cannot be written readably with
-   named arguments, the signature is wrong.
-4. **Every example folder carries a blueprint** — the construction figure, so
-   the maths is visible and not just asserted.
-5. **Variants are the unit of documentation.** A reader learns more from
-   eighteen small cells differing in one knob each than from one large cell
-   and a paragraph about what the knob does. Fill a page with icon grids, not
-   with a handful of portraits.
-6. **A public page shows only what `pip install` can do.** Every detail
-   page carried a *Rebuilding these drawings* section ending in
-   `python tools/build_gallery.py pyramidal` — a command that presumes a
-   clone of this repository, on a page written for someone who has installed
-   the library. Maintainer instructions belong in `CONTRIBUTING.md`.
-   `tools/build_site.py` now refuses to build a snippet naming `tools/`,
-   `build_gallery` or `git`. The positive form matters more than the
-   prohibition: the reader's next step is `pip install biodraw` and pointing
-   an agent at the skills, so that is what the page should say.
-7. **A catalog page shows drawings; every section earns its place with one.**
-   The gallery went live and the verdict was *"its still too much text, its
-   should be more catalog then code-snippet."* Measured: 6,662 words and 352
-   lines of code across 66 drawings — about a hundred words per picture, and
-   up to six snippets on a single page. Ten sections carried no image at all.
-
-   A section with no drawing is prose that wandered onto a catalog. It has
-   two proper homes and neither is the page: if it explains a picture, it is
-   a **caption on that picture**; if it explains a number, it is a **tuning
-   comment** next to the number, where the person changing it will actually
-   meet it. The check that this loses nothing is cheap and worth running —
-   before cutting the pyramidal page's paragraph on why `shaft` anchors sit
-   below the first spine, that reasoning was found already written at
-   `biodraw/neuro/pyramidal.py:120`.
-
-   There is **one snippet per page**: the one that draws the thing the page
-   is about. Five snippets showing five keyword combinations is five copies
-   of one snippet, and the variant grid already said it better.
-
-   Numbers, enforced by `check_catalog` in `tools/build_site.py`: ≤150 words
-   of prose per page, ≤1 code block, ≤20 words per caption, and no imageless
-   section. They took the site to 3,227 words and 10 snippets with all 66
-   drawings still on it. Rule 2 said "more images than prose" and was true
-   and unenforced for three sessions — which is the whole argument for
-   writing a rule as a number.
-
-8. **Hover may affirm, never replace.** The gallery's cards first cross-faded
-   each portrait into that example's variant sheet on hover. It read as the
-   card changing identity: two cards could not be compared, and what you
-   clicked was not what you had been looking at. Hover is allowed to say
-   *this one* — a border, a colour, a lift. The moment it substitutes
-   different content, the reader has lost the thing they were looking at in
-   order to see something the page could simply have shown. If a picture is
-   worth putting on the index, put it on the index.
-
-9. **A card is a drawing; a property of every drawing is not a card.** The
-   drawing *styles* page — hollow against skeleton, washed against solid, in
-   each palette — shipped as one more card in the grid, and the verdict was
-   *"neuron style is great! ... but i dont think it should be in a card,
-   rather, somewhere else, which is more of a 'global' or parallel to the
-   main page cards."* A card invites comparison with its neighbours, and
-   comparing "styles" with "bacteria" is a category error: every other card
-   *has* styles.
-
-   So a content module may set `standalone=True`. The page is still built and
-   still budgeted; it leaves the grid and appears instead in the masthead of
-   every page and as a full-width band beside the grid — both generated from
-   the same `PAGE` dict, so there is no second copy to drift out of step. The
-   general form: **ask whether the thing is one of the items or a property of
-   all of them**, and let the layout say which.
-
-10. **A name a reader would search for gets its own card.** Bipolar, granule,
-    Purkinje and astrocyte cells shared one card called *Neuron types*, and
-    nobody looking for a Purkinje cell searches for "neuron types". Each is a
-    card now, and what stayed behind is the argument none of them could carry
-    alone — that they are one body plan at five settings — on a *Radial body
-    plan* card that doubles as the entry point for a cell the library does
-    not name.
-
-    The cost is real (four folders, twelve images) and the rule is not "one
-    card per class". It is: if a reader arrives with a **name**, the catalog
-    should contain that name. The corollary ran the other way the same day —
-    *wiring* and *circuit motifs* were two cards for one subject, and a
-    reader wanting "how do I draw a projection from A to B" could not tell
-    which held it, so they are one card over two example folders. A page and
-    a build folder are no longer required to be the same thing.
-
-## Drawing rules
-
-What separates a drawing from a diagram of a drawing. Each of these arrived as
-a specific complaint about one figure and turned out to govern everything.
-
-1. **A repeated part must not repeat exactly.** Two fork daughters reflected
-   about their trunk, two basal legs of equal length, eight microvilli on
-   exactly even slots, a row of cells with a perfectly level apical surface —
-   each reads as a symbol *for* the thing rather than as the thing. Anything
-   the library produces in pairs or in runs must differ in the ways real ones
-   differ, **by default and not on request**, and the variation must be seeded
-   so the figure still regenerates byte-identically.
-
-   The distinction that matters is texture versus structure. Mirroring a
-   traced profile across a branch is right — it stops N decorations sharing
-   one asymmetry (`Profile.place(mirror=...)`). Mirroring a *bifurcation* is
-   wrong, because symmetry there is a claim, and a false one: real daughters
-   differ in calibre, length and angle, and the three move together — the
-   thicker daughter runs further and turns less off the parent's axis while
-   the thin one branches off wide. One ratio should drive all of them, or the
-   fork reads as three knobs that happen to be set.
-
-2. **A cosmetic term that does not scale with length will end up driving
-   something structural.** The waver that makes a branch look drawn is a sine
-   with a fixed *cycle count*, so halving a branch's length doubles its
-   frequency. An apical forked at 0.25 drove its trunk at four times the rate
-   the drawing was tuned at and swung it 44° off axis against a reference of
-   22° — which is the "twiddle" visible above the soma. Cycle counts, fixed
-   offsets and fixed angles are all suspect the moment they are shared between
-   branches of different lengths; prefer a wavelength (`Branch(wave_per=...)`)
-   or a fraction. This is the same failure as keying a fork off the local
-   tangent, and it is now the second time it has been found.
-
-3. **A count spread over a length is a density.** The same failure as rule 2,
-   one level up: `spines=9` on an apical means nine *at the reference length*,
-   and forking the apical halves the trunk. Sharing the count crams nine
-   spines into half the dendrite and the tuft becomes a mass of touching
-   heads. Anything counted along a branch — spines, boutons, microvilli,
-   protrusions — has to be derived from a per-unit rate, not carried across
-   branches of different lengths.
-
-4. **Prefer the schematic where the realistic one competes for attention.** A
-   "realistic" axon was built — a tapered tube with swellings — and removed.
-   At the size an axon appears in a circuit panel it reads as a fat beaded
-   worm and pulls the eye away from the cells it exists to connect. A line
-   with a mark on the end says the same thing and is parsed instantly. The
-   test is not "is this anatomically fuller" but "does the reader get the
-   claim faster".
-
-5. **When something looks wrong, measure it before changing it.** Neither of
-   the two above was found by looking. Both were found by computing one number
-   — cycles per unit length, degrees off axis — and comparing it against the
-   configuration the drawing was tuned in. An agent cannot see the figure, and
-   a human describing what is wrong with one is describing a symptom.
-
-## The image weight budget
-
-**The budget is a publication constraint, not a development one.** It was
-imposed before anything needed debugging, and the cost showed up immediately:
-at 100 dpi a sheet of eighteen cells gives each cell about 55 pixels, which is
-enough to see that a cell was drawn and not enough to see whether it was drawn
-*right*. Two real defects sat in the committed images for a whole session
-because nobody could see them. So `biodraw.io.QUALITY` holds three profiles —
-`compact` (what a published repo carries), `review` (the default while this one
-is not published) and `debug` (uncapped, for looking at one shape hard) — and
-`DEFAULT_QUALITY` is the single line to flip back before going public.
-
-Worth recording, since the original numbers implied otherwise: **`dpi` is the
-binding constraint, not `max_width`.** A three-column sheet at `cell_in=1.5`
-comes out 450 px wide, so the 1000 px cap never engages and only the dpi
-matters. Going from compact to review roughly doubles the linear resolution
-and costs about 2.3x the bytes.
-
-This library is heading for hundreds of examples with thousands of variants
-between them. Documentation images are the only thing here that does not
-scale for free, so the rules are measured, not guessed:
-
-| for 36 cells | size | per cell |
-|---|---|---|
-| SVG contact sheet | 2,970 kB | 83 kB |
-| PNG, 150 dpi | 157 kB | 4.4 kB |
-| PNG, 100 dpi | 87 kB | 2.4 kB |
-| **PNG, 100 dpi, quantized** | **29 kB** | **0.81 kB** |
-
-**SVG is the wrong format for documentation.** The hollow renderer strokes
-*and* fills every part, so a page of cells carries two paths per part and runs
-to megabytes. Vector is for the deliverable — the figure that goes in a paper
-— and rasters are for the README.
-
-So:
-
-- **Use `bd.contact_sheet` + `bd.save_compact` for anything in a README.**
-  Compact caps the pixel width at 1000 (a README displays at less than that,
-  and rendering at three times it is three times the bytes for nothing) and
-  quantizes to a 32-colour palette, which is visually lossless on flat line
-  art and about a third the size. Pillow does the work and ships with
-  matplotlib, so this costs no new dependency.
-- **A variant inside a shared sheet costs ~0.8 kB; the same variant as its own
-  image costs ~50 kB.** Sixty times cheaper. Show more, in fewer files.
-- **Do not commit SVGs of assembled shapes.** A single pyramidal cell is 98 kB
-  as SVG — more than all five of that example's rasters put together. The
-  vector file is one `bd.save(fig, "cell.svg")` away, and `build.py` is
-  committed, so the repository does not need to carry output that regenerates
-  in a fraction of a second. One small SVG is kept in
-  `examples/dendritic_spine/` as the standing demonstration that vector export
-  works; re-proving it per folder costs ~100 kB each for nothing.
-- **Budget: about 100 kB per example folder.** At that rate a hundred examples
-  is 10 MB, which is a repository people can clone.
-- **The frame is the drawing's shape, not the figure's.** *"the 'on a branch'
-  eight image is almost only white space image."* Measured: its ink filled
-  62% of the file's width. Two causes, both invisible until something counted
-  them — `bbox_inches="tight"` trims to the **axes**, which are equal-aspect,
-  so a tall drawing in a square figure keeps its side margins; and
-  `pad_inches` defaults to a *fixed* 0.1 inch, which is 1% of a wide sheet
-  and 19% of a portrait 0.86 inches across. `save_compact` pads 0.02 now, and
-  every `build_gallery` run reports any image whose ink leaves a quarter of
-  an axis empty. That took the catalog's worst frame from 52% to 75% and its
-  median to 93%, and made several files smaller on the way.
-- Past two varying knobs, use `row_labels` / `col_labels` rather than a
-  caption under every cell — repeating three keys eighteen times is the same
-  text written eighteen times, and it crowds out the drawings.
-
-## Non-negotiables
-
-- **Keep the tuning comments.** They record why a number is what it is,
-  usually discovered after something looked wrong. They are the most expensive
-  thing here to rediscover.
-- Vector only. No rasterized fallback anywhere.
-- Runtime dependencies: `numpy` and `matplotlib`. Nothing else.
-- Pin a drawing before refactoring it.
-
-## Milestones
+This file is the archive. For what is coming next, read
+[ROADMAP.md](ROADMAP.md) — it is short on purpose.
 
 ### 0 — Repo skeleton ✅
 
@@ -427,47 +132,24 @@ it up:
 is where user-hat feedback gets **converted into a numeric check** — step 3 of
 the loop in `CLAUDE.md`. Every check in it names the comment that produced it,
 which keeps it honest: a check that cannot point at a real failure it caught
-is a guess and should be cut. It currently carries eleven, derived from the
-waver-frequency bug, the mirror-image fork, the crotch spur, two
-inward-pointing-anchor bugs, the layer/occlusion rule, the epithelial gap, and
-the SVG determinism bug — plus two added in session 4: the *measure to an
-edge, and on a flattened shape* half of check 5, and check 5b, that an inner
-part is actually inside the part containing it. Both of those came from
-defects that a passing test had been walking past — and one more on the back
-of the `rcParams` leak, that **a single-example rebuild and a full rebuild
-must agree**, without which `--check` is testing the order the folders happen
-to sort in.
+is a guess and should be cut.
+
+    grep -c '^### ' skills/review-a-drawing/SKILL.md
+
+That is the count, and it is a command rather than a number in prose because
+this sentence said *eleven* for four sessions after it stopped being true.
+The skill itself is the list; each check opens with the defect or the comment
+that produced it, which is the only provenance worth keeping.
 
 The intended effect is that the same class of comment never has to be made
 twice — a rule written as prose gets read once, a rule written as a check gets
 run every time.
-
 #### What makes a skill good
 
-Skills are the main way this library gets used and extended: some shipped
-here, some written by others for their own figure styles. That needs a
-contract, or the repo fills up with prompts that work once.
-
-A skill in `skills/` must:
-
-1. **Name its trigger precisely.** When it applies, and — as importantly —
-   when it does not.
-2. **Be derived from a worked example, not imagined.** Do the task once by
-   hand, keep what was actually needed, and cut what turned out not to be.
-   Anything asserted in a skill that was never exercised is a guess.
-3. **State the checks.** What the agent runs to know it succeeded, and what
-   the failure looks like. A skill with no verification step is a wish.
-4. **Fail loudly on ambiguity.** Where a choice is a scientific claim — which
-   compartment a contact lands on, whether two cells are level — the skill
-   must say *ask*, not *pick*.
-5. **Ship with its example.** The folder under `examples/` that the skill was
-   derived from, so the skill can be re-derived and tested against a known
-   output.
-
-`trace-a-shape` was derived exactly this way — from
-`examples/dendritic_spine/`, by starting from the original photograph and
-rebuilding the blueprint from it. That exercise is the method: whatever it
-takes to get there *is* the skill.
+The five-point contract a skill in `skills/` must meet has moved to
+[RULES.md](RULES.md#what-makes-a-skill-good), with the rest of the rules that
+are still live. It was derived from `trace-a-shape` and
+`examples/dendritic_spine/`.
 
 ### 7.5 — `cells`: the non-neuron example, brought forward ✅
 
@@ -548,7 +230,7 @@ reviewed**. The lesson is now a rule:
 > symmetric default lives. Two of the four were exactly 0 on a round or
 > straight shape.
 
-### 8 — Roster (cells ✅, `annotate` open)
+### 8 — Roster ✅
 
 `cells.Blob` — the proof the core is not neuron-shaped — shipped in 7.5, and
 session 6 took the neuron roster past this list: `RadialCell` is the body plan
@@ -556,10 +238,47 @@ behind `Basket`, `Bipolar`, `Granule`, `Purkinje` and `Astrocyte`, which are
 settings of it rather than five modules. Session 7 gave each named cell its
 own gallery card (documentation rule 10).
 
-**What is left of this milestone is `annotate`:** `scalebar` and `label`.
-Both are small, both are needed by every figure that leaves the repository,
-and `scalebar` is a prerequisite for the microscopy reading in milestone 10 —
-a bar that knows its own units is the whole point of that category.
+**`annotate` closed it in session 8** — `core.annotate`, exposed as
+`bd.label` and `bd.scalebar`. It is the other half of the anchor contract:
+`connectors` consumes anchors to draw strokes *between* shapes, this
+consumes the same anchors to put words *beside* one.
+
+It shipped with `examples/annotation/` and a standalone *Labels & scale*
+page, and **both came straight back off**: *"i see the page: 'Labels & scale'
+its not needed."* A utility is not a catalog entry — see documentation rule 9
+in [RULES.md](RULES.md), which gained its third answer here. What documents
+`annotate` now is the four catalog figures that quietly use it, which is
+better evidence than a page built to show it off.
+
+The case for it was a count, taken before a line was written: **61
+hand-written label sites** across `examples/`, **20 of them pinned to a
+typed-in `x, y`** — which a wider neck or an animal at `facing=-1` leaves
+behind — and **30 more each reimplementing the same three lines**. One
+example folder had already grown a private `_label` helper whose docstring
+called itself "the one-line stand-in for `annotate.label` (milestone 8)".
+
+Three things the build settled, none of them guessed:
+
+- **Alignment comes from the normal, not just the offset.** A label standing
+  off to the left must be right-aligned or it grows back over the shape it
+  names. Counted on a ring of twelve: centred, **7 of 12 crossed the
+  outline**; derived, none did.
+- **`leader` defaults off.** 11 of the 61 sites used one. The rule is about
+  where the anchor is rather than taste: a part on the wall is already at the
+  edge, a part buried in the cytoplasm cannot be named without a line.
+- **`bd.fit` was cropping labels, and always had been.** Text is not ink, so
+  `points` cannot see it — three leader labels at `pad=0.12` were all three
+  outside the axes. The repository had been paying for this unnamed: **26
+  hand-written `set_xlim` / `set_ylim` calls against 24 `fit` calls.** `fit`
+  took a `marks=` argument, and every committed image stayed byte-identical
+  because the no-marks path is untouched.
+
+The `marks` loop is worth reading before changing: it measures, grows, and
+measures **again**. One pass looks sufficient — growing the limits should
+only make fixed-point text smaller in data units — and is not, because
+`canvas` locks the aspect and matplotlib satisfies that by shrinking the axes
+*box*, which can leave text covering *more* data units than when measured.
+Tried as one pass: two of eight artists still clipped.
 
 ### 9 — Examples and gallery
 
@@ -628,7 +347,7 @@ one outline would.
 recommended: no jointed rig, no pose knob, nothing traced. Each animal is a
 few superellipse bodies, `Branch` tubes for tails and legs and one union,
 and each carries the one knob it is actually about — the mouse's tail
-against its body, the fly's wings, the fish's stripe count, the worm's curl.
+against its body, the fly's wings, the fish's body depth, the worm's curl.
 
 `facing` is on the shared base, and it is the answer to the paragraph above:
 a mouse facing left and a mouse facing right are one object at `facing=±1`,
@@ -637,10 +356,11 @@ is a **mirror**, not a rotation — a rotated animal is an animal on its back.
 
 Two things fell out of building it that were not obvious in advance:
 
-- **`Layer` gained `wall_lw`.** A zebrafish's stripe is a *marking*, and
-  stroked at the body's own wall weight it stops being a stripe and becomes
-  a pipe laid across the fish. A layer can now say `wall_lw=0` (no wall) or
-  `'0.8x'` (a multiple of what `draw` was asked for);
+- **`Layer` gained `wall_lw`.** A *marking* stroked at the body's own wall
+  weight stops being a marking and becomes a pipe laid across the animal. A
+  layer can now say `wall_lw=0` (no wall) or `'0.8x'` (a multiple of what
+  `draw` was asked for). It was built for the zebrafish's stripes, which
+  were later removed; the fly's wing kept it earning its place;
 - **anchors have to be taken over what is drawn, not over the geometry.**
   The fly's wings are a layer rather than part of `_forms()`, so wall
   anchors computed from the geometry sat *under the wing* — where a label
@@ -649,7 +369,7 @@ Two things fell out of building it that were not obvious in advance:
 Still open, and cheap when wanted: more organisms (frog, macaque, chick,
 *Arabidopsis*), and the pose question, which nobody has needed yet.
 
-#### Microscopy
+#### Microscopy — **shipped** (session 8)
 
 This one needs a decision on scope, and the library's own test is the one to
 apply: *anything that wants varying is a candidate here; anything that only
@@ -658,7 +378,7 @@ that line:
 
 - **Microscopy as equipment** — a microscope, a slide, a coverslip, a
   centrifuge. This is what NIAID's BioArt already carries by the thousand, and
-  `docs/PLAN.md` opens by saying this library should never compete with it. A
+  [SCOPE.md](SCOPE.md) is explicit that this library should never compete with it. A
   microscope drawn here would be a worse version of a file you can download,
   and it does not vary: nobody needs the same microscope at three objective
   counts.
@@ -690,31 +410,37 @@ counts in it, and that is where the parameters are:
 
 Built as an outline, in the schematic house style above, that is one shape
 with five knobs rather than a downloaded picture of somebody else's
-microscope. **The field-of-view reading is not dropped** — a section outline,
+microscope.
+
+**Built in session 8** as `biodraw.lab.Microscope`, with
+`examples/microscope/` and a sixth gallery category — the first that draws
+no living thing. Four of the five knobs above survived; **`binocular` did
+not**, and its removal is the most useful thing the build produced. Two
+eyepiece tubes are separated *into the page*, so a strict side elevation puts
+one exactly behind the other: measured, the flag changed the inverted body by
+**0.0%** and widened the upright's single tube by 11.6% with the barrels
+still fused. That is the zebrafish's stripes and the side-on fly in one knob.
+
+Three defects, all found by reading numbers rather than by looking:
+
+- the objectives were drawn **through the stage** — a working distance of
+  -0.044, on an outline that looked entirely convincing;
+- the objective *anchors* pointed **up** out of an upright, because `_named`
+  re-derived the turret that `_forms` already owned and got the sign
+  backwards. Fixed by giving both one `_layout` dict to read;
+- the fan was held as a fixed **total** spread, so the step between barrels
+  shrank as barrels were added and at `objectives=5` the tips fused into a
+  lump. That is drawing rule 3 (*a count over a length is a density*) on an
+  angle, and it is now half of check 4 in `review-a-drawing`. **The field-of-view reading is not dropped** — a section outline,
 a field at a stated density, an inset box — but it is a *second* thing and it
 still waits on `annotate.scalebar` and the panel machinery.
-
 #### How the reference figures are used — for all three
 
-*"for animals, microscopy, genetics and so on — you can google and grab text
-book images, take the basic ones and add them to the catalog. use very simple
-drawings, not complex realistic images, sometimes an outline is even enough."*
-
-Two rules come out of that, and they apply to every category on this page:
-
-1. **A reference is a parts list and a set of proportions.** Look at it, write
-   down what the parts are and how big each is relative to the others, then
-   build the shape parametrically from the core. Nothing is traced off a
-   downloaded figure and no downloaded figure is committed — which is the
-   same rule this repo already reached from the other direction ("a reference
-   figure is a source of capabilities, not a thing to reproduce"), and it is
-   also the only version that gives a shape knobs.
-2. **Draw the schematic, not the portrait.** A mouse is a silhouette; a
-   coverslip is a rounded square; an organelle is an outline. The library's
-   own drawing rule 4 already says *prefer the schematic where the realistic
-   one competes for attention* — this extends it from axons to whole
-   organisms. If an outline reads at figure size, the detail was costing
-   bytes and attention for nothing.
+The two rules that came out of *"grab text book images ... sometimes an
+outline is even enough"* — **a reference is a parts list**, and **draw the
+schematic, not the portrait** — apply to every category here and to every one
+added later, so they live with the other drawing rules: [RULES.md](RULES.md),
+drawing rules 6 and 7.
 
 #### Genetics — **shipped** (session 7)
 
@@ -842,12 +568,3 @@ ask had been to expand the catalog with new *styles*. A reference figure is a
 source of capabilities, not a thing to clone — the capabilities above went
 into the catalog and the figure did not.
 
-## Verification
-
-```bash
-pip install -e ".[dev]"
-pytest --mpl                                  # geometry + pinned images
-pytest --mpl-generate-path=tests/baseline     # regenerate, if intended
-ruff check .
-python tools/build_gallery.py --check         # examples rebuild identically
-```

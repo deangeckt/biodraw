@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Model organisms — biodraw</title>
 <meta name="description" content="Mouse, fly, zebrafish and worm as silhouettes — and facing whichever way your panel needs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Space+Grotesk:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400&display=swap">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -13,7 +16,6 @@
     <a class="wordmark" href="index.html">biodraw</a>
     <nav class="masthead-links">
       <a href="styles.html">Drawing styles</a>
-      <a href="https://github.com/deangeckt/biodraw/blob/main/docs/PLAN.md">Roadmap</a>
       <a class="gh" href="https://github.com/deangeckt/biodraw" aria-label="biodraw on GitHub"
          title="biodraw on GitHub"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
     </nav>
@@ -44,7 +46,7 @@
 <section class="block">
 <h2 id="one-knob-each">One knob each</h2>
 <div class="figs is-single">
-<figure class="plate zoomable"><img src="../examples/animals/knobs.png" alt="Tail against body, wings on or off, stripe count, how curled the worm is." loading="lazy"><figcaption>Tail against body, wings on or off, stripe count, how curled the worm is.</figcaption></figure>
+<figure class="plate zoomable"><img src="../examples/animals/knobs.png" alt="Tail against body, wings on or off, body depth, how curled the worm is." loading="lazy"><figcaption>Tail against body, wings on or off, body depth, how curled the worm is.</figcaption></figure>
 </div>
 </section>
 <section class="block">
@@ -77,7 +79,7 @@ mouse = bd.animals.Mouse(
 mouse.draw(ax=ax, wall_lw=1.1)
 mouse.fit(ax, pad=0.12)
 
-fish = bd.animals.Zebrafish(stripes=4)   # 0 for a mutant, 6 for a dense one
+fish = bd.animals.Zebrafish(depth=1.35)  # a deeper-bodied fish
 fly = bd.animals.Fly(wings=False)        # a wingless mutant, in one word
 worm = bd.animals.Worm(curl=0.22, waves=2.2)
 
@@ -89,7 +91,7 @@ ax.annotate(&quot;wild type&quot;, xy=mouse.anchor(&quot;nose&quot;).xy,
   <p class="source-note">Every figure above is output, not a stored asset —
      drawn by <a href="https://github.com/deangeckt/biodraw/blob/main/examples/animals/build.py"><code>animals/build.py</code></a>, in Python, on a matplotlib axes.</p>
 
-  <nav class="pager"><a class="prev" href="inducible_construct.html"><span>Previous</span>Inducible construct</a></nav>
+  <nav class="pager"><a class="prev" href="inducible_construct.html"><span>Previous</span>Inducible construct</a><a class="next" href="microscope.html"><span>Next</span>Microscope</a></nav>
 </article>
 
 <aside class="rail">

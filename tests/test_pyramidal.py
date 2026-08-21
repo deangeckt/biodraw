@@ -158,7 +158,7 @@ def test_spines_are_a_density_not_a_count_per_branch():
 
 def test_repeated_parts_differ():
     """A design rule rather than a look: anything the library makes in pairs
-    must differ in the ways real pairs differ. See docs/PLAN.md. The exact
+    must differ in the ways real pairs differ. See docs/RULES.md. The exact
     amounts are the pins' business; that they are not equal is this test's."""
     cell = Pyramidal(spines=4, apical_fork=0.42, basal=2, basal_spines=4)
     for pair in ("daughters", "basals"):

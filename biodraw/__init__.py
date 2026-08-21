@@ -31,9 +31,21 @@ about how it was made: your sketch becomes a shape in this library the same
 way the spine did. The recipe for doing it is `skills/trace-a-shape`.
 """
 
-from . import animals, cells, core, genetics, io, layout, micro, neuro, style
+from . import (
+               animals,
+               cells,
+               core,
+               genetics,
+               io,
+               lab,
+               layout,
+               micro,
+               neuro,
+               style,
+)
 from .core import Branch, Profile
 from .core.anchor import Anchor
+from .core.annotate import label, scalebar
 from .core.connectors import connect, connect_bus, connect_tree, endcap
 from .core.shape import Layer, Shape
 from .core.track import Glyph, Track
@@ -43,10 +55,11 @@ from .layout import contact_sheet
 __version__ = "0.1.0.dev0"
 
 __all__ = [
-    "animals", "cells", "core", "genetics", "io", "layout", "micro",
-    "neuro", "style",
+    "animals", "cells", "core", "genetics", "io", "lab", "layout",
+    "micro", "neuro", "style",
     "Anchor", "Branch", "Glyph", "Layer", "Profile", "Shape", "Track",
     "connect", "connect_bus", "connect_tree", "endcap",
+    "label", "scalebar",
     "canvas", "contact_sheet", "fit", "save", "save_compact", "set_quality",
     "__version__",
 ]

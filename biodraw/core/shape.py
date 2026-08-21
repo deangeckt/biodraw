@@ -57,10 +57,11 @@ class Layer:
       wall_lw          wall thickness for this layer alone, in points, or a
                        **multiple** of what `draw` was asked for if it is
                        given as a string like `'0.5x'`. `0` draws no wall at
-                       all, which is what a *marking* wants: a zebrafish's
-                       stripe is a shape with no edge, and stroked at the
-                       body's own weight it stops being a stripe and becomes
-                       a pipe laid on the fish.
+                       all, which is what a *marking* wants: a shape with
+                       no edge of its own. The zebrafish stripe this was
+                       built for has since been removed, but the fly's wing
+                       uses the multiple form — a wing walled at the body's
+                       weight competes with the body.
       dz               z-offset from the shape's own `zorder`. `None` stacks
                        the layers in the order given, 0.1 apart —
                        `render_hollow` already puts 0.05 between its own two

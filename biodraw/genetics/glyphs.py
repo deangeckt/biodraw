@@ -8,7 +8,7 @@ track has never heard of genetics and this module has never heard of layout.
 Read off figure 1 of doi.org/10.1016/j.tibtech.2023.03.007, not off the
 field: the parts list came from the figure Dean supplied, which is why there
 are no double helices, plasmid maps or exon structures in it. See
-`docs/PLAN.md`, milestone 10.
+`docs/MILESTONES.md`, milestone 10.
 
 What varies, and why that is the whole argument
 -----------------------------------------------
